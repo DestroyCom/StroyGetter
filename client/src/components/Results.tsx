@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 
 import { Menu, MenuItem, MenuButton } from "@szhsin/react-menu";
@@ -10,21 +9,35 @@ import {
   MusicNoteIcon,
   VideoCameraIcon,
   ChevronDownIcon,
+  DownloadIcon,
 } from "@heroicons/react/solid";
 
-import { download, getExtension } from "../helpers/function/downloader";
+import { SpinnerCircular } from "spinners-react";
 
-type AppProps = {
+import { download, getExtension } from "../helpers/function/downloader";
+import { setDownloadErrors } from "../helpers/redux/slices/errorsSlice";
+
+type DataResProps = {
   qualityList: any;
   name: string;
   thumbnailUrl: string;
   channelName: string;
 };
 
-const Placeholder = () => {
+type PlaceholderProps = {
+  name: string;
+};
+
+const Placeholder = ({ name }: PlaceholderProps) => {
+  const infos = useSelector((state: any) => state.errors.getInfosError);
+
   return (
     <div className="w-[75%] h-[20vh] border-dashed border-2 border-[#102F42] flex mx-auto my-12">
-      <p className="m-auto">Your video will be there soon !</p>
+      {name === null ? (
+        <p className="m-auto">{infos}</p>
+      ) : (
+        <SpinnerCircular color="#081721" size={100} className="m-auto" />
+      )}
     </div>
   );
 };
@@ -34,19 +47,50 @@ const DataRes = ({
   name,
   thumbnailUrl,
   channelName,
-}: AppProps) => {
+}: DataResProps) => {
   const [qualityValue, setQualityValue] = useState("Choose quality");
-  const [itag, setItag] = useState(null);
+  const [itag, setItag] = useState("");
   const [mimeType, setMimeType] = useState("");
 
+  const dispatch = useDispatch();
+
   const url = useSelector((state: any) => state.url.string);
+  const downloadErrors = useSelector(
+    (state: any) => state.errors.getDownloadError
+  );
 
   const handleDownload = (e: React.MouseEvent) => {
-    fetch(`http://localhost:3100/api/download-video?url=${url}&itag=${itag}`, {
+    dispatch(setDownloadErrors(null));
+
+    if (itag === "" && qualityValue === "Choose quality") {
+      dispatch(setDownloadErrors("Please choose a quality first !"));
+      return;
+    }
+
+    var apiUrl;
+
+    //If the itag contains "audio" string
+
+    if (mimeType.includes("audio")) {
+      apiUrl = `http://localhost:3100/api/download-audio?url=${url}&itag=${itag}`;
+    } else {
+      apiUrl = `http://localhost:3100/api/download-video?url=${url}&itag=${itag}`;
+    }
+
+    fetch(apiUrl, {
       method: "get",
     })
       .then((response) => {
-        let extension = getExtension(mimeType);
+        if (!response.ok) {
+          return;
+        }
+        var extension;
+
+        if (mimeType.includes("audio")) {
+          extension = "mp3";
+        } else {
+          extension = getExtension(mimeType);
+        }
         let fileName = `${name} - ${channelName} - ${qualityValue}.${extension}`;
         response.blob().then((blob) => download(blob, fileName));
         return response;
@@ -56,20 +100,31 @@ const DataRes = ({
 
   return (
     <div className="w-[75%] h-[20vh] border-solid border-2 border-[#102F42] flex flex-row justify-evenly mx-auto my-12 p-2">
-      <img
-        src={thumbnailUrl}
-        alt={'Thumbnail of "' + name + '"'}
-        className="max-h-[90%] my-auto rounded-lg"
-      />
-      <div className="flex flex-col text-lg mx-2 my-auto">
+      <div className="w-[40%]">
+        <img
+          src={thumbnailUrl}
+          alt={'Thumbnail of "' + name + '"'}
+          className="max-h-[100%] m-auto rounded-lg "
+        />
+      </div>
+
+      <div className="flex flex-col text-lg mx-2 my-auto w-[40%]">
         <div className="flex flex-col p-2">
           <p className="italic">{name}</p>
           <p className="font-bold">{channelName}</p>
         </div>
-        <div className="flex flex-row justify-around w-[85%]">
+        <div className="flex flex-row justify-start w-[85%]">
           <Menu
             menuButton={
-              <MenuButton className="rounded-lg bg-[#102F42] flex flex-row justify-between p-2 w-[50%]">
+              <MenuButton
+                className={
+                  (downloadErrors
+                    ? "border-solid border-2 border-[#720915] text-[#720915]"
+                    : "") +
+                  " " +
+                  "rounded-lg bg-[#102F42] flex flex-row justify-between p-2 w-[50%] max-w-[20vh] mr-[10%]"
+                }
+              >
                 <p className="m-auto">{qualityValue}</p>
                 <ChevronDownIcon className="m-auto max-w-[20%]" />
               </MenuButton>
@@ -95,13 +150,27 @@ const DataRes = ({
                   <VideoCameraIcon className="h-5 w-5" />
                 )}
                 <p>{quality.quality}</p>
+                {/* <p>{JSON.stringify(quality)}</p> */}
               </MenuItem>
             ))}
           </Menu>
-          <button type="submit" onClick={(e) => handleDownload(e)}>
-            Submit
-          </button>
+          <div
+            onClick={(e) => handleDownload(e)}
+            className={
+              (qualityValue != "Choose quality"
+                ? "hover:bg-[#1C5273] hover:border-[#102F42] hover:cursor-pointer"
+                : "opacity-25") +
+              " " +
+              "flex flex-row transition-all ease-in-out bg-[#102F42] border-2 border-transparent text-white font-bold py-2 px-4 rounded-lg "
+            }
+          >
+            <p className="my-auto mx-2">DOWNLOAD</p>
+            <DownloadIcon className="h-5 w-5 m-auto" />
+          </div>
         </div>
+        {downloadErrors && (
+          <p className="font-bold italic text-[#720915]">{downloadErrors}</p>
+        )}
       </div>
     </div>
   );
@@ -123,7 +192,7 @@ const Results = () => {
           channelName={channelName}
         />
       ) : (
-        <Placeholder />
+        <Placeholder name={name} />
       )}
     </>
   );

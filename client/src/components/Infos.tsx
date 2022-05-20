@@ -15,9 +15,9 @@ const Infos = () => {
           <p className="m-auto text-lg">Unlimited downloads</p>
         </div>
 
-        <div className="flex flex-row w-[6em]">
+        <div className="flex flex-row w-[7em]">
           <CheckCircleIcon className="h-7 w-7 text-white-500 m-auto" />
-          <p className="m-auto text-lg">ads free</p>
+          <p className="m-auto text-lg">Ads free</p>
         </div>
       </div>
     </>

@@ -10,40 +10,24 @@ const PORT: number = 3100 || process.env.PORT;
 
 const corsOptions = {
   origin: "http://localhost:3000",
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-/* app.get("/api/download", async (req, res) => {
-  const url = req.query.url?.toString();
-
-  if (!url) {
-    res.send("Please provide a url");
-    return;
-  }
-
-  try {
-    if (!ytdl.validateURL(url)) {
-      return res.sendStatus(400);
-    }
-
-    ytdl(url, {}).pipe(res);
-  } catch (err) {
-    console.error(err);
-  }
-});
-*/
 app.get("/api/get-infos", async (req, res) => {
   const url = req.query.url?.toString();
 
   if (!url) {
-    res.send("Please provide a url");
-    return;
+    return res
+      .status(400)
+      .send({ message: "Please provide a correct query !" });
   }
 
   if (!ytdl.validateURL(url)) {
-    return res.sendStatus(400);
+    return res
+      .status(400)
+      .send({ message: "Please provide a correct youtube url !" });
   }
 
   ytdl.getInfo(url).then((info) => {
@@ -71,9 +55,8 @@ app.get("/api/download-video", async (req, res) => {
   }
 });
 
-app.get("/api/download-music", async (req, res) => {
+app.get("/api/download-audio", async (req, res) => {
   const url = req.query.url?.toString();
-  const itag = req.query.itag?.toString();
 
   if (!url) {
     res.send("Please provide a url");
@@ -85,7 +68,7 @@ app.get("/api/download-music", async (req, res) => {
       return res.sendStatus(400);
     }
 
-    ytmixer(url, itag).pipe(res);
+    ytdl(url, { filter: "audioonly" }).pipe(res);
   } catch (err) {
     console.error(err);
   }

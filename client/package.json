@@ -19,7 +19,8 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-redux": "^8.0.1",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "spinners-react": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^17.0.35",

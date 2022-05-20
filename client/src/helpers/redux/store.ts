@@ -6,11 +6,13 @@ import { persistReducer } from "redux-persist";
 import downloadHistorySlice from "./slices/downloadHistorySlice";
 import urlSlice from "./slices/urlSlice";
 import infosSlice from "./slices/infosSlice";
+import errorsSlice from "./slices/errorsSlice";
 
 const reducers = combineReducers({
   downloadHistory: downloadHistorySlice,
   url: urlSlice,
   infos: infosSlice,
+  errors: errorsSlice,
 });
 
 const persistConfig = {

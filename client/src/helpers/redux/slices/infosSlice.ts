@@ -1,11 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
+interface infosState {
+  name: null | string;
+  qualityList: [];
+  thumbnailUrl: null | string;
+  channelName: null | string;
+}
+
+const initialState: infosState = {
   name: "",
   qualityList: [],
   thumbnailUrl: "",
   channelName: "",
-} as const;
+};
 
 export const infosSlice = createSlice({
   name: "infos",
@@ -16,23 +23,30 @@ export const infosSlice = createSlice({
     },
     setQualityList(state, action) {
       state.qualityList = [];
+
       action.payload.forEach((quality: any, index: number) => {
         if (
           quality.mimeType.includes("video/webm") ||
           quality.mimeType.includes("audio/webm")
         )
           return;
+
+        console.log("qualityLabel", quality.qualityLabel);
+        console.log("state.qualityList", state.qualityList);
+
         //Search for same qualityLabel
         let sameQualityLabel = state.qualityList.find(
           (qualityItem: any) => qualityItem.quality === quality.qualityLabel
         );
+
+        console.log("sameQualityLabel", sameQualityLabel);
 
         if (sameQualityLabel) {
           if (sameQualityLabel.bitrate < quality.bitrate) {
             if (quality.qualityLabel === null) {
               quality.qualityLabel = "audio";
             }
-            state.qualityList[index] = {
+            state.qualityList[state.qualityList.length] = {
               mimeType: quality.mimeType,
               quality: quality.qualityLabel,
               bitrate: quality.bitrate,
