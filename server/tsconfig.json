@@ -1,0 +1,9 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "src/dist",
+    "esModuleInterop": true
+  },
+  "include": ["src", "main.ts"],
+  "exclude": ["node_modules"]
+}
