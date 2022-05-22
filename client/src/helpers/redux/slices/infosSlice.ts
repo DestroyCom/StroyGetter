@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { infosState } from "../../types/types";
 
 const initialState: infosState = {
-  name: "",
+  name: null,
   qualityList: [],
   thumbnailUrl: "",
   channelName: "",

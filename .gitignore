@@ -391,3 +391,6 @@ google-services.json
 # End of https://www.toptal.com/developers/gitignore/api/react,reactnative,node,visualstudiocode,git
 
 test.html
+*.test
+test.*
+test

@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import ytdl = require("ytdl-core");
 import cors = require("cors");
@@ -6,10 +8,17 @@ import stream from "stream";
 import cp = require("child_process");
 
 const app = express();
-const PORT: number = 3100 || process.env.PORT;
+const PORT: string = process.env.PORT || "3100";
 
-const corsOptions = {
-  origin: "http://localhost:3000",
+let allowedOrigins: string[];
+if (process.env.TYPE_ENV === "dev") {
+  allowedOrigins = ["http://localhost:3000"];
+} else {
+  allowedOrigins = ["https://stroygetter.vercel.app/"];
+}
+
+const corsOptions: cors.CorsOptions = {
+  origin: allowedOrigins,
   optionsSuccessStatus: 200,
 };
 
@@ -36,8 +45,8 @@ app.get("/api/get-infos", async (req, res) => {
 });
 
 app.get("/api/download-video", async (req, res) => {
-  const url = req.query.url?.toString();
-  const itag = req.query.itag?.toString();
+  const url: string | undefined = req.query.url?.toString();
+  const itag: string | undefined = req.query.itag?.toString();
 
   if (!url) {
     res.send("Please provide a url");
@@ -49,6 +58,7 @@ app.get("/api/download-video", async (req, res) => {
       return res.sendStatus(400);
     }
 
+    //@ts-ignore
     ytmixer(url, itag).pipe(res);
   } catch (err) {
     console.error(err);
@@ -74,9 +84,11 @@ app.get("/api/download-audio", async (req, res) => {
   }
 });
 
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
-const ytmixer = (link: any, itag: any, options = {}) => {
+const ytmixer = (link: string, itag: string, options = {}) => {
   const result = new stream.PassThrough({
     highWaterMark: (options as any).highWaterMark || 1024 * 512,
   });
