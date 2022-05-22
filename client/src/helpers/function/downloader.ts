@@ -1,10 +1,8 @@
-//@ts-ignore
-export const download = (blob, filename) => {
+export const download = (blob: Blob, filename: string) => {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.style.display = "none";
   a.href = url;
-  // the filename you want
   a.download = filename;
   document.body.appendChild(a);
   a.click();

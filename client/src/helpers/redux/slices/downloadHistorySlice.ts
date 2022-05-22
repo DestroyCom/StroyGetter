@@ -1,10 +1,7 @@
 import { createSlice, Draft, PayloadAction } from "@reduxjs/toolkit";
 
-interface list {
-  list: string[];
-}
+import { list } from "../../types/types";
 
-// Define the initial state using that type
 const initialState: list = {
   list: [],
 };

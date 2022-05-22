@@ -15,7 +15,7 @@ import { setInfosErrors } from "../helpers/redux/slices/errorsSlice";
 const Input = () => {
   const dispatch = useDispatch();
 
-  const [stateUrl, setStateUrl] = useState(null);
+  const [stateUrl, setStateUrl] = useState<string | null>(null);
 
   const getInfo = async (e: React.MouseEvent) => {
     dispatch(setUrl(null));
@@ -64,6 +64,8 @@ const Input = () => {
         <input
           type="text"
           id="url"
+          name="url"
+          placeholder="https://www.youtube.com/watch?v=[video-id]"
           className="bg-[#081721] border border-[#081721] text-white rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 my-4"
           onChange={(e) => setStateUrl(e.target.value)}
         />

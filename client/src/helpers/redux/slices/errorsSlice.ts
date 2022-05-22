@@ -1,9 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-interface ErrorsState {
-  getInfosError: null | string;
-  getDownloadError: null | string;
-}
+import { ErrorsState } from "../../types/types";
 
 const initialState: ErrorsState = {
   getInfosError: "Your video will be there soon !",

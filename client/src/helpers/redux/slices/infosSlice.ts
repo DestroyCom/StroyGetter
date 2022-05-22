@@ -1,11 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-interface infosState {
-  name: null | string;
-  qualityList: [];
-  thumbnailUrl: null | string;
-  channelName: null | string;
-}
+import { infosState } from "../../types/types";
 
 const initialState: infosState = {
   name: "",
@@ -24,47 +19,57 @@ export const infosSlice = createSlice({
     setQualityList(state, action) {
       state.qualityList = [];
 
-      action.payload.forEach((quality: any, index: number) => {
-        if (
-          quality.mimeType.includes("video/webm") ||
-          quality.mimeType.includes("audio/webm")
-        )
-          return;
+      action.payload.forEach(
+        (
+          quality: {
+            mimeType: string;
+            qualityLabel: string;
+            bitrate: number;
+            itag: string;
+          },
+          index: number
+        ) => {
+          if (
+            quality.mimeType.includes("video/webm") ||
+            quality.mimeType.includes("audio/webm")
+          )
+            return;
 
-        console.log("qualityLabel", quality.qualityLabel);
-        console.log("state.qualityList", state.qualityList);
+          console.log("qualityLabel", quality.qualityLabel);
+          console.log("state.qualityList", state.qualityList);
 
-        //Search for same qualityLabel
-        let sameQualityLabel = state.qualityList.find(
-          (qualityItem: any) => qualityItem.quality === quality.qualityLabel
-        );
+          //Search for same qualityLabel
+          let sameQualityLabel = state.qualityList.find(
+            (qualityItem: any) => qualityItem.quality === quality.qualityLabel
+          );
 
-        console.log("sameQualityLabel", sameQualityLabel);
+          console.log("sameQualityLabel", sameQualityLabel);
 
-        if (sameQualityLabel) {
-          if (sameQualityLabel.bitrate < quality.bitrate) {
+          if (sameQualityLabel) {
+            if (sameQualityLabel.bitrate < quality.bitrate) {
+              if (quality.qualityLabel === null) {
+                quality.qualityLabel = "audio";
+              }
+              state.qualityList[state.qualityList.length] = {
+                mimeType: quality.mimeType,
+                quality: quality.qualityLabel,
+                bitrate: quality.bitrate,
+                itag: quality.itag,
+              };
+            }
+          } else {
             if (quality.qualityLabel === null) {
               quality.qualityLabel = "audio";
             }
-            state.qualityList[state.qualityList.length] = {
+            state.qualityList.push({
               mimeType: quality.mimeType,
               quality: quality.qualityLabel,
               bitrate: quality.bitrate,
               itag: quality.itag,
-            };
+            });
           }
-        } else {
-          if (quality.qualityLabel === null) {
-            quality.qualityLabel = "audio";
-          }
-          state.qualityList.push({
-            mimeType: quality.mimeType,
-            quality: quality.qualityLabel,
-            bitrate: quality.bitrate,
-            itag: quality.itag,
-          });
         }
-      });
+      );
     },
     setThumbnailUrl(state, action) {
       state.thumbnailUrl = action.payload;
