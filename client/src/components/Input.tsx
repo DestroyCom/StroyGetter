@@ -11,6 +11,7 @@ import {
 
 import { setUrl } from "../helpers/redux/slices/urlSlice";
 import { setInfosErrors } from "../helpers/redux/slices/errorsSlice";
+import { getAPIURL } from "../helpers/function/getAPIURL";
 
 const Input = () => {
   const dispatch = useDispatch();
@@ -31,8 +32,10 @@ const Input = () => {
 
     dispatch(setName(""));
 
+    var API_URL = getAPIURL();
+
     axios
-      .get(`http://localhost:3100/api/get-infos?url=${stateUrl}`)
+      .get(`${API_URL}/api/get-infos?url=${stateUrl}`)
       .then((res) => {
         console.log(res.data);
         dispatch(setUrl(stateUrl));

@@ -15,6 +15,7 @@ import { download, getExtension } from "../helpers/function/downloader";
 import { setDownloadErrors } from "../helpers/redux/slices/errorsSlice";
 
 import { DataResProps } from "../helpers/types/types";
+import { getAPIURL } from "../helpers/function/getAPIURL";
 
 const DataResults = ({
   qualityList,
@@ -44,12 +45,12 @@ const DataResults = ({
 
     var apiUrl;
 
-    //If the itag contains "audio" string
+    var API_URL = getAPIURL();
 
     if (mimeType.includes("audio")) {
-      apiUrl = `http://localhost:3100/api/download-audio?url=${url}&itag=${itag}`;
+      apiUrl = `${API_URL}/api/download-audio?url=${url}&itag=${itag}`;
     } else {
-      apiUrl = `http://localhost:3100/api/download-video?url=${url}&itag=${itag}`;
+      apiUrl = `${API_URL}/api/download-video?url=${url}&itag=${itag}`;
     }
 
     setIsProcess(true);
