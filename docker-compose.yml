@@ -32,8 +32,8 @@ services:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-host.docker.internal}
       MINIO_PORT: ${MINIO_PORT:-9000}
       MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-user}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-password}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-user}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-password}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-videos}
     ports:
       - 3100:3100
