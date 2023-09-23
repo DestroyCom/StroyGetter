@@ -15,16 +15,16 @@ dotenv.config();
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || "localhost",
   port: parseInt(process.env.MINIO_PORT || "9000"),
-  useSSL: process.env.MINIO_USE_SSL === "true",
-  accessKey: process.env.MINIO_ACCESS_KEY || "user",
-  secretKey: process.env.MINIO_SECRET_KEY || "password",
+  useSSL: process.env.MINIO_USE_SSL === "true" ? true : false,
+  accessKey: process.env.MINIO_ROOT_USER || "user",
+  secretKey: process.env.MINIO_ROOT_PASSWORD || "password",
 });
 
 minioClient.bucketExists(
   process.env.MINIO_BUCKET_NAME || "videos",
   function (err: any, exists: any) {
     if (err) {
-      return console.log(err);
+      throw new Error("Error while checking if bucket exists");
     }
     if (!exists) {
       minioClient.makeBucket(
@@ -32,7 +32,7 @@ minioClient.bucketExists(
         "us-east-1",
         function (err: any) {
           if (err) {
-            return console.log(err);
+            throw new Error("Error while creating bucket");
           }
           console.log("Bucket created successfully in " + "us-east-1");
         }
@@ -42,8 +42,8 @@ minioClient.bucketExists(
 );
 
 const app = express();
-const PORT: string = process.env.PORT || "3000";
-const allowedOrigins = process.env.BACKEND_URL ? [process.env.BACKEND_URL] : [];
+const PORT: string = process.env.PORT || "3100";
+const allowedOrigins = process.env.CLIENT_URL ? [process.env.CLIENT_URL] : [];
 
 if (!fs.existsSync(path.join(__dirname, "./temp_files"))) {
   fs.mkdirSync(path.join(__dirname, "./temp_files"));
@@ -72,7 +72,6 @@ app.get("/api/get-infos", async (req, res) => {
   }
 
   if (!ytdl.validateURL(url)) {
-    console.log("not valid");
     return res
       .status(400)
       .send({ message: "Please provide a correct youtube url !" });
@@ -140,6 +139,10 @@ app.get("/api/download", async (req, res) => {
   }
 
   const videoData = await ytdl.getInfo(url);
+  videoData.videoDetails.title = videoData.videoDetails.title.replace(
+    /[\s\/\\!@#$%^&*()_+={}[\]:;"'<>,.?~\\-]/g,
+    "_"
+  );
 
   if (!videoData) {
     res.status(400).send("Please provide a correct youtube url !");
@@ -172,7 +175,9 @@ app.get("/api/download", async (req, res) => {
         24 * 60 * 60
       );
 
-      return res.send({ url: presignedUrl });
+      return res.send({
+        url: presignedUrl,
+      });
     }
 
     const minioPath = `${videoData.videoDetails.videoId}/${videoData.videoDetails.title}_${quality}.mp3`;
@@ -192,7 +197,9 @@ app.get("/api/download", async (req, res) => {
           24 * 60 * 60
         );
 
-        return res.send({ url: presignedUrl });
+        return res.send({
+          url: presignedUrl,
+        });
       }
     );
   } else {
@@ -224,16 +231,13 @@ app.get("/api/download", async (req, res) => {
         24 * 60 * 60
       );
 
-      return res.send({ url: presignedUrl });
+      return res.send({
+        url: presignedUrl,
+      });
     }
 
     const videoStream = ytdl(url, { quality: itag });
     const audioStream = ytdl(url, { quality: "highestaudio" });
-
-    videoData.videoDetails.title = videoData.videoDetails.title.replace(
-      /[\s\/\\!@#$%^&*()_+={}[\]:;"'<>,.?~\\-]/g,
-      "_"
-    );
 
     const writeVideoFile = fs.createWriteStream(
       path.join(__dirname, `./temp_files/${videoData.videoDetails.title}_video`)
@@ -272,7 +276,6 @@ app.get("/api/download", async (req, res) => {
       typeof writeAudioFile.path !== "string" ||
       typeof writeVideoFile.path !== "string"
     ) {
-      console.log("Error while downloading the files");
       res.status(400).send("Error while downloading the files");
       return;
     }
@@ -318,7 +321,9 @@ app.get("/api/download", async (req, res) => {
               fs.unlinkSync(outputFilePath);
             }, 10000);
 
-            return res.send({ url: presignedUrl });
+            return res.send({
+              url: presignedUrl,
+            });
           }
         );
       });
