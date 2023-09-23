@@ -158,11 +158,6 @@ app.get("/api/download", async (req, res) => {
       .format("mp3")
       .pipe();
 
-    res.header(
-      "Content-Disposition",
-      `attachment; filename="${videoData.videoDetails.title}.mp3"`
-    );
-
     const doesExist: any = await getVideo(
       videoData.videoDetails.videoId,
       "mp3"
@@ -289,11 +284,6 @@ app.get("/api/download", async (req, res) => {
       .outputOptions("-preset ultrafast")
       .save(outputFilePath)
       .on("end", async () => {
-        res.header(
-          "Content-Disposition",
-          `attachment; filename="${videoData.videoDetails.title}.mp4"`
-        );
-
         const minioPath = `${videoData.videoDetails.videoId}/${videoData.videoDetails.title}_${quality}.mp4`;
 
         await minioClient.putObject(
@@ -330,6 +320,10 @@ app.get("/api/download", async (req, res) => {
 
     return;
   }
+});
+
+app.use(function (req, res) {
+  res.redirect(process.env.CLIENT_URL || "http://localhost:3000");
 });
 
 app.listen(PORT, () => {
