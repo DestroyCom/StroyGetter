@@ -1,0 +1,68 @@
+version: "3.7"
+services:
+  stroygetter_client:
+    container_name: stroygetter_client
+    image: stroygetter_client:latest
+    build:
+      context: ./stroygetter_front
+      dockerfile: StroyGetterClient.Dockerfile
+      args:
+        VITE_ENV_MODE: ${VITE_ENV_MODE:-development}
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3100}
+    restart: unless-stopped
+    environment:
+      VITE_ENV_MODE: ${VITE_ENV_MODE:-development}
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3100}
+    ports:
+      - 3000:80
+    depends_on:
+      - stroygetter_server
+
+  stroygetter_server:
+    container_name: stroygetter_server
+    image: stroygetter_server:latest
+    build:
+      context: ./stroygetter_server
+      dockerfile: StroyGetterServer.Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3100}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-host.docker.internal}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-user}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-password}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-videos}
+    ports:
+      - 3100:3100
+    depends_on:
+      - minio_config
+
+  minio_config:
+    container_name: stroygetter-minio-client
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/video;
+      #/usr/bin/mc policy set public myminio/video;
+      exit 0;
+      "
+
+  minio:
+    container_name: stroygetter-minio
+    image: docker.io/bitnami/minio:2023
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER:-user}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-password}"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - ./containers/minio:/data:rw

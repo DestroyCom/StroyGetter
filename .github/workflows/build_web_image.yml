@@ -1,0 +1,34 @@
+name: Build the webapp image
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to use for the image"
+        required: true
+
+jobs:
+  build_web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: prod
+          fetch-depth: 0
+      - name: Get Latest Tag
+        id: latest_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+      - name: Echo latest tag
+        run: echo '${{ steps.latest_tag.outputs.tag }}'
+      - name: Kaniko build
+        uses: aevea/action-kaniko@master
+        with:
+          image: destcom/stroygetter-web
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tag: ${{ github.event.inputs.tag || steps.latest_tag.outputs.tag }}
+          tag_with_latest: true
+          path: ./stroygetter_front
+          build_file: ./StroyGetterClient.Dockerfile
+          extra_args: --build-arg VITE_BACKEND_URL=https://stroygetter-api.stroyco.eu --build-arg VITE_ENV_MODE=production
