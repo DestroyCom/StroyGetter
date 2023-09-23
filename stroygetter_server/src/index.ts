@@ -42,7 +42,7 @@ minioClient.bucketExists(
 );
 
 const app = express();
-const PORT: string = process.env.PORT || "3100";
+const PORT: string = process.env.SERVER_PORT || "3100";
 const allowedOrigins = process.env.CLIENT_URL ? [process.env.CLIENT_URL] : [];
 
 if (!fs.existsSync(path.join(__dirname, "./temp_files"))) {
