@@ -20,14 +20,11 @@ var minioOptions: {
   port?: number;
 } = {
   endPoint: process.env.MINIO_ENDPOINT || "localhost",
+  port: parseInt(process.env.MINIO_PORT || "9000"),
   useSSL: process.env.MINIO_USE_SSL === "true" ? true : false,
   accessKey: process.env.MINIO_ROOT_USER || "user",
   secretKey: process.env.MINIO_ROOT_PASSWORD || "password",
 };
-
-if (process.env.NODE_ENV === "developement") {
-  minioOptions.port = parseInt(process.env.MINIO_PORT || "9000");
-}
 
 const minioClient = new Minio.Client(minioOptions);
 
