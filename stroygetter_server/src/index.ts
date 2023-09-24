@@ -12,13 +12,24 @@ import { getVideo, insertVideo } from "./db-initialize";
 
 dotenv.config();
 
-const minioClient = new Minio.Client({
+var minioOptions: {
+  endPoint: string;
+  useSSL: boolean;
+  accessKey: string;
+  secretKey: string;
+  port?: number;
+} = {
   endPoint: process.env.MINIO_ENDPOINT || "localhost",
-  port: parseInt(process.env.MINIO_PORT || "9000"),
   useSSL: process.env.MINIO_USE_SSL === "true" ? true : false,
   accessKey: process.env.MINIO_ROOT_USER || "user",
   secretKey: process.env.MINIO_ROOT_PASSWORD || "password",
-});
+};
+
+if (process.env.NODE_ENV === "developement") {
+  minioOptions.port = parseInt(process.env.MINIO_PORT || "9000");
+}
+
+const minioClient = new Minio.Client(minioOptions);
 
 minioClient.bucketExists(
   process.env.MINIO_BUCKET_NAME || "videos",
@@ -43,6 +54,8 @@ minioClient.bucketExists(
           console.log("Bucket created successfully in " + "us-east-1");
         }
       );
+    } else {
+      console.log("Bucket already exists.");
     }
   }
 );

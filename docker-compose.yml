@@ -32,8 +32,8 @@ services:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-host.docker.internal}
       MINIO_PORT: ${MINIO_PORT:-9000}
       MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-user}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-password}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-videos}
     ports:
       - 3100:3100
@@ -48,9 +48,8 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 10;
-      /usr/bin/mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc alias set myminio $${MINIO_ENDPOINT} $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb myminio/video;
-      #/usr/bin/mc policy set public myminio/video;
       exit 0;
       "
 
@@ -59,8 +58,8 @@ services:
     image: docker.io/bitnami/minio:2023
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: "${MINIO_ROOT_USER:-user}"
-      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-password}"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - 9000:9000
       - 9001:9001
