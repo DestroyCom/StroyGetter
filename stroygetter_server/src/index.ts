@@ -198,7 +198,13 @@ app.get("/api/download", async (req, res) => {
       minioPath,
       audioStream,
       async function (err: any, etag: any) {
-        if (err) return console.log(err);
+        console.log("etag", etag);
+        if (err) {
+          console.log("------------------- ERROR -------------------");
+          console.log("Error uploading file.");
+          console.log(err);
+          throw new Error("Error while uploading file - music.");
+        }
 
         await insertVideo(videoData.videoDetails.videoId, "mp3", minioPath);
 
@@ -307,7 +313,13 @@ app.get("/api/download", async (req, res) => {
           minioPath,
           fs.createReadStream(outputFilePath),
           async function (err: any, etag: any) {
-            if (err) return console.log(err);
+            console.log("etag", etag);
+            if (err) {
+              console.log("------------------- ERROR -------------------");
+              console.log("Error uploading file video.");
+              console.log(err);
+              throw new Error("Error while uploading file");
+            }
 
             await insertVideo(
               videoData.videoDetails.videoId,
