@@ -12,9 +12,6 @@ import { getVideo, insertVideo } from "./db-initialize";
 
 dotenv.config();
 
-console.log("Starting server...");
-console.log(process.env);
-
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || "localhost",
   port: parseInt(process.env.MINIO_PORT || "9000"),
@@ -27,6 +24,9 @@ minioClient.bucketExists(
   process.env.MINIO_BUCKET_NAME || "videos",
   function (err: any, exists: any) {
     if (err) {
+      console.log("------------------- ERROR -------------------");
+      console.log("Error cheking bucket.");
+      console.log(err);
       throw new Error("Error while checking if bucket exists");
     }
     if (!exists) {
@@ -35,6 +35,9 @@ minioClient.bucketExists(
         "us-east-1",
         function (err: any) {
           if (err) {
+            console.log("------------------- ERROR -------------------");
+            console.log("Error creating bucket.");
+            console.log(err);
             throw new Error("Error while creating bucket");
           }
           console.log("Bucket created successfully in " + "us-east-1");
