@@ -12,6 +12,9 @@ import { getVideo, insertVideo } from "./db-initialize";
 
 dotenv.config();
 
+console.log("Starting server...");
+console.log(process.env);
+
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || "localhost",
   port: parseInt(process.env.MINIO_PORT || "9000"),
