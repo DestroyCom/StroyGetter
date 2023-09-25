@@ -6,56 +6,10 @@ import express from "express";
 import cors = require("cors");
 import ytdl = require("ytdl-core");
 import ffmpeg from "fluent-ffmpeg";
-const Minio = require("minio");
 
-import { getVideo, insertVideo } from "./db-initialize";
+import { VIDEO_FORMATS } from "./utils";
 
 dotenv.config();
-
-var minioOptions: {
-  endPoint: string;
-  useSSL: boolean;
-  accessKey: string;
-  secretKey: string;
-  port?: number;
-} = {
-  endPoint: process.env.MINIO_ENDPOINT || "localhost",
-  port: parseInt(process.env.MINIO_PORT || "9000"),
-  useSSL: process.env.MINIO_USE_SSL === "true" ? true : false,
-  accessKey: process.env.MINIO_ROOT_USER || "user",
-  secretKey: process.env.MINIO_ROOT_PASSWORD || "password",
-};
-
-const minioClient = new Minio.Client(minioOptions);
-
-minioClient.bucketExists(
-  process.env.MINIO_BUCKET_NAME || "videos",
-  function (err: any, exists: any) {
-    if (err) {
-      console.log("------------------- ERROR -------------------");
-      console.log("Error cheking bucket.");
-      console.log(err);
-      throw new Error("Error while checking if bucket exists");
-    }
-    if (!exists) {
-      minioClient.makeBucket(
-        process.env.MINIO_BUCKET_NAME || "videos",
-        "us-east-1",
-        function (err: any) {
-          if (err) {
-            console.log("------------------- ERROR -------------------");
-            console.log("Error creating bucket.");
-            console.log(err);
-            throw new Error("Error while creating bucket");
-          }
-          console.log("Bucket created successfully in " + "us-east-1");
-        }
-      );
-    } else {
-      console.log("Bucket already exists.");
-    }
-  }
-);
 
 const app = express();
 const PORT: string = process.env.SERVER_PORT || "3100";
@@ -196,57 +150,22 @@ app.get("/api/download", async (req, res) => {
       .outputOptions("-metadata", `album=${metadata.album}`)
       .pipe();
 
-    const doesExist: any = await getVideo(
-      videoData.videoDetails.videoId,
-      "mp3"
+    res.setHeader("Content-Type", "audio/mp3");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${videoData.videoDetails.title}.mp3"`
     );
 
-    if (doesExist) {
-      const presignedUrl = await minioClient.presignedGetObject(
-        process.env.MINIO_BUCKET_NAME || "videos",
-        doesExist.minio_path,
-        24 * 60 * 60
-      );
-
-      return res.send({
-        url: presignedUrl,
-      });
-    }
-
-    const minioPath = `${videoData.videoDetails.videoId}/${videoData.videoDetails.title}_${quality}.mp3`;
-
-    await minioClient.putObject(
-      process.env.MINIO_BUCKET_NAME || "videos",
-      minioPath,
-      audioStream,
-      async function (err: any, etag: any) {
-        console.log("etag", etag);
-        if (err) {
-          console.log("------------------- ERROR -------------------");
-          console.log("Error uploading file.");
-          console.log(err);
-          return res.status(500).send("Error while uploading the file.");
-        }
-
-        await insertVideo(videoData.videoDetails.videoId, "mp3", minioPath);
-
-        const presignedUrl = await minioClient.presignedGetObject(
-          process.env.MINIO_BUCKET_NAME || "videos",
-          minioPath,
-          24 * 60 * 60
-        );
-
-        return res.send({
-          url: presignedUrl,
-        });
-      }
-    );
+    audioStream.pipe(res);
+    return;
   } else {
     const match = quality.match(/(\d+)p/);
     let size = "";
     if (match) {
       const resolution = match[1];
-      const result = format.find((item) => item.name === resolution + "p");
+      const result = VIDEO_FORMATS.find(
+        (item) => item.name === resolution + "p"
+      );
       if (result) {
         size = result.format;
       } else {
@@ -256,23 +175,6 @@ app.get("/api/download", async (req, res) => {
     } else {
       res.status(400).send("Please provide a correct quality !");
       return;
-    }
-
-    const doesExist: any = await getVideo(
-      videoData.videoDetails.videoId,
-      quality
-    );
-
-    if (doesExist) {
-      const presignedUrl = await minioClient.presignedGetObject(
-        process.env.MINIO_BUCKET_NAME || "videos",
-        doesExist.minio_path,
-        24 * 60 * 60
-      );
-
-      return res.send({
-        url: presignedUrl,
-      });
     }
 
     const videoStream = ytdl(url, { quality: itag });
@@ -334,46 +236,15 @@ app.get("/api/download", async (req, res) => {
       .outputOptions("-metadata", `album=${metadata.album}`)
       .save(outputFilePath)
       .on("end", async () => {
-        const minioPath = `${videoData.videoDetails.videoId}/${videoData.videoDetails.title}_${quality}.mp4`;
-
-        await minioClient.putObject(
-          process.env.MINIO_BUCKET_NAME || "videos",
-          minioPath,
-          fs.createReadStream(outputFilePath),
-          async function (err: any, etag: any) {
-            console.log("etag", etag);
-            if (err) {
-              console.log("------------------- ERROR -------------------");
-              console.log("Error uploading file video.");
-              console.log(err);
-              return res
-                .status(500)
-                .send("Error while uploading the file to the server.");
-            }
-
-            await insertVideo(
-              videoData.videoDetails.videoId,
-              quality,
-              minioPath
-            );
-
-            const presignedUrl = await minioClient.presignedGetObject(
-              process.env.MINIO_BUCKET_NAME || "videos",
-              minioPath,
-              24 * 60 * 60
-            );
-
-            setTimeout(() => {
-              fs.unlinkSync(writeVideoFile.path);
-              fs.unlinkSync(writeAudioFile.path);
-              fs.unlinkSync(outputFilePath);
-            }, 10000);
-
-            return res.send({
-              url: presignedUrl,
-            });
-          }
+        //Send file to the client
+        res.setHeader("Content-Type", "video/mp4");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${videoData.videoDetails.title}.mp4"`
         );
+
+        fs.createReadStream(outputFilePath).pipe(res);
+        return;
       });
 
     return;
@@ -395,42 +266,3 @@ const waitForStreamClose = (stream: any) => {
     });
   });
 };
-
-const format = [
-  {
-    name: "4320p",
-    format: "7680x4320",
-  },
-  {
-    name: "2160p",
-    format: "3840x2160",
-  },
-  {
-    name: "1440p",
-    format: "2560x1440",
-  },
-  {
-    name: "1080p",
-    format: "1920x1080",
-  },
-  {
-    name: "720p",
-    format: "1280x720",
-  },
-  {
-    name: "480p",
-    format: "854x480",
-  },
-  {
-    name: "360p",
-    format: "640x360",
-  },
-  {
-    name: "240p",
-    format: "426x240",
-  },
-  {
-    name: "144p",
-    format: "256x144",
-  },
-];
