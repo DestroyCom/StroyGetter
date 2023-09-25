@@ -105,6 +105,7 @@ app.get("/api/get-infos", async (req, res) => {
     qualityLabel: string;
     itag: number;
   }[] = [];
+
   videoData.formats.forEach((format) => {
     if (format.qualityLabel === null) return;
     if (!format.hasVideo) return;
@@ -155,15 +156,30 @@ app.get("/api/download", async (req, res) => {
   }
 
   const videoData = await ytdl.getInfo(url);
-  videoData.videoDetails.title = videoData.videoDetails.title.replace(
-    /[\s\/\\!@#$%^&*()_+={}[\]:;"'<>,.?~\\-]/g,
-    "_"
-  );
 
   if (!videoData) {
     res.status(400).send("Please provide a correct youtube url !");
     return;
   }
+
+  const metadata = {
+    title: videoData.videoDetails.title,
+    artist: videoData.videoDetails.author.name,
+    author: videoData.videoDetails.author.name,
+    year: videoData.videoDetails.publishDate.split("-")[0],
+    genre: videoData.videoDetails.category,
+    album: videoData.videoDetails.title,
+  };
+
+  videoData.videoDetails.title = videoData.videoDetails.title.replace(
+    /[\s\/\\!@#$%^&*()_+={}[\]:;"'<>,.?~\\-]/g,
+    "_"
+  );
+
+  videoData.videoDetails.title = videoData.videoDetails.title.replace(
+    /[/\\?%*:|"<>]/g,
+    ""
+  );
 
   if (itag === "music") {
     const videoStream = ytdl(url, { quality: "highestaudio" });
@@ -172,6 +188,12 @@ app.get("/api/download", async (req, res) => {
       .input(videoStream)
       .audioCodec("libmp3lame")
       .format("mp3")
+      .outputOptions("-metadata", `title=${metadata.title}`)
+      .outputOptions("-metadata", `artist=${metadata.artist}`)
+      .outputOptions("-metadata", `author=${metadata.author}`)
+      .outputOptions("-metadata", `year=${metadata.year}`)
+      .outputOptions("-metadata", `genre=${metadata.genre}`)
+      .outputOptions("-metadata", `album=${metadata.album}`)
       .pipe();
 
     const doesExist: any = await getVideo(
@@ -203,7 +225,7 @@ app.get("/api/download", async (req, res) => {
           console.log("------------------- ERROR -------------------");
           console.log("Error uploading file.");
           console.log(err);
-          throw new Error("Error while uploading file - music.");
+          return res.status(500).send("Error while uploading the file.");
         }
 
         await insertVideo(videoData.videoDetails.videoId, "mp3", minioPath);
@@ -304,6 +326,12 @@ app.get("/api/download", async (req, res) => {
       .outputOptions("-c:v libx264")
       .outputOptions("-c:a aac")
       .outputOptions("-preset ultrafast")
+      .outputOptions("-metadata", `title=${metadata.title}`)
+      .outputOptions("-metadata", `artist=${metadata.artist}`)
+      .outputOptions("-metadata", `author=${metadata.author}`)
+      .outputOptions("-metadata", `year=${metadata.year}`)
+      .outputOptions("-metadata", `genre=${metadata.genre}`)
+      .outputOptions("-metadata", `album=${metadata.album}`)
       .save(outputFilePath)
       .on("end", async () => {
         const minioPath = `${videoData.videoDetails.videoId}/${videoData.videoDetails.title}_${quality}.mp4`;
@@ -318,7 +346,9 @@ app.get("/api/download", async (req, res) => {
               console.log("------------------- ERROR -------------------");
               console.log("Error uploading file video.");
               console.log(err);
-              throw new Error("Error while uploading file");
+              return res
+                .status(500)
+                .send("Error while uploading the file to the server.");
             }
 
             await insertVideo(
