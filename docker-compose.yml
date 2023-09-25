@@ -29,39 +29,5 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       SERVER_PORT: ${SERVER_PORT:-3100}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-host.docker.internal}
-      MINIO_PORT: ${MINIO_PORT:-9000}
-      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-videos}
     ports:
       - 3100:3100
-    depends_on:
-      - minio_config
-
-  minio_config:
-    container_name: stroygetter-minio-client
-    image: minio/mc
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      sleep 10;
-      /usr/bin/mc alias set myminio $${MINIO_ENDPOINT} $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb myminio/video;
-      exit 0;
-      "
-
-  minio:
-    container_name: stroygetter-minio
-    image: docker.io/bitnami/minio:2023
-    restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    ports:
-      - 9000:9000
-      - 9001:9001
-    volumes:
-      - ./containers/minio:/data:rw

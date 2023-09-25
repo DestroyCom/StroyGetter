@@ -43,12 +43,17 @@ export const VideoDisplay = ({
           itag,
           quality,
         },
+        responseType: 'blob',
       });
 
-      const a = document.createElement('a');
-      a.href = res.data.url;
-      a.download = `${title} by ${author} in ${quality}`;
-      a.click();
+      const contentType = res.headers['content-type'];
+      const urlDownload = window.URL.createObjectURL(new Blob([res.data], { type: contentType }));
+      const link = document.createElement('a');
+      link.href = urlDownload;
+      link.download = `${title} by ${author} in ${quality}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
       return res.data;
     },
@@ -132,7 +137,7 @@ export const VideoDisplay = ({
         )
       }
       <p className="text-center text-sm font-extralight italic opacity-80 md:text-base md:font-light">
-        If the video is being downloaded for the first time, conversion may take some time. <br />
+        Conversion may take some time. <br />
         Please be patient and do not reload the page.
       </p>
     </section>
