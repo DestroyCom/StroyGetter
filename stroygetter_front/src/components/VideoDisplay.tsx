@@ -64,6 +64,8 @@ export const VideoDisplay = ({
       return Number(bSplit[0]) - Number(aSplit[0]);
     });
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     console.log('getVideo.error', getVideo && getVideo.error && getVideo.error.response.data);
   }, [formats, getVideo.isError]);
 
@@ -117,9 +119,18 @@ export const VideoDisplay = ({
           </div>
         </div>
       </div>
-      {getVideo && getVideo.error && getVideo.error.response && (
-        <p className="m-auto mx-auto text-center font-bold text-red-500 md:text-xl">{getVideo.error.response.data}</p>
-      )}
+
+      {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        getVideo && getVideo.error && getVideo.error.response && (
+          <p className="m-auto mx-auto text-center font-bold text-red-500 md:text-xl">
+            {/* // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-ignore */}
+            {getVideo.error.response.data}
+          </p>
+        )
+      }
       <p className="text-center text-sm font-extralight italic opacity-80 md:text-base md:font-light">
         If the video is being downloaded for the first time, conversion may take some time. <br />
         Please be patient and do not reload the page.
