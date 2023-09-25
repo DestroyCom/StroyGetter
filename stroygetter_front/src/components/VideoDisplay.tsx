@@ -1,6 +1,6 @@
 import { Download, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axios_intcs } from '../lib/axios';
 
@@ -22,13 +22,8 @@ export const VideoDisplay = ({
 }) => {
   const [chooseFormat, setChooseFormat] = useState('best');
 
-  formats.sort((a, b) => {
-    const aSplit = a.qualityLabel.split('p');
-    const bSplit = b.qualityLabel.split('p');
-    return Number(bSplit[0]) - Number(aSplit[0]);
-  });
-
   const getVideo = useQuery({
+    queryKey: ['getVideo', url, chooseFormat],
     queryFn: async () => {
       let itag = chooseFormat;
       let quality = formats.find((format) => format.itag === itag)?.qualityLabel || '';
@@ -61,6 +56,16 @@ export const VideoDisplay = ({
     retry: false,
     retryOnMount: false,
   });
+
+  useEffect(() => {
+    formats.sort((a, b) => {
+      const aSplit = a.qualityLabel.split('p');
+      const bSplit = b.qualityLabel.split('p');
+      return Number(bSplit[0]) - Number(aSplit[0]);
+    });
+
+    console.log('getVideo.error', getVideo && getVideo.error && getVideo.error.response.data);
+  }, [formats, getVideo.isError]);
 
   return (
     <section className="py-8">
@@ -112,6 +117,9 @@ export const VideoDisplay = ({
           </div>
         </div>
       </div>
+      {getVideo && getVideo.error && getVideo.error.response && (
+        <p className="m-auto mx-auto text-center font-bold text-red-500 md:text-xl">{getVideo.error.response.data}</p>
+      )}
       <p className="text-center text-sm font-extralight italic opacity-80 md:text-base md:font-light">
         If the video is being downloaded for the first time, conversion may take some time. <br />
         Please be patient and do not reload the page.
