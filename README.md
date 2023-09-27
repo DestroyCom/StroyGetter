@@ -1,6 +1,6 @@
 # StroyGetter - An online open source youtube downloader
 
-StroyGetter is a react website, made with React, which allows to download videos from YouTube.
+StroyGetter is a PWA, made with React, which allows to download videos from YouTube.
 It use ExpressJS as backend with the help of ytdl-core and ffmpeg.
 
 ---
