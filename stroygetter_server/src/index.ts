@@ -154,9 +154,9 @@ app.get("/api/download", async (req, res) => {
     res.setHeader("Content-Type", "audio/mp3");
     res.setHeader(
       "Content-Disposition",
-      contentDisposition(
-        `attachment; filename="${videoData.videoDetails.title}.mp3"`
-      )
+      `attachment; filename="${contentDisposition(
+        videoData.videoDetails.title
+      )}.mp3"`
     );
 
     audioStream.pipe(res);
@@ -243,9 +243,9 @@ app.get("/api/download", async (req, res) => {
         res.setHeader("Content-Type", "video/mp4");
         res.setHeader(
           "Content-Disposition",
-          contentDisposition(
-            `attachment; filename="${videoData.videoDetails.title}.mp4"`
-          )
+          `attachment; filename="${contentDisposition(
+            videoData.videoDetails.title
+          )}.mp4"`
         );
 
         fs.createReadStream(outputFilePath).pipe(res);
