@@ -46,6 +46,8 @@ export const VideoDisplay = ({
         responseType: 'blob',
       });
 
+      if (!res.data) throw new Error('Error while converting the file');
+
       const contentType = res.headers['content-type'];
       const urlDownload = window.URL.createObjectURL(new Blob([res.data], { type: contentType }));
       const link = document.createElement('a');
