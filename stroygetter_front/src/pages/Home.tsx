@@ -1,14 +1,28 @@
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+
+import { axios_intcs } from '../lib/axios';
+
 import { VideoInput } from '../components/VideoInput';
+import { VideoDisplay, VideoDisplayEmpty } from '../components/VideoDisplay';
 
 import logo from '../assets/logo.svg';
-import { VideoDisplay, VideoDisplayEmpty } from '../components/VideoDisplay';
-import { axios_intcs } from '../lib/axios';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
 export const Home = () => {
   const [url, setUrl] = useState<string>('');
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlParam = urlParams.get('search');
+    console.log(urlParam);
+    if (urlParam) {
+      setUrl(urlParam);
+      setTimeout(() => {
+        refetch();
+      }, 200);
+    }
+  }, []);
 
   const {
     data: videoData,
