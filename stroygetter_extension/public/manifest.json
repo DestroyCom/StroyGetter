@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "StroyGetter",
+  "version": "1.0.0",
+  "description": "Quick access to StroyGetter from YouTube",
+  "icons": {
+    "64": "icon64.png",
+    "192": "icon192.png",
+    "512": "icon512.png"
+  },
+
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "64": "icon64.png"
+    }
+  },
+  "permissions": ["scripting"],
+  "host_permissions": ["https://*.youtube.com/*", "https://*.youtube.com/*"]
+}

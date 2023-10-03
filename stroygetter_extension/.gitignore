@@ -22,10 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-containers
-.env
-.vscode
-database
-temp_files
-backup
