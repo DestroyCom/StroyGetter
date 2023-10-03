@@ -1,4 +1,4 @@
-import { Download, Loader2 } from 'lucide-react';
+import { CheckCheck, Download, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -70,11 +70,7 @@ export const VideoDisplay = ({
       const bSplit = b.qualityLabel.split('p');
       return Number(bSplit[0]) - Number(aSplit[0]);
     });
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    console.log('getVideo.error', getVideo && getVideo.error && getVideo.error.response.data);
-  }, [formats, getVideo.isError]);
+  }, [formats]);
 
   return (
     <section className="py-8">
@@ -120,8 +116,22 @@ export const VideoDisplay = ({
               disabled={getVideo.isFetching}
               className="flex w-full flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out hover:cursor-pointer hover:border-primary hover:bg-secondary md:mx-2"
             >
-              Download {getVideo.isFetching && <Loader2 className="ml-2 animate-spin" size={24} />}
-              {!getVideo.isFetching && <Download className="ml-2" size={24} />}
+              {!getVideo.isFetching && getVideo.isSuccess && (
+                <>
+                  Downloaded <CheckCheck className="ml-2" size={24} />
+                </>
+              )}
+              {getVideo.isFetching && (
+                <>
+                  Download
+                  <Loader2 className="ml-2 animate-spin" size={24} />
+                </>
+              )}
+              {!getVideo.isFetching && !getVideo.isSuccess && (
+                <>
+                  Download <Download className="ml-2" size={24} />
+                </>
+              )}
             </button>
           </div>
         </div>
