@@ -33,7 +33,8 @@ export default defineConfig({
             purpose: 'any',
           },
         ],
-        display_override: ['standalone', 'window-controls-overlay'],
+        display: 'standalone',
+        display_override: ['window-controls-overlay', 'standalone'],
         edge_side_panel: {
           preferred_width: 400,
         },
