@@ -7,7 +7,6 @@ function App() {
       active: true,
       currentWindow: true,
     });
-    console.log(tab);
     constructUrl += tab.url;
 
     // Open the url in a new tab

@@ -1,4 +1,6 @@
+import clsx from 'clsx';
 import { ClipboardCopy } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export const VideoInput = ({
   url,
@@ -12,6 +14,36 @@ export const VideoInput = ({
   setUrl: (url: string) => void;
   refetch: () => void;
 }) => {
+  const [permission, setPermission] = useState(false);
+
+  useEffect(() => {
+    navigator.clipboard.readText();
+
+    checkPermission();
+  }, []);
+
+  const checkPermission = async () => {
+    const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const permissionStatus = await navigator.permissions.query(queryOpts);
+
+    if (permissionStatus.state === 'granted') {
+      setPermission(true);
+    } else {
+      setPermission(false);
+    }
+
+    // Listen for changes to the permission state
+    permissionStatus.onchange = () => {
+      if (permissionStatus.state === 'granted') {
+        setPermission(true);
+      } else {
+        setPermission(false);
+      }
+    };
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -33,7 +65,11 @@ export const VideoInput = ({
         />
         <button
           type="button"
-          className="absolute inset-y-0 right-0 flex  items-center overflow-hidden rounded-r-full bg-secondary  pl-2 pr-3.5"
+          className={clsx(
+            'absolute inset-y-0 right-0 flex items-center overflow-hidden rounded-r-full bg-secondary pl-2 pr-3.5 transition-all',
+            permission ? 'opacity-100' : 'bg-secondary/25',
+            'hover:pointer-events-auto hover:cursor-pointer hover:bg-secondary/60 hover:opacity-100',
+          )}
           title="Copy from clipboard"
           onClick={() => {
             navigator.clipboard.readText().then((clipText) => {
