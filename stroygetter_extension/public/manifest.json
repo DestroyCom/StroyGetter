@@ -8,13 +8,18 @@
     "192": "icon192.png",
     "512": "icon512.png"
   },
-
   "action": {
     "default_popup": "index.html",
     "default_icon": {
-      "64": "icon64.png"
+      "64": "icon64.png",
+      "192": "icon192.png",
+      "512": "icon512.png"
     }
   },
-  "permissions": ["scripting"],
-  "host_permissions": ["https://*.youtube.com/*", "https://*.youtube.com/*"]
+  "permissions": ["scripting", "tabs", "activeTab"],
+  "host_permissions": ["https://*.youtube.com/*", "https://*.youtube.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
 }

@@ -14,7 +14,7 @@ services:
       VITE_ENV_MODE: ${VITE_ENV_MODE:-development}
       VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3100}
     ports:
-      - 3000:80
+      - 3333:80
     depends_on:
       - stroygetter_server
 
@@ -28,6 +28,6 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       SERVER_PORT: ${SERVER_PORT:-3100}
-      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3333}
     ports:
       - 3100:3100

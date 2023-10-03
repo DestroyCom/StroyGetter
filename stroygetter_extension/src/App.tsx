@@ -12,6 +12,7 @@ function App() {
     // Open the url in a new tab
     chrome.tabs.create({ url: constructUrl });
   };
+
   return (
     <>
       <header className="flex flex-col bg-primary px-4 py-2 w-[300px]">
@@ -24,7 +25,7 @@ function App() {
         <button
           type="button"
           onClick={onClick}
-          className="flex w-9/12 flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out hover:cursor-pointer hover:border-primary hover:bg-secondary text-xl"
+          className="flex w-9/12 flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out hover:cursor-pointer hover:border-primary hover:bg-secondary text-lg"
         >
           Get the video !
         </button>
