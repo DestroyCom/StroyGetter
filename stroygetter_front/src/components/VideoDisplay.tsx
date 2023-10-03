@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axios_intcs } from '../lib/axios';
 import clsx from 'clsx';
+import { Progress } from './ui/progress';
 
 export const VideoDisplay = ({
   url,
@@ -21,6 +22,7 @@ export const VideoDisplay = ({
     itag: string;
   }[];
 }) => {
+  const [loadProgress, setLoadProgress] = useState(0);
   const [chooseFormat, setChooseFormat] = useState('best');
 
   const getVideo = useQuery({
@@ -53,7 +55,8 @@ export const VideoDisplay = ({
       const urlDownload = window.URL.createObjectURL(new Blob([res.data], { type: contentType }));
       const link = document.createElement('a');
       link.href = urlDownload;
-      link.download = `${title} - ${author} - ${quality}`;
+      const savedQuality = quality !== 'music' ? quality : '';
+      link.download = `${title} - ${author} ${savedQuality && '- ' + savedQuality}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -72,6 +75,37 @@ export const VideoDisplay = ({
       return Number(bSplit[0]) - Number(aSplit[0]);
     });
   }, [formats]);
+
+  useEffect(() => {
+    if (getVideo.isFetching) {
+      const maxProgress = 90;
+      const incrementDuration = 10000;
+      const incrementInterval = 25;
+
+      const startTime = Date.now();
+
+      const updateProgress = () => {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startTime;
+
+        const newProgress = maxProgress * (1 - Math.exp(-elapsedTime / incrementDuration));
+
+        setLoadProgress(newProgress);
+
+        if (newProgress >= maxProgress) {
+          clearInterval(interval);
+        }
+      };
+
+      updateProgress();
+
+      const interval = setInterval(updateProgress, incrementInterval);
+
+      return () => clearInterval(interval);
+    }
+
+    return undefined;
+  }, [getVideo.isFetching]);
 
   return (
     <section className="py-8">
@@ -99,14 +133,27 @@ export const VideoDisplay = ({
                 <SelectValue placeholder="Quality" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="best">Best quality</SelectItem>
+                <SelectItem value="best">
+                  <p className="flex justify-between">
+                    <span className="my-auto">Best quality</span>{' '}
+                    {getVideo.isFetching && <Loader2 className="ml-2 animate-spin md:hidden" size={24} />}
+                  </p>
+                </SelectItem>
                 {formats &&
                   formats.map((format) => (
                     <SelectItem key={format.qualityLabel} value={format.itag}>
-                      {format.qualityLabel}
+                      <p className="flex justify-between">
+                        <span className="my-auto">{format.qualityLabel}</span>{' '}
+                        {getVideo.isFetching && <Loader2 className="ml-2 animate-spin md:hidden" size={24} />}
+                      </p>
                     </SelectItem>
                   ))}
-                <SelectItem value="music">Music</SelectItem>
+                <SelectItem value="music">
+                  <p className="flex justify-between">
+                    <span className="my-auto">Music</span>{' '}
+                    {getVideo.isFetching && <Loader2 className="ml-2 animate-spin md:hidden" size={24} />}
+                  </p>
+                </SelectItem>
               </SelectContent>
             </Select>
             <button
@@ -120,7 +167,7 @@ export const VideoDisplay = ({
                 'flex w-full flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out',
                 'md:mx-2',
                 !getVideo.isFetching && 'hover:cursor-pointer hover:border-primary hover:bg-secondary',
-                getVideo.isFetching && 'opacity-50',
+                getVideo.isFetching && 'hidden opacity-50 md:flex',
               )}
             >
               {!getVideo.isFetching && getVideo.isSuccess && (
@@ -140,6 +187,16 @@ export const VideoDisplay = ({
                 </>
               )}
             </button>
+          </div>
+
+          <div
+            className={clsx(
+              'mx-2 my-auto flex h-auto flex-col justify-end',
+              'md:my-2 md:h-10 md:flex-row',
+              getVideo.isFetching && '!h-10',
+            )}
+          >
+            {getVideo.isFetching && <Progress value={loadProgress} className="my-auto" />}
           </div>
         </div>
       </div>
