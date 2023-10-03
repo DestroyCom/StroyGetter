@@ -40,6 +40,7 @@ export const Home = () => {
           url,
         },
       });
+
       return res.data;
     },
     enabled: false,
