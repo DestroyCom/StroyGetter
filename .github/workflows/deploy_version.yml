@@ -10,12 +10,16 @@ jobs:
   create_tag:
     uses: ./.github/workflows/create_tag.yml
     secrets: inherit
-  build_server:
+  build_extension:
     needs: create_tag
+    uses: ./.github/workflows/build_extension.yml
+    secrets: inherit
+  build_server:
+    needs: build_extension
     uses: ./.github/workflows/build_server_image.yml
     secrets: inherit
   build_webapp:
-    needs: create_tag
+    needs: build_extension
     uses: ./.github/workflows/build_web_image.yml
     secrets: inherit
   deploy_release:
