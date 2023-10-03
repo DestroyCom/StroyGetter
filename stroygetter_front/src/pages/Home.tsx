@@ -15,7 +15,6 @@ export const Home = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlParam = urlParams.get('search');
-    console.log(urlParam);
     if (urlParam) {
       setUrl(urlParam);
       setTimeout(() => {
