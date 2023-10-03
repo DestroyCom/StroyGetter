@@ -55,7 +55,8 @@ export const VideoDisplay = ({
       const urlDownload = window.URL.createObjectURL(new Blob([res.data], { type: contentType }));
       const link = document.createElement('a');
       link.href = urlDownload;
-      link.download = `${title} - ${author} - ${quality}`;
+      const savedQuality = quality !== 'music' ? quality : '';
+      link.download = `${title} - ${author} ${savedQuality && '- ' + savedQuality}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -187,11 +188,16 @@ export const VideoDisplay = ({
               )}
             </button>
           </div>
-          {getVideo.isFetching && (
-            <div className={clsx('mx-2 my-auto flex h-10 flex-col justify-end', 'md:my-2 md:flex-row')}>
-              <Progress value={loadProgress} className="my-auto" />
-            </div>
-          )}
+
+          <div
+            className={clsx(
+              'mx-2 my-auto flex h-auto flex-col justify-end',
+              'md:my-2 md:h-10 md:flex-row',
+              getVideo.isFetching && '!h-10',
+            )}
+          >
+            {getVideo.isFetching && <Progress value={loadProgress} className="my-auto" />}
+          </div>
         </div>
       </div>
 
