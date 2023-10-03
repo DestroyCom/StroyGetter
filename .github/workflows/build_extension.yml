@@ -16,7 +16,7 @@ jobs:
           ref: prod
           fetch-depth: 0
       - name: Move on extension directory
-        run: cd extension
+        run: cd stroygetter_extension
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
