@@ -44,3 +44,13 @@ jobs:
         with:
           name: stroygetter-extension-crx
           path: ./stroygetter_extension/stroygetter_extension.crx
+      - name: Zip Extension
+        uses: vimtor/action-zip@v1.1
+        with:
+          files: ./stroygetter_extension/dist
+          dest: ./stroygetter_extension/stroygetter_extension.zip
+      - name: Upload build folder
+        uses: actions/upload-artifact@v2
+        with:
+          name: stroygetter-extension-build
+          path: ./stroygetter_extension/stroygetter_extension.zip

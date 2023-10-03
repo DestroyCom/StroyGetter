@@ -12,6 +12,19 @@ It use ExpressJS as backend with the help of ytdl-core and ffmpeg.
 
 ---
 
+## The StroyGetter Extension
+
+The StroyGetter extension is a chrome (and Edge) extension that allows you to get a quick access from YouTube.
+
+### Installation
+
+1. Download the stroygetter_extension.zip inside the [latest release (https://github.com/DestroyCom/StroyGetter/releases)](https://github.com/DestroyCom/StroyGetter/releases) and unzip it.
+2. Go to [chrome://extensions/](chrome://extensions/) and activate the developer mode.
+3. Click on "Load unpacked" and select the folder of the extension.
+4. Go to [youtube.com](https://www.youtube.com/) and enjoy.
+
+---
+
 ## Environment variables
 
 | _Variable name_   | _Description_                             | _Default value_       |
