@@ -24,23 +24,23 @@ jobs:
       - name: Move on extension directory
         run: cd stroygetter_extension
       - name: Install dependencies
-        run: npm install
+        run: cd stroygetter_extension && npm install
       - name: Build
-        run: npm run build
+        run: cd stroygetter_extension && npm run build
       - id: packExtensionDir
         name: Pack extension directory
         uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
         with:
-          extensionDir: "./dist"
-          zipFilePath: "build/extension.zip"
+          extensionDir: "./stroygetter_extension/dist"
+          zipFilePath: "./stroygetter_extension/extension.zip"
       - name: Build extension CRX
         uses: cardinalby/webext-buildtools-chrome-crx-action@v2
         with:
-          zipFilePath: "build/extension.zip"
-          crxFilePath: "./stroygetter_extension.crx"
+          zipFilePath: "./stroygetter_extension/extension.zip"
+          crxFilePath: "./stroygetter_extension/stroygetter_extension.crx"
           privateKey: ${{ secrets.CHROME_CRX_PRIVATE_KEY }}
       - name: Upload extension CRX
         uses: actions/upload-artifact@v2
         with:
           name: stroygetter-extension-crx
-          path: stroygetter_extension.crx
+          path: ./stroygetter_extension/stroygetter_extension.crx
