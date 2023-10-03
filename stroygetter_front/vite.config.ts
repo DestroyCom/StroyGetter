@@ -19,6 +19,7 @@ export default defineConfig({
         short_name: 'StroyGetter',
         description: 'StroyGetter - Download any youtube video for free !',
         theme_color: '#102F42',
+        dir: 'ltr',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -32,7 +33,7 @@ export default defineConfig({
             purpose: 'any',
           },
         ],
-        display_override: ['standalone'],
+        display_override: ['standalone', 'window-controls-overlay'],
         edge_side_panel: {
           preferred_width: 400,
         },
@@ -49,6 +50,16 @@ export default defineConfig({
             type: 'image/jpg',
           },
         ],
+        file_handlers: [],
+        prefer_related_applications: false,
+        protocol_handlers: [],
+        related_applications: [],
+        scope_extensions: [
+          {
+            origin: '*.stroyco.eu',
+          },
+        ],
+        shortcuts: [],
       },
     }),
   ],
