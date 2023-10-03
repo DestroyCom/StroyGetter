@@ -29,3 +29,5 @@ containers
 database
 temp_files
 backup
+*.crx
+*.pem
