@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axios_intcs } from '../lib/axios';
+import clsx from 'clsx';
 
 export const VideoDisplay = ({
   url,
@@ -52,7 +53,7 @@ export const VideoDisplay = ({
       const urlDownload = window.URL.createObjectURL(new Blob([res.data], { type: contentType }));
       const link = document.createElement('a');
       link.href = urlDownload;
-      link.download = `${title} by ${author} in ${quality}`;
+      link.download = `${title} - ${author} - ${quality}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -92,6 +93,7 @@ export const VideoDisplay = ({
                 setChooseFormat(value);
               }}
               value={chooseFormat}
+              disabled={getVideo.isFetching}
             >
               <SelectTrigger className="my-0.5 w-full border-primary bg-secondary text-white outline-primary md:mx-2 md:h-auto">
                 <SelectValue placeholder="Quality" />
@@ -114,7 +116,12 @@ export const VideoDisplay = ({
                 getVideo.refetch();
               }}
               disabled={getVideo.isFetching}
-              className="flex w-full flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out hover:cursor-pointer hover:border-primary hover:bg-secondary md:mx-2"
+              className={clsx(
+                'flex w-full flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out',
+                'md:mx-2',
+                !getVideo.isFetching && 'hover:cursor-pointer hover:border-primary hover:bg-secondary',
+                getVideo.isFetching && 'opacity-50',
+              )}
             >
               {!getVideo.isFetching && getVideo.isSuccess && (
                 <>
