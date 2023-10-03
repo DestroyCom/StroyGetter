@@ -21,6 +21,10 @@ jobs:
         uses: WyriHaximus/github-action-get-previous-tag@v1
       - name: Echo latest tag
         run: echo '${{ steps.latest_tag.outputs.tag }}'
+      - uses: actions/download-artifact@v3
+        with:
+          name: stroygetter-extension-crx
+          path: ./stroygetter_front/public
       - name: Kaniko build
         uses: aevea/action-kaniko@master
         with:
