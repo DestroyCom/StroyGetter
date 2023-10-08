@@ -36,13 +36,6 @@ The StroyGetter extension is a chrome (and Edge) extension that allows you to ge
 | NODE_ENV          | The environnement mode of the server      | development           |
 | SERVER_PORT       | The port of the stroygetter server        | 3100                  |
 | CLIENT_URL        | The url of stroygetter client             | http://localhost:3000 |
-| **MINIO**         | ----------------------------------------- | --------------------- |
-| MINIO_ENDPOINT    | The public endpoint of your minio server  | host.docker.internal  |
-| MINIO_PORT        | The port where the minio API served       | 9000                  |
-| MINIO_USE_SSL     | If the minio server use https             | false                 |
-| MINIO_ACCESS_KEY  | Your MINIO ROOT USERNAME                  | user                  |
-| MINIO_SECRET_KEY  | Your MINIO ROOT PASSWORD                  | password              |
-| MINIO_BUCKET_NAME | The bucket where the files will be stored | videos                |
 
 ---
 
