@@ -136,23 +136,27 @@ export const VideoDisplay = ({
                 <SelectValue placeholder="Quality" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="best">
-                  <p className="flex justify-between">
+                <SelectItem value="best" id="quality-select-best">
+                  <p className="flex justify-between" id="quality-select-music">
                     <span className="my-auto">Best quality</span>{' '}
                     {getVideo.isFetching && <Loader2 className="ml-2 animate-spin md:hidden" size={24} />}
                   </p>
                 </SelectItem>
                 {formats &&
                   formats.map((format) => (
-                    <SelectItem key={format.qualityLabel} value={format.itag}>
-                      <p className="flex justify-between">
+                    <SelectItem
+                      key={format.qualityLabel}
+                      value={format.itag}
+                      id={`quality-select-${format.qualityLabel}`}
+                    >
+                      <p className="flex justify-between" id={`quality-select-${format.qualityLabel}`}>
                         <span className="my-auto">{format.qualityLabel}</span>{' '}
                         {getVideo.isFetching && <Loader2 className="ml-2 animate-spin md:hidden" size={24} />}
                       </p>
                     </SelectItem>
                   ))}
-                <SelectItem value="music">
-                  <p className="flex justify-between">
+                <SelectItem value="music" id="quality-select-music">
+                  <p className="flex justify-between" id="quality-select-music">
                     <span className="my-auto">Music</span>{' '}
                     {getVideo.isFetching && <Loader2 className="ml-2 animate-spin md:hidden" size={24} />}
                   </p>
