@@ -129,7 +129,10 @@ export const VideoDisplay = ({
               value={chooseFormat}
               disabled={getVideo.isFetching}
             >
-              <SelectTrigger className="my-0.5 w-full border-primary bg-secondary text-white outline-primary md:mx-2 md:h-auto">
+              <SelectTrigger
+                className="my-0.5 w-full border-primary bg-secondary text-white outline-primary md:mx-2 md:h-auto"
+                id="quality-select"
+              >
                 <SelectValue placeholder="Quality" />
               </SelectTrigger>
               <SelectContent>
@@ -158,6 +161,7 @@ export const VideoDisplay = ({
             </Select>
             <button
               type="button"
+              id="download-button"
               onClick={(e) => {
                 e.preventDefault();
                 getVideo.refetch();
@@ -231,7 +235,7 @@ export const VideoDisplayEmpty = ({
   isFetched: boolean;
 }) => {
   return (
-    <section className="py-8">
+    <section className="py-8" id="error-search">
       <div className="mx-auto my-2 flex h-auto w-11/12 rounded-lg border-2 border-dashed border-[#102F42]">
         {isFetched && error && !isFetching && (
           <p className="m-auto mx-auto my-10 text-center font-bold text-red-500 md:my-24 md:text-xl">

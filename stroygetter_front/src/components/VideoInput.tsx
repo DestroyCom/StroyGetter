@@ -65,6 +65,7 @@ export const VideoInput = ({
         />
         <button
           type="button"
+          id="clipboard-copy"
           className={clsx(
             'absolute inset-y-0 right-0 flex items-center overflow-hidden rounded-r-full bg-secondary pl-2 pr-3.5 transition-all',
             permission ? 'opacity-100' : 'bg-secondary/25',
@@ -85,6 +86,7 @@ export const VideoInput = ({
       </div>
       <button
         type="submit"
+        id="search-button"
         className="border-1 m-auto mx-auto rounded-full border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white transition-all duration-200 ease-in-out hover:cursor-pointer hover:border-[#205D83] hover:bg-[#102F42] hover:ring-[#205D83] focus:outline-none focus:ring-2 focus:ring-blue-300 sm:w-auto"
         disabled={isFetching}
       >
