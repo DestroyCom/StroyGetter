@@ -7,10 +7,6 @@ ARG VITE_ENV_MODE
 ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
 ENV VITE_ENV_MODE=${VITE_ENV_MODE}
 
-#Echoing the env vars for debugging purposes
-RUN echo "VITE_BACKEND_URL: ${VITE_BACKEND_URL}"
-RUN echo "VITE_ENV_MODE: ${VITE_ENV_MODE}"
-
 COPY package*.json ./
 RUN npm ci
 
