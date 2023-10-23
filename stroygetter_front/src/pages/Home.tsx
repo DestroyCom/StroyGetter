@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Github } from 'lucide-react';
 
 import { axios_intcs } from '../lib/axios';
+
+import { toast } from '../components/ui/use-toast';
+import { ToastAction } from '../components/ui/toast';
 
 import { VideoInput } from '../components/VideoInput';
 import { VideoDisplay, VideoDisplayEmpty } from '../components/VideoDisplay';
@@ -21,6 +24,26 @@ export const Home = () => {
         refetch();
       }, 200);
     }
+  }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      toast({
+        title: 'A new StroyGetter extension is available !',
+        description: 'Working on Chrome, Edge, Brave, Opera, ...',
+        action: (
+          <ToastAction altText="Get the extension !">
+            <a
+              href="https://github.com/DestroyCom/StroyGetter#the-stroygetter-extension"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Get the extension !
+            </a>
+          </ToastAction>
+        ),
+      });
+    }, 2000);
   }, []);
 
   const {
@@ -50,9 +73,21 @@ export const Home = () => {
 
   return (
     <>
-      <header className="flex justify-start bg-primary px-4 py-2">
-        <img src={logo} alt="StroyGetter" className="aspect-square h-24" />
-        <h1 className="my-auto ml-4 text-3xl font-bold">StroyGetter</h1>
+      <header className="flex justify-between bg-primary px-4 py-2">
+        <div className="flex justify-start">
+          <img src={logo} alt="StroyGetter" className="aspect-square h-24" />
+          <h1 className="my-auto ml-4 text-3xl font-bold">StroyGetter</h1>
+        </div>
+        <div className="hidden flex-col md:flex">
+          <a
+            className="flex transition-all hover:opacity-50"
+            href="https://github.com/DestroyCom/StroyGetter"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Github className="mr-4" /> <p className="underline">The project code</p>
+          </a>
+        </div>
       </header>
       <main className="">
         <div className="bg-primary py-8">
