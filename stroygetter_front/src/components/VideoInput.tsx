@@ -17,7 +17,7 @@ export const VideoInput = ({
   const [permission, setPermission] = useState(false);
 
   useEffect(() => {
-    navigator.clipboard.readText();
+    //navigator.clipboard.readText();
 
     checkPermission();
   }, []);
