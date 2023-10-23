@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2, Github } from 'lucide-react';
 
 import { axios_intcs } from '../lib/axios';
+import { checkMobile } from '../lib/utils';
 
 import { toast } from '../components/ui/use-toast';
 import { ToastAction } from '../components/ui/toast';
+import { Separator } from '../components/ui/separator';
 
 import { VideoInput } from '../components/VideoInput';
 import { VideoDisplay, VideoDisplayEmpty } from '../components/VideoDisplay';
@@ -27,6 +29,8 @@ export const Home = () => {
   }, []);
 
   useEffect(() => {
+    if (checkMobile()) return;
+
     setTimeout(() => {
       toast({
         title: 'A new StroyGetter extension is available !',
@@ -117,6 +121,73 @@ export const Home = () => {
         ) : (
           <VideoDisplayEmpty error={error} isFetching={isFetching} isFetched={isFetched} />
         )}
+        <section id="faq" className="mx-auto mt-4 w-11/12">
+          <h3 className="w-11/12 text-2xl font-bold">FAQ</h3>
+          <div className="flex flex-col lg:flex-row lg:justify-between">
+            <div className="w-full lg:w-1/2">
+              <h2 className="my-2 text-xl">What is StroyGetter ?</h2>
+              <p>
+                StroyGetter is a{' '}
+                <a href="https://www.youtube.com/" target="_blank" rel="noreferrer">
+                  Youtube
+                </a>{' '}
+                downloader, so you can download almost any video <span className="italic">(of your own)</span> in any
+                available quality.
+                <br />
+                Audio-only conversion is also available.
+              </p>
+            </div>
+            <Separator orientation="vertical" className="mx-4 hidden h-40 w-0.5 bg-primary/50 lg:block" />
+            <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
+            <div className="w-full lg:w-1/2">
+              <h2 className="my-2 text-xl">Why use StroyGetter and not another alternative?</h2>
+              <p>
+                StroyGetter is totally free and requires no software download to achieve maximum video quality.
+                <br />
+                What&apos;s more, StroyGetter is Open-Source, meaning that anyone can view the code or contribute to it,
+                which limits any possible security loopholes.
+              </p>
+            </div>
+          </div>
+          <Separator className="my-4 h-0.5 w-full bg-primary/50" />
+          <div className="flex flex-col lg:flex-row lg:justify-between">
+            <div className="w-full lg:w-1/2">
+              <h2 className="my-2 text-xl">Totally free, where&apos;s the catch ?</h2>
+              <p>
+                There&apos;s no catch, we just use statistical tools to find out how people use the site and count
+                visitors, and that&apos;s it. Of course, depending on traffic, we reserve the right to add non-intrusive
+                ads to finance server costs.
+              </p>
+            </div>
+            <Separator orientation="vertical" className="mx-4 hidden h-40 w-0.5 bg-primary/50 lg:block" />
+            <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
+            <div className="w-full lg:w-1/2">
+              <h2 className="my-2 text-xl">The StroyGetter Extension</h2>
+              <p>
+                An extension is available for Chrome, Edge, Brave and Opera browsers. The extension allows quick access
+                to the site from a youtube video. Due to the nature of the project, the extension cannot be installed
+                from a store, and must be installed manually, as explained{' '}
+                <a
+                  href="https://github.com/DestroyCom/StroyGetter#the-stroygetter-extension"
+                  target="_blank"
+                  className="underline hover:cursor-pointer hover:opacity-50"
+                  rel="noreferrer"
+                >
+                  here
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        </section>
+        <footer className="mx-auto my-4 text-center">
+          <a
+            className="text-sm hover:cursor-pointer hover:underline hover:opacity-75"
+            href="https://portfolio.stroyco.eu/"
+          >
+            StroyGetter - {new Date().getFullYear()}
+          </a>
+        </footer>
       </main>
     </>
   );
