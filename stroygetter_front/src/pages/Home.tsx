@@ -18,6 +18,10 @@ export const Home = () => {
   const [url, setUrl] = useState<string>('');
 
   useEffect(() => {
+    //call the function removeHTMLTAG from index.htmt
+    //@ts-expect-error : removeHTMLTAG is defined in index.html
+    window.removeHTMLTAG();
+
     const urlParams = new URLSearchParams(window.location.search);
     const urlParam = urlParams.get('search');
     if (urlParam) {
