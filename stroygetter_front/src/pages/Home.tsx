@@ -18,11 +18,9 @@ export const Home = () => {
   const [url, setUrl] = useState<string>('');
 
   useEffect(() => {
-    //Remove every html tag that had css class named hide_when_no_js
-    const hideWhenNoJs = document.getElementsByClassName('hide_when_no_js');
-    for (let i = 0; i < hideWhenNoJs.length; i++) {
-      hideWhenNoJs[i].classList.remove('hide_when_no_js');
-    }
+    //call the function removeHTMLTAG from index.htmt
+    //@ts-expect-error : removeHTMLTAG is defined in index.html
+    window.removeHTMLTAG();
 
     const urlParams = new URLSearchParams(window.location.search);
     const urlParam = urlParams.get('search');
