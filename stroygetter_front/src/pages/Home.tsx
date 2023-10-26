@@ -18,6 +18,12 @@ export const Home = () => {
   const [url, setUrl] = useState<string>('');
 
   useEffect(() => {
+    //Remove every html tag that had css class named hide_when_no_js
+    const hideWhenNoJs = document.getElementsByClassName('hide_when_no_js');
+    for (let i = 0; i < hideWhenNoJs.length; i++) {
+      hideWhenNoJs[i].classList.remove('hide_when_no_js');
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const urlParam = urlParams.get('search');
     if (urlParam) {
