@@ -57,7 +57,7 @@ docker-compose up -d
 
 ### Without Docker
 
-**Make sure you have [NodeJS](https://nodejs.org/en/) installed and a MINIO server.**
+**Make sure you have [NodeJS](https://nodejs.org/en/) installed.**
 
 1. At [./stroygetter_front](./stroygetter_front) Copy the [.env.example](./stroygetter_front/.env.example) file to .env and fill in the variables.
 
