@@ -81,7 +81,7 @@ export const VideoInput = ({
             });
           }}
         >
-          <ClipboardCopy size={24} id="clipboard-copy" />
+          <ClipboardCopy size={24} />
         </button>
       </div>
       <button
