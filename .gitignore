@@ -31,3 +31,5 @@ temp_files
 backup
 *.crx
 *.pem
+
+old
