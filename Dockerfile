@@ -41,9 +41,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 #Create nodejs group and nextjs user
-RUN addgroup --system nextjs && adduser --system --ingroup nextjs nextjs
-
-#COPY --from=builder /app/public ./public
+RUN addgroup --system nodejs && adduser --system --ingroup nodejs nextjs
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
