@@ -1,33 +1,9 @@
-version: "3.7"
 services:
-  stroygetter_client:
-    container_name: stroygetter_client
-    image: stroygetter_client:latest
+  stroygetter:
+    container_name: stroygetter
     build:
-      context: ./stroygetter_front
-      dockerfile: StroyGetterClient.Dockerfile
-      args:
-        VITE_ENV_MODE: ${VITE_ENV_MODE:-development}
-        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3100}
-    restart: unless-stopped
-    environment:
-      VITE_ENV_MODE: ${VITE_ENV_MODE:-development}
-      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3100}
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
     ports:
-      - 3333:80
-    depends_on:
-      - stroygetter_server
-
-  stroygetter_server:
-    container_name: stroygetter_server
-    image: stroygetter_server:latest
-    build:
-      context: ./stroygetter_server
-      dockerfile: StroyGetterServer.Dockerfile
-    restart: unless-stopped
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      SERVER_PORT: ${SERVER_PORT:-3100}
-      CLIENT_URL: ${CLIENT_URL:-http://localhost:3333}
-    ports:
-      - 3100:3100
+      - 3002:3000
