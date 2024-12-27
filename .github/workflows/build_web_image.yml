@@ -24,7 +24,7 @@ jobs:
       - name: Kaniko build
         uses: aevea/action-kaniko@master
         with:
-          image: destcom/stroygetter-web
+          image: destcom/stroygetter
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           tag: ${{ github.event.inputs.tag || steps.latest_tag.outputs.tag }}
