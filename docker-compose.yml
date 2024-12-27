@@ -1,0 +1,9 @@
+services:
+  stroygetter:
+    container_name: stroygetter
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - 3002:3000
