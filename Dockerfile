@@ -49,18 +49,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 RUN npm install --save @ffmpeg-installer/ffmpeg
 
-RUN mkdir -p /stroygetter/temp
+#RUN mkdir -p /stroygetter/temp
 RUN mkdir -p /temp/stroygetter
-
-#Create a CRON job to delete files older than 1 day
-RUN apt-get update && apt-get install -y cron
-RUN echo "0 0 * * * find /stroygetter/temp -type f -mtime +1 -exec rm -f {} \;" >> /etc/cron.d/delete_old_files
-RUN chmod 0644 /etc/cron.d/delete_old_files
-RUN crontab /etc/cron.d/delete_old_files
-RUN touch /var/log/cron.log
+RUN chown -R nextjs:nodejs /temp/stroygetter
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 
-CMD cron && tail -f /var/log/cron.log & HOSTNAME="0.0.0.0" node server.js
+CMD HOSTNAME="0.0.0.0" node server.js

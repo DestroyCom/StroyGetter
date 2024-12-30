@@ -48,8 +48,10 @@ export const metadata: Metadata = {
         alt: "StroyGetter",
       },
     ],
-
     site: "@ADSantoine",
+  },
+  verification: {
+    google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo",
   },
 };
 
