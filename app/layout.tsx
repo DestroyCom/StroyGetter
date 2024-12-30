@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     url: "https://stroygetter.stroyco.eu/",
     images: [
       {
-        url: "https://stroygetter.stroyco.eu/prez.png",
+        url: "https://stroygetter.stroyco.eu/opengraph-image.png",
         alt: "StroyGetter",
       },
     ],
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
       "No ads. Unlimited downloads. Download videos at max quality (available) for free and without software !",
     images: [
       {
-        url: "https://stroygetter.stroyco.eu/prez.png",
+        url: "https://stroygetter.stroyco.eu/opengraph-image.png",
         alt: "StroyGetter",
       },
     ],
