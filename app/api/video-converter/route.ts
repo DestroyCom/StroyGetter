@@ -11,6 +11,8 @@ import * as fs from "fs";
 const DIFFERENCE_TOLERANCE = 0.2;
 const PARENT_PATH =
   process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
+const CLEANUP_INTERVAL =
+  process.env.NODE_ENV === "production" ? 1000 * 60 * 30 : 1000 * 60 * 2;
 
 const locateFfmpegPath = async () => {
   const localPath = execSync("which ffmpeg").toString().trim();
@@ -117,6 +119,11 @@ const mergeAudioVideo = (
       .output(merged_path)
       .on("end", () => {
         console.log("Audio and video merged");
+
+        setTimeout(() => {
+          cleanPreviousFiles([video_path, audio_path, merged_path]);
+        }, CLEANUP_INTERVAL);
+
         resolve();
       })
       .on("error", (err) => {
@@ -247,9 +254,6 @@ export async function GET(request: Request) {
     }
 
     await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, MERGED_FILE_PATH);
-    setTimeout(() => {
-      cleanPreviousFiles([VIDEO_FILE_PATH, AUDIO_FILE_PATH]);
-    }, 600000);
 
     const fileStream = fs.createReadStream(MERGED_FILE_PATH);
     //@ts-expect-error - L'argument de type n'est pas attribuable au paramètre de type .
