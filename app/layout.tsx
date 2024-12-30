@@ -31,23 +31,11 @@ export const metadata: Metadata = {
     siteName: "StroyGetter - Download any youtube video for free !",
     description: "Download any youtube video for free in any resolution",
     url: "https://stroygetter.stroyco.eu/",
-    images: [
-      {
-        url: "https://stroygetter.stroyco.eu/opengraph-image.png",
-        alt: "StroyGetter",
-      },
-    ],
   },
   twitter: {
     title: "StroyGetter - Download any youtube video for free !",
     description:
       "No ads. Unlimited downloads. Download videos at max quality (available) for free and without software !",
-    images: [
-      {
-        url: "https://stroygetter.stroyco.eu/opengraph-image.png",
-        alt: "StroyGetter",
-      },
-    ],
     site: "@ADSantoine",
   },
   verification: {
@@ -70,7 +58,6 @@ export default function RootLayout({
       >
         <header className="flex justify-between bg-primary px-4 py-2">
           <div className="flex justify-start">
-            {/* <img src={logo} alt="StroyGetter" className="aspect-square h-24" /> */}
             <Image src={logo} height={96} alt="StroyGetter" />
             <h1 className="my-auto ml-4 text-3xl font-bold">StroyGetter</h1>
           </div>
@@ -80,6 +67,7 @@ export default function RootLayout({
               href="https://github.com/DestroyCom/StroyGetter"
               target="_blank"
               rel="noreferrer noopener"
+              title="Code source of StroyGetter"
             >
               <SiGithub className="mr-4" />{" "}
               <p className="underline">The project code</p>
@@ -146,22 +134,15 @@ export default function RootLayout({
             />
             <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
             <div className="w-full lg:w-1/2">
-              <h2 className="my-2 text-xl">The StroyGetter Extension</h2>
+              <h2 className="my-2 text-xl">Why is my conversion slow ?</h2>
               <p>
-                An extension is available for Chrome, Edge, Brave and Opera
-                browsers. The extension allows quick access to the site from a
-                youtube video. Due to the nature of the project, the extension
-                cannot be installed from a store, and must be installed
-                manually, as explained{" "}
-                <a
-                  href="https://github.com/DestroyCom/StroyGetter#the-stroygetter-extension"
-                  target="_blank"
-                  className="underline hover:cursor-pointer hover:opacity-50"
-                  rel="noreferrer noopener"
-                >
-                  here
-                </a>
-                .
+                The conversion speed depends on the quality of the video you
+                want to download. The higher the quality, the longer the
+                conversion time.
+                <br />
+                If you have a slow internet connection or if a lot of people are
+                using the site at the same time, the conversion may be impacted
+                as well.
               </p>
             </div>
           </div>
