@@ -7,6 +7,7 @@ import logo from "@/assets/logo.svg";
 import { Separator } from "@/components/ui/separator";
 import getConfig from "next/config";
 import Image from "next/image";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const nunitoSans = Nunito_Sans({
   variable: "--font-nunito-sans",
@@ -23,6 +24,33 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "StroyGetter",
   description: "Get your videos, the easy way.",
+  keywords: ["video", "download", "audio", "free", "no ads", "converter"],
+  publisher: "StroyCo",
+  openGraph: {
+    title: "StroyGetter",
+    siteName: "StroyGetter - Download any youtube video for free !",
+    description: "Download any youtube video for free in any resolution",
+    url: "https://stroygetter.stroyco.eu/",
+    images: [
+      {
+        url: "https://stroygetter.stroyco.eu/prez.png",
+        alt: "StroyGetter",
+      },
+    ],
+  },
+  twitter: {
+    title: "StroyGetter - Download any youtube video for free !",
+    description:
+      "No ads. Unlimited downloads. Download videos at max quality (available) for free and without software !",
+    images: [
+      {
+        url: "https://stroygetter.stroyco.eu/prez.png",
+        alt: "StroyGetter",
+      },
+    ],
+
+    site: "@ADSantoine",
+  },
 };
 
 export default function RootLayout({
@@ -145,6 +173,7 @@ export default function RootLayout({
           </a>
         </footer>
       </body>
+      <GoogleAnalytics gaId="G-X2X4B9LKDW" />
     </html>
   );
 }
