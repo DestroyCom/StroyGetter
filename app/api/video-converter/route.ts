@@ -4,10 +4,13 @@ import ffmpeg from "fluent-ffmpeg";
 import ytdl from "@distube/ytdl-core";
 import { video_info } from "play-dl";
 import { execSync } from "child_process";
-import { PassThrough } from "stream";
+import { PassThrough, Readable } from "stream";
 import path from "path";
-import { title } from "process";
 import * as fs from "fs";
+
+const DIFFERENCE_TOLERANCE = 0.2;
+const PARENT_PATH =
+  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 
 const locateFfmpegPath = async () => {
   const localPath = execSync("which ffmpeg").toString().trim();
@@ -35,6 +38,15 @@ const createTempDir = (tmp_dir: string) => {
   }
 };
 
+const getDuration = (filePath: string): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) return reject(err);
+      resolve(metadata.format.duration || 0);
+    });
+  });
+};
+
 const cleanPreviousFiles = (oldPaths: string[]) => {
   oldPaths.forEach((oldPath) => {
     if (fs.existsSync(oldPath)) {
@@ -44,7 +56,15 @@ const cleanPreviousFiles = (oldPaths: string[]) => {
   });
 };
 
-const downloadStreams = (
+const waitForStreamClose = (stream: Readable) => {
+  return new Promise<void>((resolve) => {
+    stream.on("end", () => {
+      resolve();
+    });
+  });
+};
+
+const downloadStreams = async (
   url: string,
   audio_path: string,
   video_path: string,
@@ -52,29 +72,34 @@ const downloadStreams = (
 ) => {
   quality = quality || "highestvideo";
 
-  return new Promise((resolve, reject) => {
-    const audioStream = ytdl(url, { quality: "highestaudio" });
-    const videoStream = ytdl(url, { quality });
+  console.log("------------------------");
+  console.log("Downloading audio and video streams");
+  console.log("Audio path:", audio_path);
+  console.log("Video path:", video_path);
 
-    const audioWriteStream = fs.createWriteStream(audio_path);
-    const videoWriteStream = fs.createWriteStream(video_path);
-
-    audioStream.pipe(audioWriteStream);
-    videoStream.pipe(videoWriteStream);
-
-    audioWriteStream.on("finish", () => {
-      console.log("Audio downloaded");
-      resolve("audio");
-    });
-
-    videoWriteStream.on("finish", () => {
-      console.log("Video downloaded");
-      resolve("video");
-    });
-
-    audioStream.on("error", reject);
-    videoStream.on("error", reject);
+  const audioStream = ytdl(url, {
+    quality: "highestaudio",
   });
+
+  const videoStream = ytdl(url, {
+    quality: quality,
+    filter: "videoonly",
+  });
+
+  const audioWriteStream = fs.createWriteStream(audio_path);
+  const videoWriteStream = fs.createWriteStream(video_path);
+
+  audioStream.pipe(audioWriteStream);
+  videoStream.pipe(videoWriteStream);
+
+  await Promise.all([
+    waitForStreamClose(audioStream),
+    waitForStreamClose(videoStream),
+  ]);
+
+  console.log("Audio and video streams downloaded");
+
+  return;
 };
 
 const mergeAudioVideo = (
@@ -86,14 +111,18 @@ const mergeAudioVideo = (
     ffmpeg()
       .input(video_path)
       .input(audio_path)
-      .outputOptions("-c:v", "copy") // Copier la vidéo sans ré-encodage
-      .outputOptions("-c:a", "aac") // Encoder l'audio en AAC
+      .outputOptions("-c:v libx264")
+      .outputOptions("-c:a aac")
+      .outputOptions("-preset ultrafast")
       .output(merged_path)
       .on("end", () => {
         console.log("Audio and video merged");
         resolve();
       })
-      .on("error", reject)
+      .on("error", (err) => {
+        console.error("An error occurred while merging audio and video", err);
+        reject(err);
+      })
       .run();
   });
 };
@@ -186,23 +215,37 @@ export async function GET(request: Request) {
   console.log("Quality: ", quality);
   console.log("------------------------");
 
-  const TEMP_DIR = path.join(__dirname, "temp");
+  const TEMP_DIR = path.join(PARENT_PATH);
   const VIDEO_FILE_PATH = path.join(
     TEMP_DIR,
-    `video_${title}_${quality}_${Date.now()}.mp4`
+    `video_${metadata.title}_${quality}_${Date.now()}.mp4`
   );
   const AUDIO_FILE_PATH = path.join(
     TEMP_DIR,
-    `audio_${title}_${Date.now()}.mp3`
+    `audio_${metadata.title}_${Date.now()}.mp3`
   );
   const MERGED_FILE_PATH = path.join(
     TEMP_DIR,
-    `merged_${title}_${quality}_${Date.now()}.mp4`
+    `merged_${metadata.title}_${quality}_${Date.now()}.mp4`
   );
 
   try {
     createTempDir(TEMP_DIR);
     await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, quality);
+
+    const audioDuration = await getDuration(AUDIO_FILE_PATH);
+    const videoDuration = await getDuration(VIDEO_FILE_PATH);
+
+    if (Math.abs(audioDuration - videoDuration) > DIFFERENCE_TOLERANCE) {
+      console.log("Audio and video duration mismatch");
+      console.log("Audio duration:", audioDuration);
+      console.log("Video duration:", videoDuration);
+      return new Response("Audio and video duration mismatch", { status: 400 });
+    } else if (audioDuration === 0 || videoDuration === 0) {
+      console.log("Audio or video duration is zero");
+      return new Response("Audio or video duration is zero", { status: 400 });
+    }
+
     await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, MERGED_FILE_PATH);
     setTimeout(() => {
       cleanPreviousFiles([VIDEO_FILE_PATH, AUDIO_FILE_PATH]);
