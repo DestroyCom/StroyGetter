@@ -32,6 +32,7 @@ export const VideoSelect = () => {
 
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [loadProgress, setLoadProgress] = useState<number>(0);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!videoUrl) {
@@ -41,6 +42,7 @@ export const VideoSelect = () => {
 
   useEffect(() => {
     setError(null);
+    setDownloadError(null);
 
     const asynchroneousFetch = async () => {
       if (!videoUrl) {
@@ -183,6 +185,7 @@ export const VideoSelect = () => {
               disabled={isDownloading}
               onClick={async (e) => {
                 e.preventDefault();
+                setDownloadError(null);
                 setIsDownloading(true);
 
                 try {
@@ -192,6 +195,10 @@ export const VideoSelect = () => {
                       method: "GET",
                     }
                   );
+
+                  if (!video.ok) {
+                    throw new Error("An error occurred while fetching video");
+                  }
 
                   const extension = selectedQuality === "audio" ? "mp3" : "mp4";
 
@@ -203,6 +210,9 @@ export const VideoSelect = () => {
                   a.click();
                 } catch (e) {
                   console.error(e);
+                  setDownloadError(
+                    "An error occurred while downloading the video"
+                  );
                 }
                 setIsDownloading(false);
               }}
@@ -222,11 +232,17 @@ export const VideoSelect = () => {
             className={clsx(
               "mx-2 my-auto flex h-auto flex-col justify-end",
               "md:my-2 md:h-10 md:flex-row",
-              isDownloading && "!h-10"
+              isDownloading || downloadError ? "!h-10" : null
             )}
           >
             {isDownloading && (
               <Progress value={loadProgress} className="my-auto" />
+            )}
+
+            {downloadError && (
+              <p className="my-auto mx-auto text-center font-bold text-red-700 md:text-xl">
+                {downloadError}
+              </p>
             )}
           </div>
         </div>
