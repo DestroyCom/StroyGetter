@@ -100,6 +100,7 @@ const mergeAudioVideo = (
   hasNvidiaGpu: boolean
 ) => {
   return new Promise<void>((resolve, reject) => {
+    console.log("Merging audio and video streams");
     const startTime = Date.now();
     const ffmpegCommand = ffmpeg().input(video_path).input(audio_path);
 

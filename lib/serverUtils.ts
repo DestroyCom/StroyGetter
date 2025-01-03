@@ -15,6 +15,7 @@ export async function detectFfmpegCapabilities() {
   if (!hasCuda) {
     console.warn("CUDA or NVENC not detected in hardware acceleration output.");
   }
+  console.log("CUDA or NVENC detected in hardware acceleration output.");
 
   return hasCuda;
 }
@@ -24,7 +25,7 @@ export async function detectNvidiaGpuAvailable() {
     execSync("nvidia-smi");
     return true;
   } catch {
-    console.error("NVIDIA GPU not found");
+    console.error("nvidia-smi not found. NVIDIA GPU not available.");
     return false;
   }
 }
