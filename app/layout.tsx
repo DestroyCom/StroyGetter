@@ -22,6 +22,10 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://stroygetter.stroyco.eu"),
+  alternates: {
+    canonical: "/",
+  },
   title: "StroyGetter",
   description: "Get your videos, the easy way.",
   keywords: ["video", "download", "audio", "free", "no ads", "converter"],
@@ -31,6 +35,7 @@ export const metadata: Metadata = {
     siteName: "StroyGetter - Download any youtube video for free !",
     description: "Download any youtube video for free in any resolution",
     url: "https://stroygetter.stroyco.eu/",
+    images: "/og-image.png",
   },
   twitter: {
     title: "StroyGetter - Download any youtube video for free !",
