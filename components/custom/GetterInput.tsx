@@ -44,9 +44,6 @@ export const GetterInput = () => {
     if (url.length === 0) {
       return;
     }
-
-    console.log(url);
-
     router.push(`/fetch?videoUrl=${url}`);
   };
 
