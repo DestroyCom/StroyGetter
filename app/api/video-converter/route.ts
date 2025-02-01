@@ -11,25 +11,13 @@ import {
   sanitizeFilename,
 } from "@/lib/serverUtils";
 import { FormatData, VideoData } from "@/lib/types";
+import { NextResponse } from "next/server";
 
 const DIFFERENCE_TOLERANCE = 0.2;
 const PARENT_PATH =
   process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const CLEANUP_INTERVAL =
   process.env.NODE_ENV === "production" ? 1000 * 60 * 30 : 1000 * 60 * 2;
-
-const buildReadableStream = (stream: PassThrough): ReadableStream => {
-  return new ReadableStream({
-    start(controller) {
-      stream.on("data", (chunk: Buffer) => {
-        controller.enqueue(chunk);
-      });
-      stream.on("end", () => {
-        controller.close();
-      });
-    },
-  });
-};
 
 const createTempDir = (tmp_dir: string) => {
   if (!fs.existsSync(tmp_dir)) {
@@ -236,7 +224,8 @@ export async function GET(request: Request) {
       })
       .pipe(audioPassThrough, { end: true });
 
-    return new Response(buildReadableStream(audioPassThrough), {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new NextResponse(audioPassThrough as any, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
@@ -285,11 +274,14 @@ export async function GET(request: Request) {
     );
 
     const fileStream = fs.createReadStream(MERGED_FILE_PATH);
-    //@ts-expect-error - L'argument de type readstream n'est pas attribuable au paramètre de type Passthrought.
-    return new Response(buildReadableStream(fileStream), {
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new NextResponse(fileStream as any, {
       headers: {
-        "Content-Type": "video/mp4",
-        "Content-Disposition": `attachment; filename="output.mp4"`,
+        "Content-Type": quality === "audio" ? "audio/mpeg" : "video/mp4",
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(
+          metadata.title || "video"
+        ).replace(/[\u0300-\u036f]/g, "")}.mp4"`,
       },
     });
   } catch (error) {
