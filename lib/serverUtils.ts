@@ -20,7 +20,7 @@ export async function detectFfmpegCapabilities() {
   return hasCuda;
 }
 
-export async function detectNvidiaGpuAvailable() {
+async function detectNvidiaGpuAvailable() {
   try {
     execSync("nvidia-smi");
     return true;
@@ -28,10 +28,6 @@ export async function detectNvidiaGpuAvailable() {
     console.error("nvidia-smi not found. NVIDIA GPU not available.");
     return false;
   }
-}
-
-export async function detectOs() {
-  return os.platform();
 }
 
 export async function locateFfmpegPath() {
