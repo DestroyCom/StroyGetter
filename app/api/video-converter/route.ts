@@ -5,11 +5,7 @@ import ytdl from "@distube/ytdl-core";
 import { PassThrough, Readable } from "stream";
 import path from "path";
 import * as fs from "fs";
-import {
-  detectFfmpegCapabilities,
-  locateFfmpegPath,
-  sanitizeFilename,
-} from "@/lib/serverUtils";
+import { initializeConf, sanitizeFilename } from "@/lib/serverUtils";
 import { FormatData, VideoData } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -18,6 +14,11 @@ const PARENT_PATH =
   process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const CLEANUP_INTERVAL =
   process.env.NODE_ENV === "production" ? 1000 * 60 * 30 : 1000 * 60 * 2;
+let CONF = {
+  isInitialized: false,
+  ffmpegPath: "",
+  hasNvidiaCapabilities: false,
+};
 
 const createTempDir = (tmp_dir: string) => {
   if (!fs.existsSync(tmp_dir)) {
@@ -143,7 +144,11 @@ export async function GET(request: Request) {
     return new Response("Missing quality parameter", { status: 400 });
   }
 
-  const ffmpegPath = await locateFfmpegPath();
+  if (CONF.isInitialized === false) {
+    CONF = await initializeConf(CONF);
+  }
+
+  const ffmpegPath = CONF.ffmpegPath;
   if (!ffmpegPath) {
     console.error("FFmpeg path not found");
     return new Response("An error occurred in the server", { status: 500 });
@@ -249,7 +254,7 @@ export async function GET(request: Request) {
     TEMP_DIR,
     `merged_${SANITIZED_TITLE}_${quality}_${Date.now()}.mp4`
   );
-  const HAS_NVIDIA_GPU = await detectFfmpegCapabilities();
+  const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
 
   try {
     createTempDir(TEMP_DIR);
