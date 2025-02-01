@@ -2,33 +2,22 @@
 
 import ffmpeg from "fluent-ffmpeg";
 import ytdl from "@distube/ytdl-core";
-import { video_info } from "play-dl";
 import { PassThrough, Readable } from "stream";
 import path from "path";
 import * as fs from "fs";
-import {
-  detectFfmpegCapabilities,
-  locateFfmpegPath,
-  sanitizeFilename,
-} from "@/lib/serverUtils";
+import { initializeConf, sanitizeFilename } from "@/lib/serverUtils";
+import { FormatData, VideoData } from "@/lib/types";
+import { NextResponse } from "next/server";
 
 const DIFFERENCE_TOLERANCE = 0.2;
 const PARENT_PATH =
   process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const CLEANUP_INTERVAL =
   process.env.NODE_ENV === "production" ? 1000 * 60 * 30 : 1000 * 60 * 2;
-
-const buildReadableStream = (stream: PassThrough): ReadableStream => {
-  return new ReadableStream({
-    start(controller) {
-      stream.on("data", (chunk: Buffer) => {
-        controller.enqueue(chunk);
-      });
-      stream.on("end", () => {
-        controller.close();
-      });
-    },
-  });
+let CONF = {
+  isInitialized: false,
+  ffmpegPath: "",
+  hasNvidiaCapabilities: false,
 };
 
 const createTempDir = (tmp_dir: string) => {
@@ -155,7 +144,11 @@ export async function GET(request: Request) {
     return new Response("Missing quality parameter", { status: 400 });
   }
 
-  const ffmpegPath = await locateFfmpegPath();
+  if (CONF.isInitialized === false) {
+    CONF = await initializeConf(CONF);
+  }
+
+  const ffmpegPath = CONF.ffmpegPath;
   if (!ffmpegPath) {
     console.error("FFmpeg path not found");
     return new Response("An error occurred in the server", { status: 500 });
@@ -163,23 +156,48 @@ export async function GET(request: Request) {
     ffmpeg.setFfmpegPath(ffmpegPath);
   }
 
-  const videoData = await video_info(url);
+  const video = await ytdl.getBasicInfo(url);
+  const formatMap = new Map();
+  (video.player_response.streamingData.adaptiveFormats as FormatData[]).forEach(
+    (format: FormatData) => {
+      if (!formatMap.has(format.qualityLabel)) {
+        formatMap.set(format.qualityLabel, format);
+      }
+    }
+  );
 
-  if (!videoData || !videoData.video_details || !videoData.format) {
+  const videoData: VideoData = {
+    video_details: {
+      title: video.videoDetails.title,
+      description: video.videoDetails.description || "",
+      duration: video.videoDetails.lengthSeconds,
+      thumbnail: video.videoDetails.thumbnails[0].url,
+      author: video.videoDetails.author.name,
+    },
+    format: Array.from(formatMap.values()),
+  };
+
+  //const videoData = await ytdl.getBasicInfo(url);
+
+  if (!videoData) {
     return new Response("An error occurred while fetching video data", {
       status: 500,
     });
   }
 
-  const date = videoData.video_details.uploadedAt || new Date().toISOString();
+  const date =
+    video.player_response.microformat.playerMicroformatRenderer.publishDate ||
+    new Date().toISOString();
 
   const metadata = {
-    title: videoData.video_details.title,
-    artist: videoData.video_details.channel?.name || "Unknown artist",
-    author: videoData.video_details.channel?.name || "Unknown author",
+    title: videoData.video_details.title || "Unknown title",
+    artist: videoData.video_details.author || "Unknown artist",
+    author: videoData.video_details.author || "Unknown author",
     year: date.split("T")[0],
-    genre: videoData.video_details.type || "Unknown genre",
-    album: videoData.video_details.title,
+    genre: video.videoDetails.keywords
+      ? video.videoDetails.keywords.join(", ")
+      : "Unknown genre",
+    album: videoData.video_details.title || "Unknown album",
   };
 
   if (quality === "audio") {
@@ -211,7 +229,8 @@ export async function GET(request: Request) {
       })
       .pipe(audioPassThrough, { end: true });
 
-    return new Response(buildReadableStream(audioPassThrough), {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new NextResponse(audioPassThrough as any, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
@@ -235,7 +254,7 @@ export async function GET(request: Request) {
     TEMP_DIR,
     `merged_${SANITIZED_TITLE}_${quality}_${Date.now()}.mp4`
   );
-  const HAS_NVIDIA_GPU = await detectFfmpegCapabilities();
+  const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
 
   try {
     createTempDir(TEMP_DIR);
@@ -260,11 +279,14 @@ export async function GET(request: Request) {
     );
 
     const fileStream = fs.createReadStream(MERGED_FILE_PATH);
-    //@ts-expect-error - L'argument de type readstream n'est pas attribuable au paramètre de type Passthrought.
-    return new Response(buildReadableStream(fileStream), {
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new NextResponse(fileStream as any, {
       headers: {
-        "Content-Type": "video/mp4",
-        "Content-Disposition": `attachment; filename="output.mp4"`,
+        "Content-Type": quality === "audio" ? "audio/mpeg" : "video/mp4",
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(
+          metadata.title || "video"
+        ).replace(/[\u0300-\u036f]/g, "")}.mp4"`,
       },
     });
   } catch (error) {

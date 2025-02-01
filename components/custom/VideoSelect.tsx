@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter, useSearchParams } from "next/navigation";
-import { YouTubeVideo } from "play-dl";
 import { Download } from "lucide-react";
 import {
   Select,
@@ -13,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import clsx from "clsx";
-import { formatData } from "@/lib/types";
+import { VideoData } from "@/lib/types";
 import { VideoLoading } from "./VideoLoading";
 import { Progress } from "../ui/progress";
 
@@ -22,8 +21,10 @@ export const VideoSelect = () => {
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
 
-  const [videoData, setVideoData] = useState<YouTubeVideo | null>(null);
-  const [formats, setFormats] = useState<Partial<formatData>[] | null>(null);
+  const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(
+    null
+  );
+  const [formats, setFormats] = useState<VideoData["format"] | null>(null);
 
   const [selectedQuality, setSelectedQuality] = useState<string>("audio");
 
@@ -109,7 +110,7 @@ export const VideoSelect = () => {
     return (
       <section className="py-8" id="error-search">
         <div className="mx-auto my-2 flex h-auto min-h-40 w-11/12 rounded-lg border-2 border-dashed border-[#102F42]">
-          <p className="m-auto mx-auto text-center font-bold text-red-700 md:text-xl">
+          <p className="m-auto mx-auto text-center font-bold text-red-800 md:text-xl">
             {error ? error : "An error occured"}
           </p>
         </div>
@@ -120,22 +121,27 @@ export const VideoSelect = () => {
   return (
     <section className="py-8">
       <div className="mx-auto my-2 flex min-h-40 h-auto w-11/12 rounded-lg border-2 border-dashed border-primary py-2 md:py-4 lg:text-xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          // @ts-expect-error -- play-dl is wrongly typed
-          src={videoData.thumbnail.url}
-          title={`Thumbnail of ${videoData.title}`}
-          className="m-auto aspect-video w-3/12 rounded-lg"
-          alt={`Thumbnail of ${videoData.title}`}
-        />
-        <div className="my-auto flex w-8/12 flex-col">
-          <h3 className="line-clamp-2">
-            {videoData.title}{" "}
-            <span className="font-light italic">
-              by {videoData.channel?.name}
-            </span>
-          </h3>
-          <div className="mx-2 flex flex-col justify-end md:my-2 md:flex-row">
+        <div className="w-4/12 mx-2 hidden md:flex">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={videoData.thumbnail}
+            title={`Thumbnail of ${videoData.title}`}
+            className="m-auto aspect-video w-full rounded-lg"
+            alt={`Thumbnail of ${videoData.title}`}
+          />
+        </div>
+        <div className="my-auto flex w-full md:w-8/12 flex-col">
+          <h3 className="line-clamp-2 mx-2">{videoData.title}</h3>
+          <p className="text-base italic text-right mx-2">{videoData.author}</p>
+          <p className="text-sm font-light italic text-right mx-2">
+            ({videoData.duration} seconds)
+          </p>
+          <div
+            className={clsx(
+              "mx-2 flex flex-col justify-end md:my-2 md:flex-row",
+              isDownloading || downloadError ? "hidden" : "flex"
+            )}
+          >
             <Select
               defaultValue={(formats && formats[0].qualityLabel) || "audio"}
               onValueChange={(value) => {
@@ -178,7 +184,6 @@ export const VideoSelect = () => {
                 </SelectItem>
               </SelectContent>
             </Select>
-
             <button
               type="button"
               id="download-button"
@@ -232,7 +237,8 @@ export const VideoSelect = () => {
             className={clsx(
               "mx-2 my-auto flex h-auto flex-col justify-end",
               "md:my-2 md:h-10 md:flex-row",
-              isDownloading || downloadError ? "!h-10" : null
+              isDownloading || downloadError ? "!h-10" : null,
+              isDownloading || downloadError ? "flex" : "hidden"
             )}
           >
             {isDownloading && (

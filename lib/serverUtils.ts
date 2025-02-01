@@ -2,7 +2,26 @@
 import { execSync } from "child_process";
 import * as os from "os";
 
-export async function detectFfmpegCapabilities() {
+type Conf = {
+  isInitialized: boolean;
+  ffmpegPath: string;
+  hasNvidiaCapabilities: boolean;
+};
+
+export async function initializeConf(conf: Conf) {
+  if (conf.isInitialized) {
+    console.log("Server configuration already initialized.");
+    return conf;
+  }
+  conf.ffmpegPath = await locateFfmpegPath();
+  conf.hasNvidiaCapabilities = await detectFfmpegCapabilities();
+  conf.isInitialized = true;
+  console.log("Server configuration initialized.");
+
+  return conf;
+}
+
+async function detectFfmpegCapabilities() {
   if (!(await detectNvidiaGpuAvailable())) {
     return false;
   }
@@ -20,7 +39,7 @@ export async function detectFfmpegCapabilities() {
   return hasCuda;
 }
 
-export async function detectNvidiaGpuAvailable() {
+async function detectNvidiaGpuAvailable() {
   try {
     execSync("nvidia-smi");
     return true;
@@ -30,11 +49,7 @@ export async function detectNvidiaGpuAvailable() {
   }
 }
 
-export async function detectOs() {
-  return os.platform();
-}
-
-export async function locateFfmpegPath() {
+async function locateFfmpegPath() {
   const detectCommand =
     os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
 
