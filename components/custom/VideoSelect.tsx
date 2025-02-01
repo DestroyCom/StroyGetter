@@ -54,8 +54,6 @@ export const VideoSelect = () => {
 
       const value = await getVideoInfos(videoUrl);
 
-      console.log(value);
-
       if (value.error) {
         setError(value.error);
         setIsLoading(false);

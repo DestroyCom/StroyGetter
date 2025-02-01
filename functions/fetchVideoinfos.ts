@@ -12,7 +12,6 @@ export const getVideoInfos = async (url: string) => {
   }
 
   const video = await ytdl.getBasicInfo(url);
-  console.log(video.player_response.streamingData.adaptiveFormats);
 
   const formatMap = new Map();
   (video.player_response.streamingData.adaptiveFormats as FormatData[]).forEach(
@@ -28,7 +27,9 @@ export const getVideoInfos = async (url: string) => {
       title: video.videoDetails.title,
       description: video.videoDetails.description || "",
       duration: video.videoDetails.lengthSeconds,
-      thumbnail: video.videoDetails.thumbnails[0].url,
+      thumbnail:
+        video.videoDetails.thumbnails[video.videoDetails.thumbnails.length - 1]
+          .url,
       author: video.videoDetails.author.name,
     },
     format: Array.from(formatMap.values()),
