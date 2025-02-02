@@ -1,5 +1,6 @@
 "use client";
 
+import { searchQuery } from "@/functions/getYoutubeUrl";
 import clsx from "clsx";
 import { ClipboardCopy } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -40,11 +41,10 @@ export const GetterInput = () => {
     };
   };
 
-  const submitUrl = (url: string) => {
-    if (url.length === 0) {
-      return;
-    }
-    router.push(`/fetch?videoUrl=${url}`);
+  const submitUrl = async (url: string) => {
+    const getUrl = await searchQuery(url);
+
+    router.push(`/fetch?videoUrl=${getUrl}`);
   };
 
   return (
@@ -59,10 +59,10 @@ export const GetterInput = () => {
       <div className="relative my-4 w-full">
         <input
           type="text"
-          placeholder="Enter video url"
+          placeholder="https://www.youtube.com/watch?v= - https://youtu.be/ - keywords"
           id="video-url"
           name="video-url"
-          className="block w-full rounded-full border border-[#081721] bg-[#081721] p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
+          className="block w-full rounded-md border border-[#081721] bg-[#081721] p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
@@ -70,7 +70,7 @@ export const GetterInput = () => {
           type="button"
           id="clipboard-copy"
           className={clsx(
-            "absolute inset-y-0 right-0 flex items-center overflow-hidden rounded-r-full bg-secondary pl-2 pr-3.5 transition-all",
+            "absolute inset-y-0 right-0 flex items-center overflow-hidden rounded-r-md bg-secondary px-4 transition-all",
             permission ? "opacity-100" : "bg-secondary/25",
             "hover:pointer-events-auto hover:cursor-pointer hover:bg-secondary/60 hover:opacity-100"
           )}
@@ -90,7 +90,7 @@ export const GetterInput = () => {
       <button
         type="submit"
         id="search-button"
-        className="border-1 m-auto mx-auto rounded-full border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white transition-all duration-200 ease-in-out hover:cursor-pointer hover:border-[#205D83] hover:bg-[#102F42] hover:ring-[#205D83] focus:outline-none focus:ring-2 focus:ring-blue-300 sm:w-auto disabled:opacity-50"
+        className="border-1 m-auto mx-auto rounded-md border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white transition-all duration-200 ease-in-out hover:cursor-pointer hover:border-[#205D83] hover:bg-[#102F42] hover:ring-[#205D83] focus:outline-none focus:ring-2 focus:ring-blue-300 sm:w-auto disabled:opacity-50"
         disabled={url.length === 0}
       >
         {false ? "Loading..." : "Search"}

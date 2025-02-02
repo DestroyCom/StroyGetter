@@ -110,8 +110,8 @@ export const VideoSelect = () => {
     return (
       <section className="py-8" id="error-search">
         <div className="mx-auto my-2 flex h-auto min-h-40 w-11/12 rounded-lg border-2 border-dashed border-[#102F42]">
-          <p className="m-auto mx-auto text-center font-bold text-red-800 md:text-xl">
-            {error ? error : "An error occured"}
+          <p className="m-auto mx-auto text-center font-bold text-white md:text-xl">
+            ERROR: {error ? error : "An error occured"}
           </p>
         </div>
       </section>
@@ -246,7 +246,7 @@ export const VideoSelect = () => {
             )}
 
             {downloadError && (
-              <p className="my-auto mx-auto text-center font-bold text-red-700 md:text-xl">
+              <p className="my-auto mx-auto text-center font-bold text-white md:text-xl">
                 {downloadError}
               </p>
             )}
