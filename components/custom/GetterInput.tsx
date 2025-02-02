@@ -1,5 +1,6 @@
 "use client";
 
+import { searchQuery } from "@/functions/getYoutubeUrl";
 import clsx from "clsx";
 import { ClipboardCopy } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -40,11 +41,10 @@ export const GetterInput = () => {
     };
   };
 
-  const submitUrl = (url: string) => {
-    if (url.length === 0) {
-      return;
-    }
-    router.push(`/fetch?videoUrl=${url}`);
+  const submitUrl = async (url: string) => {
+    const getUrl = await searchQuery(url);
+
+    router.push(`/fetch?videoUrl=${getUrl}`);
   };
 
   return (
@@ -59,10 +59,10 @@ export const GetterInput = () => {
       <div className="relative my-4 w-full">
         <input
           type="text"
-          placeholder="Enter video url"
+          placeholder="https://www.youtube.com/watch?v= - https://youtu.be/ - keywords"
           id="video-url"
           name="video-url"
-          className="block w-full rounded-full border border-[#081721] bg-[#081721] p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
+          className="block w-full rounded-md border border-[#081721] bg-[#081721] p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
