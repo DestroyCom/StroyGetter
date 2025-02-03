@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Video {
+  id             String   @id @default(cuid())
+  title          String
+  url            String   @unique
+  searchAmount   Int      @default(0)
+  //downloadAmount Int      @default(0)
+  //isCached       Boolean  @default(false)
+  availableFiles File[]   // Relation avec les fichiers de différentes qualités
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model File {
+  id           String   @id @default(cuid())
+  path         String   @unique
+  hash         String   @unique        // Hash pour éviter les doublons
+  quality      String                 // ex: "audio", "720p", "1080p", "2160p"
+  qualityLabel String                 // ex: "MP3", "HD", "Full HD", "4K"
+  videoId      String                 // Référence vers la vidéo
+  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}

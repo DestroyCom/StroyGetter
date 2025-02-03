@@ -5,6 +5,7 @@ export interface FormatData {
 
 export interface VideoData {
   video_details: {
+    id?: string;
     title: string;
     description: string;
     duration: string;

@@ -2,6 +2,7 @@
 
 import { FormatData, VideoData } from "@/lib/types";
 import ytdl from "@distube/ytdl-core";
+import { PrismaClient } from "@prisma/client";
 
 export const getVideoInfos = async (url: string) => {
   if (!(url.startsWith("https") && ytdl.validateURL(url))) {
@@ -10,6 +11,8 @@ export const getVideoInfos = async (url: string) => {
       error: "Invalid URL",
     };
   }
+
+  const prisma = new PrismaClient();
 
   const video = await ytdl.getBasicInfo(url);
 
@@ -34,6 +37,36 @@ export const getVideoInfos = async (url: string) => {
     },
     format: Array.from(formatMap.values()),
   };
+
+  const dbVideo = await prisma.video.findUnique({
+    where: {
+      id: video.videoDetails.videoId,
+    },
+  });
+
+  if (!dbVideo) {
+    await prisma.video.create({
+      data: {
+        id: video.videoDetails.videoId,
+        title: video.videoDetails.title,
+        url: url,
+        searchAmount: 1,
+        updatedAt: new Date(),
+      },
+    });
+    await prisma.$disconnect();
+  } else {
+    await prisma.video.update({
+      where: {
+        id: video.videoDetails.videoId,
+      },
+      data: {
+        searchAmount: dbVideo.searchAmount + 1,
+        updatedAt: new Date(),
+      },
+    });
+    await prisma.$disconnect();
+  }
 
   return JSON.parse(JSON.stringify(videoData));
 };

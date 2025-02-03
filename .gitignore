@@ -38,5 +38,11 @@ next-env.d.ts
 downloads
 tmp
 temp
+videos
+video
 
 .next
+
+.env
+database
+.vscode
