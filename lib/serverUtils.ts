@@ -1,6 +1,9 @@
 "use server";
 import { execSync } from "child_process";
 import * as os from "os";
+import * as fs from "fs";
+import path from "path";
+import { initializeCleanup } from "@/scripts/cleanup";
 
 type Conf = {
   isInitialized: boolean;
@@ -8,11 +11,31 @@ type Conf = {
   hasNvidiaCapabilities: boolean;
 };
 
+const PARENT_PATH =
+  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
+const TEMP_DIR = path.join(PARENT_PATH);
+
+const createTempDir = (tmp_dir: string) => {
+  if (!fs.existsSync(tmp_dir)) {
+    fs.mkdirSync(tmp_dir);
+  }
+  if (!fs.existsSync(path.join(tmp_dir, "cached"))) {
+    fs.mkdirSync(path.join(tmp_dir, "cached"));
+  }
+  if (!fs.existsSync(path.join(tmp_dir, "source"))) {
+    fs.mkdirSync(path.join(tmp_dir, "source"));
+  }
+};
+
 export async function initializeConf(conf: Conf) {
   if (conf.isInitialized) {
     console.log("Server configuration already initialized.");
     return conf;
   }
+
+  initializeCleanup();
+  createTempDir(TEMP_DIR);
+
   conf.ffmpegPath = await locateFfmpegPath();
   conf.hasNvidiaCapabilities = await detectFfmpegCapabilities();
   conf.isInitialized = true;

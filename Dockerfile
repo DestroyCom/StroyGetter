@@ -29,6 +29,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+COPY prisma ./prisma
 # This will do the trick, use the corresponding env file for each environment.
 #COPY .env.production.sample .env.production
 RUN npm install --save @ffmpeg-installer/ffmpeg
@@ -47,14 +48,22 @@ RUN addgroup --system nodejs && adduser --system --ingroup nodejs nextjs
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
 RUN npm install --save @ffmpeg-installer/ffmpeg
+RUN npm install --save-dev prisma
+RUN npm install @prisma/client --save
 
-#RUN mkdir -p /stroygetter/temp
 RUN mkdir -p /temp/stroygetter
-RUN chown -R nextjs:nodejs /temp/stroygetter
+RUN mkdir -p /temp/stroygetter/source/
+RUN mkdir -p /temp/stroygetter/cached/
+RUN chown -R nextjs:nodejs /temp/stroygetter/
+
+RUN npx prisma migrate deploy
+RUN npx prisma generate
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
+
 
 CMD HOSTNAME="0.0.0.0" node server.js
