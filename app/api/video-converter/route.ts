@@ -8,30 +8,29 @@ import * as fs from "fs";
 import { initializeConf, sanitizeFilename } from "@/lib/serverUtils";
 import { FormatData, VideoData } from "@/lib/types";
 import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { createHash } from "crypto";
 
-const DIFFERENCE_TOLERANCE = 0.2;
+const prisma = new PrismaClient();
+
 const PARENT_PATH =
   process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
-const CLEANUP_INTERVAL =
-  process.env.NODE_ENV === "production" ? 1000 * 60 * 30 : 1000 * 60 * 2;
+const TEMP_DIR = path.join(PARENT_PATH);
+
 let CONF = {
   isInitialized: false,
   ffmpegPath: "",
   hasNvidiaCapabilities: false,
 };
 
-const createTempDir = (tmp_dir: string) => {
-  if (!fs.existsSync(tmp_dir)) {
-    fs.mkdirSync(tmp_dir);
-  }
-};
-
-const getDuration = (filePath: string): Promise<number> => {
+const generateFileHash = (filePath: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) return reject(err);
-      resolve(metadata.format.duration || 0);
-    });
+    const hash = createHash("sha256");
+    const stream = fs.createReadStream(filePath);
+
+    stream.on("data", (data) => hash.update(data));
+    stream.on("end", () => resolve(hash.digest("hex")));
+    stream.on("error", (err) => reject(err));
   });
 };
 
@@ -86,10 +85,16 @@ const mergeAudioVideo = (
   video_path: string,
   audio_path: string,
   merged_path: string,
-  hasNvidiaGpu: boolean
+  hasNvidiaGpu: boolean,
+  queryData: {
+    title: string;
+    url: string;
+    quality: string;
+    qualityLabel: string;
+  }
 ) => {
   return new Promise<void>((resolve, reject) => {
-    console.log("Merging audio and video streams");
+    console.log("Merging audio and video streams into one file");
     const startTime = Date.now();
     const ffmpegCommand = ffmpeg().input(video_path).input(audio_path);
 
@@ -113,15 +118,35 @@ const mergeAudioVideo = (
 
     ffmpegCommand
       .output(merged_path)
-      .on("end", () => {
+      .on("end", async () => {
         const endTime = Date.now();
         const timeTaken = (endTime - startTime) / 1000;
         console.log("Time taken to merge:", timeTaken, "seconds");
 
-        setTimeout(() => {
-          cleanPreviousFiles([video_path, audio_path, merged_path]);
-        }, CLEANUP_INTERVAL);
+        const fileHash = await generateFileHash(merged_path);
+        console.log("✅ Hash du fichier généré :", fileHash);
 
+        await prisma.file.create({
+          data: {
+            path: merged_path,
+            hash: fileHash,
+            quality: queryData.quality,
+            qualityLabel: queryData.qualityLabel,
+            video: {
+              connectOrCreate: {
+                where: {
+                  url: queryData.url,
+                },
+                create: {
+                  title: queryData.title,
+                  url: queryData.url,
+                },
+              },
+            },
+          },
+        });
+
+        cleanPreviousFiles([video_path, audio_path]);
         resolve();
       })
       .on("error", (err) => {
@@ -168,6 +193,7 @@ export async function GET(request: Request) {
 
   const videoData: VideoData = {
     video_details: {
+      id: video.videoDetails.videoId,
       title: video.videoDetails.title,
       description: video.videoDetails.description || "",
       duration: video.videoDetails.lengthSeconds,
@@ -176,8 +202,6 @@ export async function GET(request: Request) {
     },
     format: Array.from(formatMap.values()),
   };
-
-  //const videoData = await ytdl.getBasicInfo(url);
 
   if (!videoData) {
     return new Response("An error occurred while fetching video data", {
@@ -240,52 +264,70 @@ export async function GET(request: Request) {
     });
   }
 
+  const prisma = new PrismaClient();
+
   const SANITIZED_TITLE = await sanitizeFilename(metadata.title || "video");
-  const TEMP_DIR = path.join(PARENT_PATH);
+
+  const VIDEO_FILE_NAME = `video_${SANITIZED_TITLE}_${quality}_${Date.now()}`;
   const VIDEO_FILE_PATH = path.join(
     TEMP_DIR,
-    `video_${SANITIZED_TITLE}_${quality}_${Date.now()}.mp4`
+    "source",
+    `${VIDEO_FILE_NAME}.mp4`
   );
+
+  const AUDIO_FILE_NAME = `audio_${SANITIZED_TITLE}_${Date.now()}`;
   const AUDIO_FILE_PATH = path.join(
     TEMP_DIR,
-    `audio_${SANITIZED_TITLE}_${Date.now()}.mp3`
+    "source",
+    `${AUDIO_FILE_NAME}.mp3`
   );
-  const MERGED_FILE_PATH = path.join(
+
+  const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${videoData.video_details.title}`;
+  let merged_file_path = path.join(
     TEMP_DIR,
-    `merged_${SANITIZED_TITLE}_${quality}_${Date.now()}.mp4`
+    "cached",
+    `${MERGED_FILE_NAME}.mp4`
   );
   const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
 
   try {
-    createTempDir(TEMP_DIR);
-    await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, quality);
+    const requestedFile = await prisma.file.findFirst({
+      where: {
+        video: {
+          url: url,
+          id: videoData.video_details.id,
+        },
+        quality: quality,
+      },
+    });
 
-    const audioDuration = await getDuration(AUDIO_FILE_PATH);
-    const videoDuration = await getDuration(VIDEO_FILE_PATH);
+    if (!requestedFile) {
+      await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, quality);
 
-    if (Math.abs(audioDuration - videoDuration) > DIFFERENCE_TOLERANCE) {
-      cleanPreviousFiles([AUDIO_FILE_PATH, VIDEO_FILE_PATH]);
-      return new Response("Audio and video duration mismatch", { status: 400 });
-    } else if (audioDuration === 0 || videoDuration === 0) {
-      cleanPreviousFiles([AUDIO_FILE_PATH, VIDEO_FILE_PATH]);
-      return new Response("Audio or video duration is zero", { status: 400 });
+      await mergeAudioVideo(
+        VIDEO_FILE_PATH,
+        AUDIO_FILE_PATH,
+        merged_file_path,
+        HAS_NVIDIA_GPU,
+        {
+          title: metadata.title,
+          url: url,
+          quality: quality,
+          qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
+        }
+      );
+    } else {
+      merged_file_path = requestedFile.path;
     }
 
-    await mergeAudioVideo(
-      VIDEO_FILE_PATH,
-      AUDIO_FILE_PATH,
-      MERGED_FILE_PATH,
-      HAS_NVIDIA_GPU
-    );
-
-    const fileStream = fs.createReadStream(MERGED_FILE_PATH);
+    const fileStream = fs.createReadStream(merged_file_path);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new NextResponse(fileStream as any, {
       headers: {
-        "Content-Type": quality === "audio" ? "audio/mpeg" : "video/mp4",
+        "Content-Type": "video/mp4",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          metadata.title || "video"
+          (metadata.title || "video").normalize("NFKD")
         ).replace(/[\u0300-\u036f]/g, "")}.mp4"`,
       },
     });
