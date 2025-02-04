@@ -58,6 +58,7 @@ RUN mkdir -p /temp/stroygetter/source/
 RUN mkdir -p /temp/stroygetter/cached/
 RUN chown -R nextjs:nodejs /temp/stroygetter/
 
+RUN npx prisma generate
 RUN npx prisma migrate deploy
 RUN npx prisma generate
 
