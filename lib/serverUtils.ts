@@ -3,6 +3,7 @@ import { execSync } from "child_process";
 import * as os from "os";
 import * as fs from "fs";
 import path from "path";
+import { initializeCleanup } from "@/scripts/cleanup";
 
 type Conf = {
   isInitialized: boolean;
@@ -32,6 +33,7 @@ export async function initializeConf(conf: Conf) {
     return conf;
   }
 
+  initializeCleanup();
   createTempDir(TEMP_DIR);
 
   conf.ffmpegPath = await locateFfmpegPath();
