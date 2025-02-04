@@ -11,18 +11,21 @@ type Conf = {
 };
 
 const PARENT_PATH =
-  process.env.NODE_ENV === "production"
-    ? "/var/lib/stroygetter/videos"
-    : "./videos";
+  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);
 
 const createTempDir = (tmp_dir: string) => {
   if (!fs.existsSync(tmp_dir)) {
     fs.mkdirSync(tmp_dir);
+  }
+  if (!fs.existsSync(path.join(tmp_dir, "cached"))) {
     fs.mkdirSync(path.join(tmp_dir, "cached"));
-    fs.mkdirSync(path.join(tmp_dir, "temp"));
+  }
+  if (!fs.existsSync(path.join(tmp_dir, "source"))) {
+    fs.mkdirSync(path.join(tmp_dir, "source"));
   }
 };
+
 export async function initializeConf(conf: Conf) {
   if (conf.isInitialized) {
     console.log("Server configuration already initialized.");

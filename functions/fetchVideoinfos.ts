@@ -50,18 +50,6 @@ export const getVideoInfos = async (url: string) => {
         id: video.videoDetails.videoId,
         title: video.videoDetails.title,
         url: url,
-        searchAmount: 1,
-        updatedAt: new Date(),
-      },
-    });
-    await prisma.$disconnect();
-  } else {
-    await prisma.video.update({
-      where: {
-        id: video.videoDetails.videoId,
-      },
-      data: {
-        searchAmount: dbVideo.searchAmount + 1,
         updatedAt: new Date(),
       },
     });

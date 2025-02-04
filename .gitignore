@@ -46,3 +46,4 @@ video
 .env
 database
 .vscode
+docker_videos

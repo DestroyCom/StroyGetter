@@ -14,9 +14,7 @@ import { createHash } from "crypto";
 const prisma = new PrismaClient();
 
 const PARENT_PATH =
-  process.env.NODE_ENV === "production"
-    ? "/var/lib/stroygetter/videos"
-    : "./videos";
+  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);
 
 let CONF = {
@@ -271,10 +269,18 @@ export async function GET(request: Request) {
   const SANITIZED_TITLE = await sanitizeFilename(metadata.title || "video");
 
   const VIDEO_FILE_NAME = `video_${SANITIZED_TITLE}_${quality}_${Date.now()}`;
-  const VIDEO_FILE_PATH = path.join(TEMP_DIR, "temp", `${VIDEO_FILE_NAME}.mp4`);
+  const VIDEO_FILE_PATH = path.join(
+    TEMP_DIR,
+    "source",
+    `${VIDEO_FILE_NAME}.mp4`
+  );
 
   const AUDIO_FILE_NAME = `audio_${SANITIZED_TITLE}_${Date.now()}`;
-  const AUDIO_FILE_PATH = path.join(TEMP_DIR, "temp", `${AUDIO_FILE_NAME}.mp3`);
+  const AUDIO_FILE_PATH = path.join(
+    TEMP_DIR,
+    "source",
+    `${AUDIO_FILE_NAME}.mp3`
+  );
 
   const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${videoData.video_details.title}`;
   let merged_file_path = path.join(
