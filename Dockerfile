@@ -33,6 +33,8 @@ COPY prisma ./prisma
 # This will do the trick, use the corresponding env file for each environment.
 #COPY .env.production.sample .env.production
 RUN npm install --save @ffmpeg-installer/ffmpeg
+RUN npx prisma migrate deploy
+RUN npx prisma generate
 RUN npm run build
 
 # 3. Production image, copy all the files and run next
