@@ -32,13 +32,13 @@ export const metadata: Metadata = {
   publisher: "StroyCo",
   openGraph: {
     title: "StroyGetter",
-    siteName: "StroyGetter - Download any youtube video for free !",
-    description: "Download any youtube video for free in any resolution",
+    siteName: "StroyGetter - Download any video for free !",
+    description: "Download any video for free in any resolution",
     url: "https://stroygetter.stroyco.eu/",
     images: "/og-image.png",
   },
   twitter: {
-    title: "StroyGetter - Download any youtube video for free !",
+    title: "StroyGetter - Download any video for free !",
     description:
       "No ads. Unlimited downloads. Download videos at max quality (available) for free and without software !",
     site: "@ADSantoine",
@@ -86,17 +86,9 @@ export default function RootLayout({
             <div className="w-full lg:w-1/2">
               <h2 className="my-2 text-xl">What is StroyGetter ?</h2>
               <p>
-                StroyGetter is a{" "}
-                <a
-                  href="https://www.youtube.com/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  Youtube
-                </a>{" "}
-                downloader, so you can download almost any video{" "}
-                <span className="italic">(of your own)</span> in any available
-                quality.
+                StroyGetter is a video downloader, so you can download almost
+                any video <span className="italic">(of your own)</span> in any
+                available quality.
                 <br />
                 Audio-only conversion is also available.
               </p>
