@@ -59,7 +59,7 @@ export const GetterInput = () => {
       <div className="relative my-4 w-full">
         <input
           type="text"
-          placeholder="https://www.youtube.com/watch?v= - https://youtu.be/ - keywords"
+          placeholder="Please enter a instagram, tiktok, youtube... video URL"
           id="video-url"
           name="video-url"
           className="block w-full rounded-md border border-[#081721] bg-[#081721] p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
