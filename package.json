@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.27",
-    "@types/node": "^20.17.16",
+    "@types/node": "^22.14.0",
     "@types/node-cron": "^3.0.11",
     "@types/react": "^18",
     "@types/react-dom": "^18",
