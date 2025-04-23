@@ -1,0 +1,14 @@
+services:
+  stroygetter:
+    container_name: stroygetter
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - 3002:3000
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - ./docker_videos:/temp/stroygetter:rw
