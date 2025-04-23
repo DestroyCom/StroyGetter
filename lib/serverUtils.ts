@@ -3,6 +3,7 @@ import { execSync } from "child_process";
 import * as os from "os";
 import * as fs from "fs";
 import path from "path";
+import { create as createYoutubeDl } from "youtube-dl-exec";
 import { initializeCleanup } from "@/scripts/cleanup";
 
 type Conf = {
@@ -113,4 +114,24 @@ export async function yt_validate(url: string): Promise<"video" | false> {
     }
   }
   return false;
+}
+
+export async function selectYtDlpPath() {
+  let youtubedl;
+
+  if (process.env.NODE_ENV === "development") {
+    const devBinaryPath = path.join(
+      process.cwd(),
+      "node_modules/youtube-dl-exec/bin/yt-dlp"
+    );
+    youtubedl = createYoutubeDl(devBinaryPath);
+  } else {
+    const prodBinaryPath = path.join(
+      process.cwd(),
+      "node_modules/youtube-dl-exec/bin/yt-dlp"
+    );
+    youtubedl = createYoutubeDl(prodBinaryPath);
+  }
+
+  return youtubedl;
 }

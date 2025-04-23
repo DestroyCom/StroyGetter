@@ -1,11 +1,15 @@
 "use server";
 
 import ffmpeg from "fluent-ffmpeg";
-import ytdl from "@distube/ytdl-core";
+import * as oldYtdl from "@distube/ytdl-core";
 import { PassThrough, Readable } from "stream";
 import path from "path";
 import * as fs from "fs";
-import { initializeConf, sanitizeFilename } from "@/lib/serverUtils";
+import {
+  initializeConf,
+  sanitizeFilename,
+  selectYtDlpPath,
+} from "@/lib/serverUtils";
 import { FormatData, VideoData } from "@/lib/types";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
@@ -54,18 +58,32 @@ const downloadStreams = async (
   url: string,
   audio_path: string,
   video_path: string,
-  quality?: string
+  formatSelector?: string
 ) => {
-  quality = quality || "highestvideo";
+  const ytdl = await selectYtDlpPath();
+  formatSelector = formatSelector || "bv";
 
-  const audioStream = ytdl(url, {
-    quality: "highestaudio",
-  });
+  const audioStream = ytdl.exec(url, {
+    noCheckCertificates: true,
+    noWarnings: true,
+    preferFreeFormats: true,
+    addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+    format: "ba",
+    output: "-",
+  }).stdout;
 
-  const videoStream = ytdl(url, {
-    quality: quality,
-    filter: "videoonly",
-  });
+  const videoStream = ytdl.exec(url, {
+    noCheckCertificates: true,
+    noWarnings: true,
+    preferFreeFormats: true,
+    addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+    format: formatSelector,
+    output: "-",
+  }).stdout;
+  if (!audioStream || !videoStream) {
+    throw new Error("Failed to download audio or video stream");
+  }
+  console.log("Downloading audio and video streams...");
 
   const audioWriteStream = fs.createWriteStream(audio_path);
   const videoWriteStream = fs.createWriteStream(video_path);
@@ -181,12 +199,16 @@ export async function GET(request: Request) {
     ffmpeg.setFfmpegPath(ffmpegPath);
   }
 
-  const video = await ytdl.getBasicInfo(url);
+  const video = await oldYtdl.getBasicInfo(url);
   const formatMap = new Map();
   (video.player_response.streamingData.adaptiveFormats as FormatData[]).forEach(
     (format: FormatData) => {
-      if (!formatMap.has(format.qualityLabel)) {
+      if (format.qualityLabel && !formatMap.has(format.qualityLabel)) {
         formatMap.set(format.qualityLabel, format);
+      }
+      const itagKey = String(format.itag);
+      if (!formatMap.has(itagKey)) {
+        formatMap.set(itagKey, format);
       }
     }
   );
@@ -225,9 +247,18 @@ export async function GET(request: Request) {
   };
 
   if (quality === "audio") {
-    const audioStream = ytdl(url, {
-      quality: "highestaudio",
-    });
+    const ytdl = await selectYtDlpPath();
+    const audioStream = ytdl.exec(url, {
+      noCheckCertificates: true,
+      noWarnings: true,
+      preferFreeFormats: true,
+      addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+      format: "ba",
+      output: "-",
+    }).stdout;
+    if (!audioStream) {
+      throw new Error("Failed to download audio stream");
+    }
 
     //Convert audio stream to mp3
     const audioPassThrough = new PassThrough();
@@ -302,7 +333,29 @@ export async function GET(request: Request) {
     });
 
     if (!requestedFile) {
-      await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, quality);
+      const selectedFormat = formatMap.get(quality);
+      if (!selectedFormat) {
+        console.log("formatMap", formatMap);
+        console.log("quality", quality);
+        console.error(
+          `Cannot find the requested format: ${quality}. Available formats are: ${Array.from(
+            formatMap.keys()
+          ).join(", ")}`
+        );
+
+        return new Response(
+          `Cannot find the requested format. Available formats are: ${Array.from(
+            formatMap.keys()
+          ).join(", ")}`,
+          { status: 400 }
+        );
+      }
+      await downloadStreams(
+        url,
+        AUDIO_FILE_PATH,
+        VIDEO_FILE_PATH,
+        String(selectedFormat.itag)
+      );
 
       await mergeAudioVideo(
         VIDEO_FILE_PATH,
