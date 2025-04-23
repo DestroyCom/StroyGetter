@@ -3,8 +3,9 @@
   "version": "3.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev && node copy-binaries.js",
     "build": "next build",
+    "postbuild": "node copy-binaries.js",
     "start": "next start",
     "lint": "next lint",
     "knip": "knip",
@@ -30,7 +31,8 @@
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "youtube-dl-exec": "^3.0.20"
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.27",
