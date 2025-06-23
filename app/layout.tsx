@@ -9,7 +9,7 @@ import getConfig from "next/config";
 import Image from "next/image";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
-export const satoshi = localFont({
+const satoshi = localFont({
   src: [
     {
       path: "./fonts/Satoshi-Light.woff2",
