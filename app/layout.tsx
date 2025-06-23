@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nunito_Sans, Nunito } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 
@@ -9,16 +9,69 @@ import getConfig from "next/config";
 import Image from "next/image";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
-const nunitoSans = Nunito_Sans({
-  variable: "--font-nunito-sans",
-  weight: "400",
-  subsets: ["latin"],
-});
-
-const nunito = Nunito({
-  variable: "--font-nunito",
-  weight: "400",
-  subsets: ["latin"],
+export const satoshi = localFont({
+  src: [
+    {
+      path: "./fonts/Satoshi-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-LightItalic.woff2",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Satoshi-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-Italic.woff2",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Satoshi-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-MediumItalic.woff2",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Satoshi-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-BoldItalic.woff2",
+      weight: "700",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Satoshi-Black.woff2",
+      weight: "900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-BlackItalic.woff2",
+      weight: "900",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-VariableItalic.woff2",
+      weight: "300 900",
+      style: "italic",
+    },
+  ],
 });
 
 export const metadata: Metadata = {
@@ -58,13 +111,11 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${nunitoSans.variable} ${nunito.variable} font-sans antialiased`}
-      >
+      <body className={`${satoshi.className} font-satoshi antialiased`}>
         <header className="flex justify-between bg-primary px-4 py-2">
           <div className="flex justify-start">
             <Image src={logo} height={96} alt="StroyGetter" />
-            <h1 className="my-auto ml-4 text-3xl font-bold">StroyGetter</h1>
+            <h1 className="my-auto ml-4 text-5xl font-semibold">StroyGetter</h1>
           </div>
           <div className="hidden flex-col md:flex">
             <a

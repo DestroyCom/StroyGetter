@@ -10,8 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: "var(--font-nunito-sans)",
-        serif: "var(--font-nunito)",
+        satoshi: "var(--font-satoshi)",
       },
       colors: {
         background: "hsl(var(--background))",
