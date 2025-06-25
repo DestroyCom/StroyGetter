@@ -1,0 +1,30 @@
+name: Deploy Pre-release Image
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to use for the image"
+        required: true
+
+jobs:
+  build_web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - run: |
+          echo "${{ secrets.ENVFILE }}" > .env
+      - name: Kaniko build
+        uses: aevea/action-kaniko@master
+        with:
+          image: destcom/stroygetter
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tag: ${{ github.event.inputs.tag || 'alpha' }}
+          tag_with_latest: false
+          path: .
+          build_file: Dockerfile
