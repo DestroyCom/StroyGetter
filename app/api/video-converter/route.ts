@@ -117,20 +117,20 @@ const mergeAudioVideo = (
     const ffmpegCommand = ffmpeg().input(video_path).input(audio_path);
 
     if (hasNvidiaGpu) {
-      ffmpegCommand
-        .inputOptions(["-hwaccel cuda", "-hwaccel_device 0", "-c:v h264_cuvid"])
-        .outputOptions([
-          "-c:v h264_nvenc",
-          "-preset fast",
-          "-cq 23",
-          "-c:a copy",
-        ]);
+      ffmpegCommand.outputOptions([
+        "-c:v h264_nvenc",
+        "-preset fast",
+        "-cq 23",
+        "-c:a aac",
+        "-b:a 128k",
+      ]);
     } else {
       ffmpegCommand.outputOptions([
         "-c:v libx264",
         "-preset ultrafast",
         "-crf 23",
-        "-c:a copy",
+        "-c:a aac",
+        "-b:a 128k",
       ]);
     }
 
