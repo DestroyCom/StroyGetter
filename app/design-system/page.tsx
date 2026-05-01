@@ -345,7 +345,7 @@ export default function DesignSystemPage() {
               <button
                 type="button"
                 disabled
-                className="m-auto mx-auto rounded-md border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white opacity-50 sm:w-auto"
+                className="mx-auto rounded-md border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white opacity-50 sm:w-auto"
               >
                 Search
               </button>
@@ -368,7 +368,7 @@ export default function DesignSystemPage() {
               <button
                 type="button"
                 disabled
-                className="m-auto mx-auto rounded-full border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white opacity-50 sm:w-auto"
+                className="mx-auto rounded-full border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white opacity-50 sm:w-auto"
               >
                 Loading
               </button>
