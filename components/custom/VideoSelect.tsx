@@ -140,7 +140,7 @@ export const VideoSelect = () => {
             )}
           >
             <Select
-              defaultValue={(formats && formats[0].qualityLabel) || "audio"}
+              defaultValue={formats?.[0].qualityLabel || "audio"}
               onValueChange={(value) => {
                 setSelectedQuality(value);
               }}
@@ -154,26 +154,25 @@ export const VideoSelect = () => {
                 <SelectValue placeholder="Quality" />
               </SelectTrigger>
               <SelectContent>
-                {formats &&
-                  formats.map((format) => {
-                    if (!format.qualityLabel) return null;
-                    if (!format.itag) return null;
+                {formats?.map((format) => {
+                  if (!format.qualityLabel) return null;
+                  if (!format.itag) return null;
 
-                    return (
-                      <SelectItem
-                        key={format.qualityLabel}
-                        value={format.itag.toString()}
+                  return (
+                    <SelectItem
+                      key={format.qualityLabel}
+                      value={format.itag.toString()}
+                      id={`quality-select-${format.qualityLabel}`}
+                    >
+                      <p
+                        className="flex justify-between"
                         id={`quality-select-${format.qualityLabel}`}
                       >
-                        <p
-                          className="flex justify-between"
-                          id={`quality-select-${format.qualityLabel}`}
-                        >
-                          <span className="my-auto">{format.qualityLabel}</span>{" "}
-                        </p>
-                      </SelectItem>
-                    );
-                  })}
+                        <span className="my-auto">{format.qualityLabel}</span>{" "}
+                      </p>
+                    </SelectItem>
+                  );
+                })}
                 <SelectItem value="audio" id="quality-select-music">
                   <p className="flex justify-between" id="quality-select-music">
                     <span className="my-auto">Audio (mp3)</span>{" "}

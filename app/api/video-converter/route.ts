@@ -1,7 +1,6 @@
 "use server";
 
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import path from "node:path";
 import { PassThrough, type Readable } from "node:stream";
@@ -23,17 +22,6 @@ let CONF = {
 let _confInitPromise: Promise<typeof CONF> | null = null;
 const _inFlight = new Map<string, Promise<string>>();
 
-const generateFileHash = (filePath: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const hash = createHash("sha256");
-    const stream = fs.createReadStream(filePath);
-
-    stream.on("data", (data) => hash.update(data));
-    stream.on("end", () => resolve(hash.digest("hex")));
-    stream.on("error", (err) => reject(err));
-  });
-};
-
 const cleanPreviousFiles = (oldPaths: string[]) => {
   oldPaths.forEach((oldPath) => {
     if (fs.existsSync(oldPath)) {
@@ -49,32 +37,38 @@ const waitForStreamClose = (stream: Readable) => {
   });
 };
 
+const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
+
 const downloadStreams = async (
   url: string,
   audio_path: string,
   video_path: string,
   formatSelector?: string
 ) => {
-  const ytdl = await selectYtDlpPath();
+  const ytdl = selectYtDlpPath();
   formatSelector = formatSelector || "bv";
 
-  const audioStream = ytdl.exec(url, {
+  const audioProc = ytdl.exec(url, {
     noCheckCertificates: true,
     noWarnings: true,
     preferFreeFormats: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
     format: "ba",
     output: "-",
-  }).stdout;
+  });
 
-  const videoStream = ytdl.exec(url, {
+  const videoProc = ytdl.exec(url, {
     noCheckCertificates: true,
     noWarnings: true,
     preferFreeFormats: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
     format: formatSelector,
     output: "-",
-  }).stdout;
+  });
+
+  const audioStream = audioProc.stdout;
+  const videoStream = videoProc.stdout;
+
   if (!audioStream || !videoStream) {
     throw new Error("Failed to download audio or video stream");
   }
@@ -86,22 +80,27 @@ const downloadStreams = async (
   audioStream.pipe(audioWriteStream);
   videoStream.pipe(videoWriteStream);
 
-  await Promise.all([waitForStreamClose(audioStream), waitForStreamClose(videoStream)]);
+  const timeoutHandle = setTimeout(() => {
+    audioProc.kill();
+    videoProc.kill();
+  }, DOWNLOAD_TIMEOUT_MS);
 
-  return;
+  try {
+    await Promise.all([waitForStreamClose(audioStream), waitForStreamClose(videoStream)]);
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 };
 
 const mergeAudioVideo = (
   video_path: string,
   audio_path: string,
   merged_path: string,
-  hasNvidiaGpu: boolean,
   ffmpegPath: string,
   queryData: {
     title: string;
     url: string;
     quality: string;
-    qualityLabel: string;
   }
 ) => {
   return new Promise<void>((resolve, reject) => {
@@ -113,20 +112,8 @@ const mergeAudioVideo = (
       video_path,
       "-i",
       audio_path,
-      ...(hasNvidiaGpu
-        ? [
-            "-hwaccel",
-            "cuda",
-            "-hwaccel_device",
-            "0",
-            "-c:v",
-            "h264_nvenc",
-            "-preset",
-            "fast",
-            "-cq",
-            "23",
-          ]
-        : ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "23"]),
+      "-c:v",
+      "copy",
       "-c:a",
       "copy",
       "-y",
@@ -144,15 +131,10 @@ const mergeAudioVideo = (
       const endTime = Date.now();
       console.log("Time taken to merge:", (endTime - startTime) / 1000, "seconds");
 
-      const fileHash = await generateFileHash(merged_path);
-      console.log("✅ Hash du fichier généré :", fileHash);
-
       await prisma.file.create({
         data: {
           path: merged_path,
-          hash: fileHash,
           quality: queryData.quality,
-          qualityLabel: queryData.qualityLabel,
           video: {
             connectOrCreate: {
               where: { url: queryData.url },
@@ -328,22 +310,20 @@ export async function GET(request: Request) {
 
   const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${SANITIZED_TITLE}`;
   const merged_file_path = path.join(TEMP_DIR, "cached", `${MERGED_FILE_NAME}.mp4`);
-  const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
   const cacheKey = `${videoId}:${quality}`;
 
   const resolveFilePath = async (): Promise<string> => {
     const requestedFile = await prisma.file.findFirst({
       where: { video: { url }, quality },
     });
-    if (requestedFile) return requestedFile.path;
+    if (requestedFile && fs.existsSync(requestedFile.path)) return requestedFile.path;
 
     try {
       await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, String(selectedFormat.itag));
-      await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, merged_file_path, HAS_NVIDIA_GPU, ffmpegPath, {
+      await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, merged_file_path, ffmpegPath, {
         title: metadata.title,
         url,
         quality,
-        qualityLabel: selectedFormat.qualityLabel,
       });
     } catch (err) {
       cleanPreviousFiles([VIDEO_FILE_PATH, AUDIO_FILE_PATH]);

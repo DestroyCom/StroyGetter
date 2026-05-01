@@ -18,12 +18,10 @@ model Video {
 }
 
 model File {
-  id           String   @id @default(cuid(2))
-  path         String   @unique
-  hash         String   @unique        
-  quality      String                 
-  qualityLabel String                 
-  videoId      String                
-  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid(2))
+  path      String   @unique
+  quality   String
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

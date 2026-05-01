@@ -15,7 +15,7 @@ export const initializeCleanup = async () => {
     try {
       console.log("Starting cleanup...");
       const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() - parseInt(CLEANUP_INTERVAL));
+      expirationDate.setDate(expirationDate.getDate() - parseInt(CLEANUP_INTERVAL, 10));
 
       const oldFiles = await prisma.file.findMany({
         where: {
