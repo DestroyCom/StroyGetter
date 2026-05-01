@@ -1,8 +1,8 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
+import { spawn } from "child_process";
 import { createHash } from "crypto";
-import ffmpeg from "fluent-ffmpeg";
 import * as fs from "fs";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -97,6 +97,7 @@ const mergeAudioVideo = (
   audio_path: string,
   merged_path: string,
   hasNvidiaGpu: boolean,
+  ffmpegPath: string,
   queryData: {
     title: string;
     url: string;
@@ -107,54 +108,64 @@ const mergeAudioVideo = (
   return new Promise<void>((resolve, reject) => {
     console.log("Merging audio and video streams into one file");
     const startTime = Date.now();
-    const ffmpegCommand = ffmpeg().input(video_path).input(audio_path);
 
-    if (hasNvidiaGpu) {
-      ffmpegCommand
-        .inputOptions(["-hwaccel cuda", "-hwaccel_device 0", "-c:v h264_cuvid"])
-        .outputOptions(["-c:v h264_nvenc", "-preset fast", "-cq 23", "-c:a copy"]);
-    } else {
-      ffmpegCommand.outputOptions(["-c:v libx264", "-preset ultrafast", "-crf 23", "-c:a copy"]);
-    }
+    const args = [
+      "-i",
+      video_path,
+      "-i",
+      audio_path,
+      ...(hasNvidiaGpu
+        ? [
+            "-hwaccel",
+            "cuda",
+            "-hwaccel_device",
+            "0",
+            "-c:v",
+            "h264_nvenc",
+            "-preset",
+            "fast",
+            "-cq",
+            "23",
+          ]
+        : ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "23"]),
+      "-c:a",
+      "copy",
+      "-y",
+      merged_path,
+    ];
 
-    ffmpegCommand
-      .output(merged_path)
-      .on("end", async () => {
-        const endTime = Date.now();
-        const timeTaken = (endTime - startTime) / 1000;
-        console.log("Time taken to merge:", timeTaken, "seconds");
+    const proc = spawn(ffmpegPath, args);
+    proc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
+    proc.on("error", reject);
+    proc.on("close", async (code: number | null) => {
+      if (code !== 0) {
+        reject(new Error(`ffmpeg exited with code ${code}`));
+        return;
+      }
+      const endTime = Date.now();
+      console.log("Time taken to merge:", (endTime - startTime) / 1000, "seconds");
 
-        const fileHash = await generateFileHash(merged_path);
-        console.log("✅ Hash du fichier généré :", fileHash);
+      const fileHash = await generateFileHash(merged_path);
+      console.log("✅ Hash du fichier généré :", fileHash);
 
-        await prisma.file.create({
-          data: {
-            path: merged_path,
-            hash: fileHash,
-            quality: queryData.quality,
-            qualityLabel: queryData.qualityLabel,
-            video: {
-              connectOrCreate: {
-                where: {
-                  url: queryData.url,
-                },
-                create: {
-                  title: queryData.title,
-                  url: queryData.url,
-                },
-              },
+      await prisma.file.create({
+        data: {
+          path: merged_path,
+          hash: fileHash,
+          quality: queryData.quality,
+          qualityLabel: queryData.qualityLabel,
+          video: {
+            connectOrCreate: {
+              where: { url: queryData.url },
+              create: { title: queryData.title, url: queryData.url },
             },
           },
-        });
+        },
+      });
 
-        cleanPreviousFiles([video_path, audio_path]);
-        resolve();
-      })
-      .on("error", (err) => {
-        console.error("An error occurred while merging audio and video", err);
-        reject(err);
-      })
-      .run();
+      cleanPreviousFiles([video_path, audio_path]);
+      resolve();
+    });
   });
 };
 
@@ -178,8 +189,6 @@ export async function GET(request: Request) {
   if (!ffmpegPath) {
     console.error("FFmpeg path not found");
     return new Response("An error occurred in the server", { status: 500 });
-  } else {
-    ffmpeg.setFfmpegPath(ffmpegPath);
   }
 
   const videoId = extractVideoId(url);
@@ -215,27 +224,35 @@ export async function GET(request: Request) {
 
     //Convert audio stream to mp3
     const audioPassThrough = new PassThrough();
-    ffmpeg(audioStream)
-      .setFfmpegPath(ffmpegPath)
-      .audioCodec("libmp3lame")
-      .format("mp3")
-      .outputOptions("-preset", "ultrafast")
-      .outputOptions("-metadata", `title=${metadata.title}`)
-      .outputOptions("-metadata", `artist=${metadata.artist}`)
-      .outputOptions("-metadata", `author=${metadata.author}`)
-      .outputOptions("-metadata", `year=${metadata.year}`)
-      .outputOptions("-metadata", `genre=${metadata.genre}`)
-      .outputOptions("-metadata", `album=${metadata.album}`)
-      .on("end", () => {
-        console.log("Audio conversion finished");
-      })
-      .on("progress", (progress) => {
-        console.log("Processing: " + progress.timemark + "% done");
-      })
-      .on("error", (err) => {
-        console.error("An error occurred while converting audio", err);
-      })
-      .pipe(audioPassThrough, { end: true });
+    const ffmpegAudioProc = spawn(ffmpegPath, [
+      "-i",
+      "pipe:0",
+      "-vn",
+      "-codec:a",
+      "libmp3lame",
+      "-q:a",
+      "2",
+      "-metadata",
+      `title=${metadata.title}`,
+      "-metadata",
+      `artist=${metadata.artist}`,
+      "-metadata",
+      `author=${metadata.author}`,
+      "-metadata",
+      `year=${metadata.year}`,
+      "-metadata",
+      `genre=${metadata.genre}`,
+      "-metadata",
+      `album=${metadata.album}`,
+      "-f",
+      "mp3",
+      "pipe:1",
+    ]);
+    audioStream.pipe(ffmpegAudioProc.stdin);
+    ffmpegAudioProc.stdout.pipe(audioPassThrough, { end: true });
+    ffmpegAudioProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
+    ffmpegAudioProc.on("error", (err: Error) => console.error("ffmpeg audio error", err));
+    ffmpegAudioProc.on("end", () => console.log("Audio conversion finished"));
 
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(audioPassThrough as any, {
@@ -333,12 +350,19 @@ export async function GET(request: Request) {
       }
       await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, String(selectedFormat.itag));
 
-      await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, merged_file_path, HAS_NVIDIA_GPU, {
-        title: metadata.title,
-        url: url,
-        quality: quality,
-        qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
-      });
+      await mergeAudioVideo(
+        VIDEO_FILE_PATH,
+        AUDIO_FILE_PATH,
+        merged_file_path,
+        HAS_NVIDIA_GPU,
+        ffmpegPath,
+        {
+          title: metadata.title,
+          url: url,
+          quality: quality,
+          qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
+        }
+      );
     } else {
       merged_file_path = requestedFile.path;
     }
