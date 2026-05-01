@@ -1,59 +1,56 @@
 "use server";
 
 import { FormatData, VideoData } from "@/lib/types";
-import ytdl from "@distube/ytdl-core";
+import { getInnertube, extractVideoId } from "@/lib/innertube";
+import { getVideoFormats } from "@/lib/ytdlp-info";
+import { yt_validate } from "@/lib/serverUtils";
 import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
+
 export const getVideoInfos = async (url: string) => {
-  if (!(url.startsWith("https") && ytdl.validateURL(url))) {
+  if (!(await yt_validate(url))) {
     console.error("Invalid URL");
-    return {
-      error: "Invalid URL",
-    };
+    return { error: "Invalid URL" };
   }
 
-  const prisma = new PrismaClient();
+  const videoId = extractVideoId(url);
+  if (!videoId) {
+    return { error: "Invalid URL" };
+  }
 
-  const video = await ytdl.getBasicInfo(url);
+  const innertube = await getInnertube();
 
-  const formatMap = new Map();
-  (video.player_response.streamingData.adaptiveFormats as FormatData[]).forEach(
-    (format: FormatData) => {
-      if (!formatMap.has(format.qualityLabel)) {
-        formatMap.set(format.qualityLabel, format);
-      }
-    }
-  );
+  const [basicInfo, formats] = await Promise.all([
+    innertube.getBasicInfo(videoId),
+    getVideoFormats(url),
+  ]);
+
+  const details = basicInfo.basic_info;
+  const thumbnails = details.thumbnail ?? [];
 
   const videoData: VideoData = {
     video_details: {
-      title: video.videoDetails.title,
-      description: video.videoDetails.description || "",
-      duration: video.videoDetails.lengthSeconds,
+      title: details.title ?? "",
+      description: details.short_description ?? "",
+      duration: String(details.duration ?? 0),
       thumbnail:
-        video.videoDetails.thumbnails[video.videoDetails.thumbnails.length - 1]
-          .url,
-      author: video.videoDetails.author.name,
+        thumbnails[thumbnails.length - 1]?.url ?? thumbnails[0]?.url ?? "",
+      author: details.author ?? "",
     },
-    format: Array.from(formatMap.values()),
+    format: formats as FormatData[],
   };
 
-  const dbVideo = await prisma.video.findUnique({
-    where: {
-      id: video.videoDetails.videoId,
-    },
-  });
-
+  const dbVideo = await prisma.video.findUnique({ where: { id: videoId } });
   if (!dbVideo) {
     await prisma.video.create({
       data: {
-        id: video.videoDetails.videoId,
-        title: video.videoDetails.title,
+        id: videoId,
+        title: details.title ?? "Unknown",
         url: url,
         updatedAt: new Date(),
       },
     });
-    await prisma.$disconnect();
   }
 
   return JSON.parse(JSON.stringify(videoData));
