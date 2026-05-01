@@ -3,7 +3,7 @@
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
-import { PassThrough, type Readable } from "node:stream";
+import type { Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { prisma } from "@/lib/prisma";
@@ -244,6 +244,12 @@ export async function GET(request: Request) {
       throw new Error("Failed to download audio stream");
     }
 
+    const mp3TempPath = path.join(
+      TEMP_DIR,
+      "source",
+      `audio_${videoId}_${Date.now()}.mp3`,
+    );
+
     const ffmpegArgs = [
       "-i",
       "pipe:0",
@@ -277,26 +283,33 @@ export async function GET(request: Request) {
       `genre=${metadata.genre}`,
       "-metadata",
       `album=${metadata.album}`,
-      "-f",
-      "mp3",
-      "pipe:1",
+      "-y",
+      mp3TempPath,
     ];
 
-    const audioPassThrough = new PassThrough();
-    const ffmpegAudioProc = spawn(ffmpegPath, ffmpegArgs);
-    audioStream.pipe(ffmpegAudioProc.stdin);
-    ffmpegAudioProc.stdout.pipe(audioPassThrough, { end: true });
-    ffmpegAudioProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
-    ffmpegAudioProc.on("error", (err: Error) =>
-      console.error("ffmpeg audio error", err),
-    );
-    ffmpegAudioProc.on("close", () => {
-      console.log("Audio conversion finished");
-      if (hasThumb) cleanPreviousFiles([thumbPath]);
+    await new Promise<void>((resolve, reject) => {
+      const ffmpegAudioProc = spawn(ffmpegPath, ffmpegArgs);
+      audioStream.pipe(ffmpegAudioProc.stdin);
+      ffmpegAudioProc.stderr.on("data", (d: Buffer) =>
+        process.stdout.write(d),
+      );
+      ffmpegAudioProc.on("error", reject);
+      ffmpegAudioProc.on("close", (code) => {
+        console.log("Audio conversion finished");
+        if (hasThumb) cleanPreviousFiles([thumbPath]);
+        if (code !== 0) {
+          reject(new Error(`ffmpeg exited with code ${code}`));
+        } else {
+          resolve();
+        }
+      });
     });
 
+    const mp3Stream = fs.createReadStream(mp3TempPath);
+    mp3Stream.on("close", () => cleanPreviousFiles([mp3TempPath]));
+
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
-    return new NextResponse(audioPassThrough as any, {
+    return new NextResponse(mp3Stream as any, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
