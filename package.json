@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "knip": "knip",
-    "db:deploy": "npx prisma migrate deploy && npx prisma generate"
+    "db:deploy": "prisma migrate deploy && prisma generate"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.6",
