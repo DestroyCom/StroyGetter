@@ -7,17 +7,21 @@ import { PassThrough, type Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { prisma } from "@/lib/prisma";
-import { initializeConf, sanitizeFilename, selectYtDlpPath } from "@/lib/serverUtils";
+import {
+  initializeConf,
+  sanitizeFilename,
+  selectYtDlpPath,
+} from "@/lib/serverUtils";
 import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
 
-const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
+const PARENT_PATH =
+  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);
 
 let CONF = {
   isInitialized: false,
   ffmpegPath: "",
-  hasNvidiaCapabilities: false,
 };
 let _confInitPromise: Promise<typeof CONF> | null = null;
 const _inFlight = new Map<string, Promise<string>>();
@@ -43,7 +47,7 @@ const downloadStreams = async (
   url: string,
   audio_path: string,
   video_path: string,
-  formatSelector?: string
+  formatSelector?: string,
 ) => {
   const ytdl = selectYtDlpPath();
   formatSelector = formatSelector || "bv";
@@ -86,7 +90,10 @@ const downloadStreams = async (
   }, DOWNLOAD_TIMEOUT_MS);
 
   try {
-    await Promise.all([waitForStreamClose(audioStream), waitForStreamClose(videoStream)]);
+    await Promise.all([
+      waitForStreamClose(audioStream),
+      waitForStreamClose(videoStream),
+    ]);
   } finally {
     clearTimeout(timeoutHandle);
   }
@@ -101,7 +108,7 @@ const mergeAudioVideo = (
     title: string;
     url: string;
     quality: string;
-  }
+  },
 ) => {
   return new Promise<void>((resolve, reject) => {
     console.log("Merging audio and video streams into one file");
@@ -129,7 +136,11 @@ const mergeAudioVideo = (
         return;
       }
       const endTime = Date.now();
-      console.log("Time taken to merge:", (endTime - startTime) / 1000, "seconds");
+      console.log(
+        "Time taken to merge:",
+        (endTime - startTime) / 1000,
+        "seconds",
+      );
 
       await prisma.file.create({
         data: {
@@ -164,7 +175,8 @@ export async function GET(request: Request) {
 
   if (!CONF.isInitialized) {
     if (!_confInitPromise) _confInitPromise = initializeConf(CONF);
-    CONF = await _confInitPromise;
+    const conf = await _confInitPromise;
+    CONF = conf;
   }
 
   const ffmpegPath = CONF.ffmpegPath;
@@ -191,7 +203,29 @@ export async function GET(request: Request) {
       album: audioDetails.title ?? "Unknown album",
     };
 
-    const ytdl = await selectYtDlpPath();
+    const thumbnails = audioDetails.thumbnail ?? [];
+    const bestThumb = thumbnails.reduce(
+      (best, t) => ((t.width ?? 0) > (best.width ?? 0) ? t : best),
+      thumbnails[0] ?? { url: "" },
+    );
+    const thumbPath = path.join(TEMP_DIR, "source", `thumb_${videoId}.jpg`);
+    let hasThumb = false;
+    if (bestThumb?.url) {
+      try {
+        const thumbRes = await fetch(bestThumb.url);
+        if (thumbRes.ok) {
+          await fs.promises.writeFile(
+            thumbPath,
+            Buffer.from(await thumbRes.arrayBuffer()),
+          );
+          hasThumb = true;
+        }
+      } catch {
+        // proceed without artwork
+      }
+    }
+
+    const ytdl = selectYtDlpPath();
     const audioStream = ytdl.exec(url, {
       noCheckCertificates: true,
       noWarnings: true,
@@ -204,16 +238,27 @@ export async function GET(request: Request) {
       throw new Error("Failed to download audio stream");
     }
 
-    //Convert audio stream to mp3
-    const audioPassThrough = new PassThrough();
-    const ffmpegAudioProc = spawn(ffmpegPath, [
+    const ffmpegArgs = [
       "-i",
       "pipe:0",
-      "-vn",
+      ...(hasThumb ? ["-i", thumbPath] : []),
+      "-map",
+      "0:a",
+      ...(hasThumb ? ["-map", "1:0"] : []),
       "-codec:a",
       "libmp3lame",
       "-q:a",
       "2",
+      ...(hasThumb
+        ? [
+            "-id3v2_version",
+            "3",
+            "-metadata:s:v",
+            "title=Album cover",
+            "-metadata:s:v",
+            "comment=Cover (front)",
+          ]
+        : []),
       "-metadata",
       `title=${metadata.title}`,
       "-metadata",
@@ -229,19 +274,27 @@ export async function GET(request: Request) {
       "-f",
       "mp3",
       "pipe:1",
-    ]);
+    ];
+
+    const audioPassThrough = new PassThrough();
+    const ffmpegAudioProc = spawn(ffmpegPath, ffmpegArgs);
     audioStream.pipe(ffmpegAudioProc.stdin);
     ffmpegAudioProc.stdout.pipe(audioPassThrough, { end: true });
     ffmpegAudioProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
-    ffmpegAudioProc.on("error", (err: Error) => console.error("ffmpeg audio error", err));
-    ffmpegAudioProc.on("close", () => console.log("Audio conversion finished"));
+    ffmpegAudioProc.on("error", (err: Error) =>
+      console.error("ffmpeg audio error", err),
+    );
+    ffmpegAudioProc.on("close", () => {
+      console.log("Audio conversion finished");
+      if (hasThumb) cleanPreviousFiles([thumbPath]);
+    });
 
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(audioPassThrough as any, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          (metadata.title || "audio").normalize("NFKD")
+          (metadata.title || "audio").normalize("NFKD"),
         ).replace(/[\u0300-\u036f]/g, "")}.mp3"`,
       },
     });
@@ -292,39 +345,63 @@ export async function GET(request: Request) {
   const SANITIZED_TITLE = await sanitizeFilename(metadata.title || "video");
 
   const VIDEO_FILE_NAME = `video_${SANITIZED_TITLE}_${quality}_${Date.now()}`;
-  const VIDEO_FILE_PATH = path.join(TEMP_DIR, "source", `${VIDEO_FILE_NAME}.mp4`);
+  const VIDEO_FILE_PATH = path.join(
+    TEMP_DIR,
+    "source",
+    `${VIDEO_FILE_NAME}.mp4`,
+  );
 
   const AUDIO_FILE_NAME = `audio_${SANITIZED_TITLE}_${Date.now()}`;
-  const AUDIO_FILE_PATH = path.join(TEMP_DIR, "source", `${AUDIO_FILE_NAME}.mp3`);
+  const AUDIO_FILE_PATH = path.join(
+    TEMP_DIR,
+    "source",
+    `${AUDIO_FILE_NAME}.mp3`,
+  );
 
   const selectedFormat = formatMap.get(quality);
   if (!selectedFormat) {
     console.error(
-      `Cannot find the requested format: ${quality}. Available formats: ${Array.from(formatMap.keys()).join(", ")}`
+      `Cannot find the requested format: ${quality}. Available formats: ${Array.from(formatMap.keys()).join(", ")}`,
     );
     return new Response(
       `Cannot find the requested format. Available formats: ${Array.from(formatMap.keys()).join(", ")}`,
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${SANITIZED_TITLE}`;
-  const merged_file_path = path.join(TEMP_DIR, "cached", `${MERGED_FILE_NAME}.mp4`);
+  const merged_file_path = path.join(
+    TEMP_DIR,
+    "cached",
+    `${MERGED_FILE_NAME}.mp4`,
+  );
   const cacheKey = `${videoId}:${quality}`;
 
   const resolveFilePath = async (): Promise<string> => {
     const requestedFile = await prisma.file.findFirst({
       where: { video: { url }, quality },
     });
-    if (requestedFile && fs.existsSync(requestedFile.path)) return requestedFile.path;
+    if (requestedFile && fs.existsSync(requestedFile.path))
+      return requestedFile.path;
 
     try {
-      await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, String(selectedFormat.itag));
-      await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, merged_file_path, ffmpegPath, {
-        title: metadata.title,
+      await downloadStreams(
         url,
-        quality,
-      });
+        AUDIO_FILE_PATH,
+        VIDEO_FILE_PATH,
+        String(selectedFormat.itag),
+      );
+      await mergeAudioVideo(
+        VIDEO_FILE_PATH,
+        AUDIO_FILE_PATH,
+        merged_file_path,
+        ffmpegPath,
+        {
+          title: metadata.title,
+          url,
+          quality,
+        },
+      );
     } catch (err) {
       cleanPreviousFiles([VIDEO_FILE_PATH, AUDIO_FILE_PATH]);
       throw err;
@@ -347,12 +424,14 @@ export async function GET(request: Request) {
       headers: {
         "Content-Type": "video/mp4",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          (metadata.title || "video").normalize("NFKD")
+          (metadata.title || "video").normalize("NFKD"),
         ).replace(/[\u0300-\u036f]/g, "")}.mp4"`,
       },
     });
   } catch (error) {
     console.error("Error occurred:", error);
-    return new Response("An error occurred while processing the video", { status: 500 });
+    return new Response("An error occurred while processing the video", {
+      status: 500,
+    });
   }
 }

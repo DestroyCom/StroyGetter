@@ -43,11 +43,9 @@ CRON=0 0 * * *                        # Cleanup schedule (default: daily prod, e
 
 **Temp directory structure**: Dev uses `./temp/{source,cached}`, production uses `/temp/stroygetter/{source,cached}`. Created automatically on first request via `initializeConf()`.
 
-**File caching**: Merged MP4s are stored in `temp/cached/` and indexed in the `File` table by hash. Repeat requests for the same URL+quality are served from cache without re-downloading.
+**File caching**: Merged MP4s are stored in `temp/cached/` and indexed in the `File` table by URL+quality. Repeat requests for the same URL+quality are served from cache without re-downloading.
 
-**GPU acceleration**: On startup, detects NVIDIA GPU via `nvidia-smi` + checks `ffmpeg -hwaccels` for CUDA/NVENC. Uses `h264_nvenc` if available, otherwise `libx264 -preset ultrafast`.
-
-**Audio path**: `quality=audio` streams directly (ffmpeg → PassThrough → Response). No temp file written.
+**Audio path**: `quality=audio` streams directly (ffmpeg → PassThrough → Response). Thumbnail fetched to a temp file for album art embedding, deleted after ffmpeg closes.
 
 ## Prisma 7 Notes
 
