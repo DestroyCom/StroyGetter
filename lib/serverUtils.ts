@@ -1,7 +1,7 @@
 "use server";
 import { execSync } from "child_process";
-import * as os from "os";
 import * as fs from "fs";
+import * as os from "os";
 import path from "path";
 import { create as createYoutubeDl } from "youtube-dl-exec";
 import { initializeCleanup } from "@/scripts/cleanup";
@@ -12,8 +12,7 @@ type Conf = {
   hasNvidiaCapabilities: boolean;
 };
 
-const PARENT_PATH =
-  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
+const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);
 
 const createTempDir = (tmp_dir: string) => {
@@ -52,8 +51,7 @@ async function detectFfmpegCapabilities() {
 
   const hwaccelOutput = execSync("ffmpeg -hwaccels").toString();
 
-  const hasCuda =
-    hwaccelOutput.includes("cuda") || hwaccelOutput.includes("nvenc");
+  const hasCuda = hwaccelOutput.includes("cuda") || hwaccelOutput.includes("nvenc");
 
   if (!hasCuda) {
     console.warn("CUDA or NVENC not detected in hardware acceleration output.");
@@ -74,8 +72,7 @@ async function detectNvidiaGpuAvailable() {
 }
 
 async function locateFfmpegPath() {
-  const detectCommand =
-    os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
+  const detectCommand = os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
 
   const localPath = execSync(detectCommand).toString().trim();
 
@@ -83,26 +80,28 @@ async function locateFfmpegPath() {
 }
 
 export async function sanitizeFilename(filename: string) {
-  return filename
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[<>:"\/\\|?*\x00-\x1F]/g, "_")
-    .replace(/[\u200B-\u200D\uFEFF]/g, "")
-    .replace(/\s+/g, "_")
-    .slice(0, 255);
+  return (
+    filename
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional control char sanitization
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+      .replace(/[\u200B-\u200D\uFEFF]/g, "")
+      .replace(/\s+/g, "_")
+      .slice(0, 255)
+  );
 }
 
 const video_id_pattern = /^[a-zA-Z\d_-]{11,12}$/;
 const video_pattern =
-  /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|shorts\/|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$/;
+  /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|shorts\/|embed\/|live\/|v\/)?)([\w-]+)(\S+)?$/;
 export async function yt_validate(url: string): Promise<"video" | false> {
   const url_ = url.trim();
   if (url_.indexOf("list=") === -1) {
     if (url_.startsWith("https")) {
       if (url_.match(video_pattern)) {
         let id: string;
-        if (url_.includes("youtu.be/"))
-          id = url_.split("youtu.be/")[1].split(/(\?|\/|&)/)[0];
+        if (url_.includes("youtu.be/")) id = url_.split("youtu.be/")[1].split(/(\?|\/|&)/)[0];
         else if (url_.includes("youtube.com/embed/"))
           id = url_.split("youtube.com/embed/")[1].split(/(\?|\/|&)/)[0];
         else if (url_.includes("youtube.com/shorts/"))
@@ -117,19 +116,13 @@ export async function yt_validate(url: string): Promise<"video" | false> {
 }
 
 export async function selectYtDlpPath() {
-  let youtubedl;
+  let youtubedl: ReturnType<typeof createYoutubeDl>;
 
   if (process.env.NODE_ENV === "development") {
-    const devBinaryPath = path.join(
-      process.cwd(),
-      "node_modules/youtube-dl-exec/bin/yt-dlp"
-    );
+    const devBinaryPath = path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
     youtubedl = createYoutubeDl(devBinaryPath);
   } else {
-    const prodBinaryPath = path.join(
-      process.cwd(),
-      "node_modules/youtube-dl-exec/bin/yt-dlp"
-    );
+    const prodBinaryPath = path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
     youtubedl = createYoutubeDl(prodBinaryPath);
   }
 

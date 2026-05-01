@@ -1,25 +1,20 @@
 "use server";
 
-import ffmpeg from "fluent-ffmpeg";
-import { PassThrough, Readable } from "stream";
-import path from "path";
-import * as fs from "fs";
-import {
-  initializeConf,
-  sanitizeFilename,
-  selectYtDlpPath,
-} from "@/lib/serverUtils";
-import { FormatData, VideoData } from "@/lib/types";
-import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
-import { getInnertube, extractVideoId } from "@/lib/innertube";
+import ffmpeg from "fluent-ffmpeg";
+import * as fs from "fs";
+import { NextResponse } from "next/server";
+import path from "path";
+import { PassThrough, type Readable } from "stream";
+import { extractVideoId, getInnertube } from "@/lib/innertube";
+import { initializeConf, sanitizeFilename, selectYtDlpPath } from "@/lib/serverUtils";
+import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
 
 const prisma = new PrismaClient();
 
-const PARENT_PATH =
-  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
+const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);
 
 let CONF = {
@@ -92,10 +87,7 @@ const downloadStreams = async (
   audioStream.pipe(audioWriteStream);
   videoStream.pipe(videoWriteStream);
 
-  await Promise.all([
-    waitForStreamClose(audioStream),
-    waitForStreamClose(videoStream),
-  ]);
+  await Promise.all([waitForStreamClose(audioStream), waitForStreamClose(videoStream)]);
 
   return;
 };
@@ -120,19 +112,9 @@ const mergeAudioVideo = (
     if (hasNvidiaGpu) {
       ffmpegCommand
         .inputOptions(["-hwaccel cuda", "-hwaccel_device 0", "-c:v h264_cuvid"])
-        .outputOptions([
-          "-c:v h264_nvenc",
-          "-preset fast",
-          "-cq 23",
-          "-c:a copy",
-        ]);
+        .outputOptions(["-c:v h264_nvenc", "-preset fast", "-cq 23", "-c:a copy"]);
     } else {
-      ffmpegCommand.outputOptions([
-        "-c:v libx264",
-        "-preset ultrafast",
-        "-crf 23",
-        "-c:a copy",
-      ]);
+      ffmpegCommand.outputOptions(["-c:v libx264", "-preset ultrafast", "-crf 23", "-c:a copy"]);
     }
 
     ffmpegCommand
@@ -255,7 +237,7 @@ export async function GET(request: Request) {
       })
       .pipe(audioPassThrough, { end: true });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(audioPassThrough as any, {
       headers: {
         "Content-Type": "audio/mpeg",
@@ -311,25 +293,13 @@ export async function GET(request: Request) {
   const SANITIZED_TITLE = await sanitizeFilename(metadata.title || "video");
 
   const VIDEO_FILE_NAME = `video_${SANITIZED_TITLE}_${quality}_${Date.now()}`;
-  const VIDEO_FILE_PATH = path.join(
-    TEMP_DIR,
-    "source",
-    `${VIDEO_FILE_NAME}.mp4`
-  );
+  const VIDEO_FILE_PATH = path.join(TEMP_DIR, "source", `${VIDEO_FILE_NAME}.mp4`);
 
   const AUDIO_FILE_NAME = `audio_${SANITIZED_TITLE}_${Date.now()}`;
-  const AUDIO_FILE_PATH = path.join(
-    TEMP_DIR,
-    "source",
-    `${AUDIO_FILE_NAME}.mp3`
-  );
+  const AUDIO_FILE_PATH = path.join(TEMP_DIR, "source", `${AUDIO_FILE_NAME}.mp3`);
 
   const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${videoData.video_details.title}`;
-  let merged_file_path = path.join(
-    TEMP_DIR,
-    "cached",
-    `${MERGED_FILE_NAME}.mp4`
-  );
+  let merged_file_path = path.join(TEMP_DIR, "cached", `${MERGED_FILE_NAME}.mp4`);
   const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
 
   try {
@@ -361,32 +331,21 @@ export async function GET(request: Request) {
           { status: 400 }
         );
       }
-      await downloadStreams(
-        url,
-        AUDIO_FILE_PATH,
-        VIDEO_FILE_PATH,
-        String(selectedFormat.itag)
-      );
+      await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, String(selectedFormat.itag));
 
-      await mergeAudioVideo(
-        VIDEO_FILE_PATH,
-        AUDIO_FILE_PATH,
-        merged_file_path,
-        HAS_NVIDIA_GPU,
-        {
-          title: metadata.title,
-          url: url,
-          quality: quality,
-          qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
-        }
-      );
+      await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, merged_file_path, HAS_NVIDIA_GPU, {
+        title: metadata.title,
+        url: url,
+        quality: quality,
+        qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
+      });
     } else {
       merged_file_path = requestedFile.path;
     }
 
     const fileStream = fs.createReadStream(merged_file_path);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(fileStream as any, {
       headers: {
         "Content-Type": "video/mp4",

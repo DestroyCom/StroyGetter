@@ -1,10 +1,10 @@
 "use client";
 
-import { searchQuery } from "@/functions/getYoutubeUrl";
 import clsx from "clsx";
 import { ClipboardCopy } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { searchQuery } from "@/functions/getYoutubeUrl";
 
 export const GetterInput = () => {
   const router = useRouter();
@@ -15,6 +15,7 @@ export const GetterInput = () => {
   const [url, setUrl] = useState(videoUrl || "");
   const [permission, setPermission] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: checkPermission is stable per render cycle
   useEffect(() => {
     checkPermission();
   }, []);
@@ -22,7 +23,7 @@ export const GetterInput = () => {
   const checkPermission = async () => {
     const queryOpts = { name: "clipboard-read", allowWithoutGesture: false };
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error
     const permissionStatus = await navigator.permissions.query(queryOpts);
 
     if (permissionStatus.state === "granted") {
@@ -93,7 +94,7 @@ export const GetterInput = () => {
         className="border-1 m-auto mx-auto rounded-md border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white transition-all duration-200 ease-in-out hover:cursor-pointer hover:border-[#205D83] hover:bg-[#102F42] hover:ring-[#205D83] focus:outline-none focus:ring-2 focus:ring-blue-300 sm:w-auto disabled:opacity-50"
         disabled={url.length === 0}
       >
-        {false ? "Loading..." : "Search"}
+        Search
       </button>
     </form>
   );
