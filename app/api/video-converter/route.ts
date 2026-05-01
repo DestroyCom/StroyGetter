@@ -1,6 +1,5 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
 import { spawn } from "child_process";
 import { createHash } from "crypto";
 import * as fs from "fs";
@@ -8,11 +7,10 @@ import { NextResponse } from "next/server";
 import path from "path";
 import { PassThrough, type Readable } from "stream";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
+import { prisma } from "@/lib/prisma";
 import { initializeConf, sanitizeFilename, selectYtDlpPath } from "@/lib/serverUtils";
 import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
-
-const prisma = new PrismaClient();
 
 const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);

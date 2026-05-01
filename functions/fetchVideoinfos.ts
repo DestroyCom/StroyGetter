@@ -1,12 +1,10 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
+import { prisma } from "@/lib/prisma";
 import { yt_validate } from "@/lib/serverUtils";
 import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
-
-const prisma = new PrismaClient();
 
 export const getVideoInfos = async (url: string) => {
   if (!(await yt_validate(url))) {

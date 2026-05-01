@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^13.13.0",
+    "@libsql/client": "^0.17.3",
     "@next/third-parties": "16.2.4",
+    "@prisma/adapter-libsql": "^7.8.0",
     "@radix-ui/react-progress": "^1.1.8",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
@@ -61,7 +63,10 @@
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
-      "prisma"
+      "ffmpeg-static",
+      "prisma",
+      "sharp",
+      "youtube-dl-exec"
     ]
   }
 }
