@@ -1,0 +1,13 @@
+.git
+.github
+.next
+node_modules
+temp
+data
+docker_videos
+coverage
+docs
+*.log
+*.md
+.env.local
+.env.*.local

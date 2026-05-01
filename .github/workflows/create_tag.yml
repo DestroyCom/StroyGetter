@@ -1,31 +1,34 @@
-name: Create new tag based on last commit message
+name: Create tag from commit message
 
 on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  deploy:
+  tag:
+    name: Create tag
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: prod
           fetch-depth: 0
-      - name: Get last commit message
-        id: commit_message
+
+      - name: Get version from last commit message
+        id: commit
         run: |
           MESSAGE=$(git log -1 --pretty=format:'%s')
-          CLEANED_MESSAGE=$(echo "$MESSAGE" | sed -e 's/[^a-zA-Z0-9.-]/-/g')
-          echo "COMMIT_MSG=${CLEANED_MESSAGE}" >> $GITHUB_ENV
-      - name: Create or update major version
+          CLEANED=$(echo "$MESSAGE" | sed -e 's/[^a-zA-Z0-9.-]/-/g')
+          echo "tag=${CLEANED}" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update tag
         uses: joutvhu/create-tag@v1
         with:
-          tag_name: ${{ env.COMMIT_MSG }}
-          message: ${{ env.COMMIT_MSG }}
+          tag_name: ${{ steps.commit.outputs.tag }}
+          message: ${{ steps.commit.outputs.tag }}
           on_tag_exists: update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

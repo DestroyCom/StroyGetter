@@ -8,7 +8,6 @@ import { initializeCleanup } from "@/scripts/cleanup";
 type Conf = {
   isInitialized: boolean;
   ffmpegPath: string;
-  hasNvidiaCapabilities: boolean;
 };
 
 const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
@@ -36,39 +35,12 @@ export async function initializeConf(conf: Conf) {
   createTempDir(TEMP_DIR);
 
   conf.ffmpegPath = await locateFfmpegPath();
-  conf.hasNvidiaCapabilities = await detectFfmpegCapabilities();
   conf.isInitialized = true;
   console.log("Server configuration initialized.");
 
   return conf;
 }
 
-async function detectFfmpegCapabilities() {
-  if (!(await detectNvidiaGpuAvailable())) {
-    return false;
-  }
-
-  const hwaccelOutput = execSync("ffmpeg -hwaccels").toString();
-
-  const hasCuda = hwaccelOutput.includes("cuda") || hwaccelOutput.includes("nvenc");
-
-  if (!hasCuda) {
-    console.warn("CUDA or NVENC not detected in hardware acceleration output.");
-  }
-  console.log("CUDA or NVENC detected in hardware acceleration output.");
-
-  return hasCuda;
-}
-
-async function detectNvidiaGpuAvailable() {
-  try {
-    execSync("nvidia-smi");
-    return true;
-  } catch {
-    console.error("nvidia-smi not found. NVIDIA GPU not available.");
-    return false;
-  }
-}
 
 async function locateFfmpegPath(): Promise<string> {
   try {

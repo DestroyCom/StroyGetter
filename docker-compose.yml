@@ -4,18 +4,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: on-failure
+    restart: unless-stopped
     ports:
-      - 3002:3000
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
+      - "3002:3000"
+    env_file: .env
     volumes:
-      - ./docker_videos:/temp/stroygetter:rw
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      - ./data:/temp/stroygetter:rw
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
