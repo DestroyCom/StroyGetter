@@ -9,5 +9,12 @@ coverage
 docs
 *.log
 *.md
+.env
 .env.local
 .env.*.local
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*~
+*.swp

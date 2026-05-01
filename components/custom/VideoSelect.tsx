@@ -160,7 +160,7 @@ export const VideoSelect = () => {
 
                   return (
                     <SelectItem
-                      key={format.qualityLabel}
+                      key={format.itag.toString()}
                       value={format.itag.toString()}
                       id={`quality-select-${format.qualityLabel}`}
                     >

@@ -15,32 +15,16 @@ export const GetterInput = () => {
   const [url, setUrl] = useState(videoUrl || "");
   const [permission, setPermission] = useState(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: checkPermission is stable per render cycle
   useEffect(() => {
-    checkPermission();
-  }, []);
-
-  const checkPermission = async () => {
     const queryOpts = { name: "clipboard-read", allowWithoutGesture: false };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const permissionStatus = await navigator.permissions.query(queryOpts);
-
-    if (permissionStatus.state === "granted") {
-      setPermission(true);
-    } else {
-      setPermission(false);
-    }
-
-    // Listen for changes to the permission state
-    permissionStatus.onchange = () => {
-      if (permissionStatus.state === "granted") {
-        setPermission(true);
-      } else {
-        setPermission(false);
-      }
-    };
-  };
+    // @ts-expect-error clipboard-read is not in the standard PermissionName type
+    navigator.permissions.query(queryOpts).then((permissionStatus) => {
+      setPermission(permissionStatus.state === "granted");
+      permissionStatus.onchange = () => {
+        setPermission(permissionStatus.state === "granted");
+      };
+    });
+  }, []);
 
   const submitUrl = async (url: string) => {
     const getUrl = await searchQuery(url);

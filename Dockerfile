@@ -20,7 +20,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm prisma generate
-RUN pnpm prisma migrate deploy
 RUN pnpm run build
 
 # ── runner ───────────────────────────────────────────────────────────────────
@@ -46,9 +45,19 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/youtube-dl-exec/bin/yt-dlp \
     ./node_modules/youtube-dl-exec/bin/yt-dlp
 
+# prisma CLI (required by entrypoint to run migrate deploy at startup)
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 RUN mkdir -p /temp/stroygetter/source /temp/stroygetter/cached \
     && chown -R nextjs:nodejs /temp/stroygetter/
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
 USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["./docker-entrypoint.sh"]

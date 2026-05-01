@@ -43,11 +43,13 @@ export async function initializeConf(conf: Conf) {
 
 
 async function locateFfmpegPath(): Promise<string> {
+  const detectCommand = os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
   try {
-    const detectCommand = os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
     const localPath = execSync(detectCommand).toString().trim();
     if (localPath) return localPath;
-  } catch {}
+  } catch (err) {
+    console.debug(`System FFmpeg lookup via "${detectCommand}" failed: ${err instanceof Error ? err.message : err}`);
+  }
   const { default: staticPath } = await import("ffmpeg-static");
   if (staticPath) return staticPath;
   throw new Error("FFmpeg not found in PATH and ffmpeg-static unavailable");
@@ -93,8 +95,14 @@ let _ytdl: ReturnType<typeof createYoutubeDl> | null = null;
 
 export function selectYtDlpPath() {
   if (!_ytdl) {
-    const binaryPath = path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
-    _ytdl = createYoutubeDl(binaryPath);
+    const filename = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
+    const candidates = [
+      path.join(process.cwd(), ".next/server/bin", filename),
+      path.join(process.cwd(), "node_modules/youtube-dl-exec/bin", filename),
+    ];
+    const resolved = candidates.find((p) => fs.existsSync(p));
+    if (!resolved) throw new Error(`yt-dlp binary not found. Searched: ${candidates.join(", ")}`);
+    _ytdl = createYoutubeDl(resolved);
   }
   return _ytdl;
 }

@@ -25,10 +25,12 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
   return rawFormats
     .filter((f) => f.vcodec && f.vcodec !== "none" && f.acodec === "none" && f.height)
     .reduce<FormatData[]>((acc, f) => {
+      const itag = parseInt(f.format_id, 10);
+      if (!Number.isFinite(itag)) return acc;
       const label = f.format_note || `${f.height}p`;
       if (!seen.has(label)) {
         seen.add(label);
-        acc.push({ itag: parseInt(f.format_id, 10), qualityLabel: label });
+        acc.push({ itag, qualityLabel: label });
       }
       return acc;
     }, []);

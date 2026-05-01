@@ -9,9 +9,12 @@ services:
       - "3002:3000"
     env_file: .env
     volumes:
+      # Data directory for cached downloads and SQLite DB.
+      # Previously mapped to ./docker_videos — if upgrading, move that folder:
+      #   mv ./docker_videos ./data
       - ./data:/temp/stroygetter:rw
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3

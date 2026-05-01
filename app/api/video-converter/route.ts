@@ -36,8 +36,17 @@ const cleanPreviousFiles = (oldPaths: string[]) => {
 
 const waitForStreamClose = (stream: Readable) => {
   return new Promise<void>((resolve, reject) => {
-    stream.on("end", resolve);
-    stream.on("error", reject);
+    const cleanup = () => {
+      stream.removeListener("end", onEnd);
+      stream.removeListener("close", onClose);
+      stream.removeListener("error", onError);
+    };
+    const onEnd = () => { cleanup(); resolve(); };
+    const onClose = () => { cleanup(); resolve(); };
+    const onError = (err: Error) => { cleanup(); reject(err); };
+    stream.once("end", onEnd);
+    stream.once("close", onClose);
+    stream.once("error", onError);
   });
 };
 
@@ -326,12 +335,6 @@ export async function GET(request: Request) {
     },
     format: formats as FormatData[],
   };
-
-  if (!videoData) {
-    return new Response("An error occurred while fetching video data", {
-      status: 500,
-    });
-  }
 
   const metadata = {
     title: details.title ?? "Unknown title",

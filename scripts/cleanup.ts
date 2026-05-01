@@ -26,10 +26,18 @@ export const initializeCleanup = async () => {
       });
 
       for (const file of oldFiles) {
-        if (fs.existsSync(file.path)) {
-          fs.unlinkSync(file.path);
+        try {
+          await fs.promises.unlink(file.path);
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+            console.error(`Failed to delete file ${file.path}:`, err);
+          }
         }
-        await prisma.file.delete({ where: { id: file.id } });
+        try {
+          await prisma.file.delete({ where: { id: file.id } });
+        } catch (err) {
+          console.error(`Failed to delete DB record ${file.id}:`, err);
+        }
       }
     } catch (error) {
       console.error("Error during cleanup:", error);

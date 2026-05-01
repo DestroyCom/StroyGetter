@@ -7,11 +7,21 @@ on:
         description: Tag to use for the image
         required: false
         type: string
+      push_latest:
+        description: Also push the "latest" tag
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       tag:
         description: Tag to use for the image
         required: false
+      push_latest:
+        description: Also push the "latest" tag
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -50,7 +60,7 @@ jobs:
           images: destcom/stroygetter
           tags: |
             type=raw,value=${{ inputs.tag || steps.version.outputs.value }}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ inputs.push_latest != false }}
 
       - uses: docker/build-push-action@v6
         with:
