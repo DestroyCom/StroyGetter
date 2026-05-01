@@ -81,8 +81,9 @@ docker-compose up -d
 ```
 
 App is available on port **3002**.  
-Videos are persisted in `./docker_videos` (mounted as `/temp/stroygetter`).
+Cached downloads and the SQLite database are persisted in `./data` (mounted as `/temp/stroygetter`).
 
+> **Upgrade note:** If you previously used `./docker_videos`, move or copy its contents into `./data` to keep existing cached files and database state.
 ---
 
 ## Releasing a new version
