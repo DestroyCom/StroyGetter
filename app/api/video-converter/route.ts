@@ -1,21 +1,19 @@
 "use server";
 
-import ffmpeg from "fluent-ffmpeg";
-import * as oldYtdl from "@distube/ytdl-core";
-import { PassThrough, Readable } from "stream";
-import path from "path";
-import * as fs from "fs";
+import { spawn } from "node:child_process";
+import * as fs from "node:fs";
+import path from "node:path";
+import type { Readable } from "node:stream";
+import { NextResponse } from "next/server";
+import { extractVideoId, getInnertube } from "@/lib/innertube";
+import { prisma } from "@/lib/prisma";
 import {
   initializeConf,
   sanitizeFilename,
   selectYtDlpPath,
 } from "@/lib/serverUtils";
-import { FormatData, VideoData } from "@/lib/types";
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { createHash } from "crypto";
-
-const prisma = new PrismaClient();
+import type { FormatData, VideoData } from "@/lib/types";
+import { getVideoFormats } from "@/lib/ytdlp-info";
 
 const PARENT_PATH =
   process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
@@ -24,19 +22,9 @@ const TEMP_DIR = path.join(PARENT_PATH);
 let CONF = {
   isInitialized: false,
   ffmpegPath: "",
-  hasNvidiaCapabilities: false,
 };
-
-const generateFileHash = (filePath: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const hash = createHash("sha256");
-    const stream = fs.createReadStream(filePath);
-
-    stream.on("data", (data) => hash.update(data));
-    stream.on("end", () => resolve(hash.digest("hex")));
-    stream.on("error", (err) => reject(err));
-  });
-};
+let _confInitPromise: Promise<typeof CONF> | null = null;
+const _inFlight = new Map<string, Promise<string>>();
 
 const cleanPreviousFiles = (oldPaths: string[]) => {
   oldPaths.forEach((oldPath) => {
@@ -47,39 +35,51 @@ const cleanPreviousFiles = (oldPaths: string[]) => {
 };
 
 const waitForStreamClose = (stream: Readable) => {
-  return new Promise<void>((resolve) => {
-    stream.on("end", () => {
-      resolve();
-    });
+  return new Promise<void>((resolve, reject) => {
+    const cleanup = () => {
+      stream.removeListener("end", onEnd);
+      stream.removeListener("close", onClose);
+      stream.removeListener("error", onError);
+    };
+    const onEnd = () => { cleanup(); resolve(); };
+    const onClose = () => { cleanup(); resolve(); };
+    const onError = (err: Error) => { cleanup(); reject(err); };
+    stream.once("end", onEnd);
+    stream.once("close", onClose);
+    stream.once("error", onError);
   });
 };
+
+const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 
 const downloadStreams = async (
   url: string,
   audio_path: string,
   video_path: string,
-  formatSelector?: string
+  formatSelector?: string,
 ) => {
-  const ytdl = await selectYtDlpPath();
+  const ytdl = selectYtDlpPath();
   formatSelector = formatSelector || "bv";
 
-  const audioStream = ytdl.exec(url, {
+  const audioProc = ytdl.exec(url, {
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-    format: "ba",
+    format: "ba[ext=m4a]/ba[acodec^=mp4a]/ba",
     output: "-",
-  }).stdout;
+  });
 
-  const videoStream = ytdl.exec(url, {
+  const videoProc = ytdl.exec(url, {
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
     format: formatSelector,
     output: "-",
-  }).stdout;
+  });
+
+  const audioStream = audioProc.stdout;
+  const videoStream = videoProc.stdout;
+
   if (!audioStream || !videoStream) {
     throw new Error("Failed to download audio or video stream");
   }
@@ -91,87 +91,80 @@ const downloadStreams = async (
   audioStream.pipe(audioWriteStream);
   videoStream.pipe(videoWriteStream);
 
-  await Promise.all([
-    waitForStreamClose(audioStream),
-    waitForStreamClose(videoStream),
-  ]);
+  const timeoutHandle = setTimeout(() => {
+    audioProc.kill();
+    videoProc.kill();
+  }, DOWNLOAD_TIMEOUT_MS);
 
-  return;
+  try {
+    await Promise.all([
+      waitForStreamClose(audioStream),
+      waitForStreamClose(videoStream),
+    ]);
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 };
 
 const mergeAudioVideo = (
   video_path: string,
   audio_path: string,
   merged_path: string,
-  hasNvidiaGpu: boolean,
+  ffmpegPath: string,
   queryData: {
     title: string;
     url: string;
     quality: string;
-    qualityLabel: string;
-  }
+  },
 ) => {
   return new Promise<void>((resolve, reject) => {
     console.log("Merging audio and video streams into one file");
     const startTime = Date.now();
-    const ffmpegCommand = ffmpeg().input(video_path).input(audio_path);
 
-    if (hasNvidiaGpu) {
-      ffmpegCommand
-        .inputOptions(["-hwaccel cuda", "-hwaccel_device 0", "-c:v h264_cuvid"])
-        .outputOptions([
-          "-c:v h264_nvenc",
-          "-preset fast",
-          "-cq 23",
-          "-c:a copy",
-        ]);
-    } else {
-      ffmpegCommand.outputOptions([
-        "-c:v libx264",
-        "-preset ultrafast",
-        "-crf 23",
-        "-c:a copy",
-      ]);
-    }
+    const args = [
+      "-i",
+      video_path,
+      "-i",
+      audio_path,
+      "-c:v",
+      "copy",
+      "-c:a",
+      "copy",
+      "-y",
+      merged_path,
+    ];
 
-    ffmpegCommand
-      .output(merged_path)
-      .on("end", async () => {
-        const endTime = Date.now();
-        const timeTaken = (endTime - startTime) / 1000;
-        console.log("Time taken to merge:", timeTaken, "seconds");
+    const proc = spawn(ffmpegPath, args);
+    proc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
+    proc.on("error", reject);
+    proc.on("close", async (code: number | null) => {
+      if (code !== 0) {
+        reject(new Error(`ffmpeg exited with code ${code}`));
+        return;
+      }
+      const endTime = Date.now();
+      console.log(
+        "Time taken to merge:",
+        (endTime - startTime) / 1000,
+        "seconds",
+      );
 
-        const fileHash = await generateFileHash(merged_path);
-        console.log("✅ Hash du fichier généré :", fileHash);
-
-        await prisma.file.create({
-          data: {
-            path: merged_path,
-            hash: fileHash,
-            quality: queryData.quality,
-            qualityLabel: queryData.qualityLabel,
-            video: {
-              connectOrCreate: {
-                where: {
-                  url: queryData.url,
-                },
-                create: {
-                  title: queryData.title,
-                  url: queryData.url,
-                },
-              },
+      await prisma.file.create({
+        data: {
+          path: merged_path,
+          quality: queryData.quality,
+          video: {
+            connectOrCreate: {
+              where: { url: queryData.url },
+              create: { title: queryData.title, url: queryData.url },
             },
           },
-        });
+        },
+      });
 
-        cleanPreviousFiles([video_path, audio_path]);
-        resolve();
-      })
-      .on("error", (err) => {
-        console.error("An error occurred while merging audio and video", err);
-        reject(err);
-      })
-      .run();
+      cleanPreviousFiles([video_path, audio_path]);
+      resolve();
+    });
   });
 };
 
@@ -187,71 +180,62 @@ export async function GET(request: Request) {
     return new Response("Missing quality parameter", { status: 400 });
   }
 
-  if (CONF.isInitialized === false) {
-    CONF = await initializeConf(CONF);
+  if (!CONF.isInitialized) {
+    if (!_confInitPromise) _confInitPromise = initializeConf(CONF);
+    const conf = await _confInitPromise;
+    CONF = conf;
   }
 
   const ffmpegPath = CONF.ffmpegPath;
   if (!ffmpegPath) {
     console.error("FFmpeg path not found");
     return new Response("An error occurred in the server", { status: 500 });
-  } else {
-    ffmpeg.setFfmpegPath(ffmpegPath);
   }
 
-  const video = await oldYtdl.getBasicInfo(url);
-  const formatMap = new Map();
-  (video.player_response.streamingData.adaptiveFormats as FormatData[]).forEach(
-    (format: FormatData) => {
-      if (format.qualityLabel && !formatMap.has(format.qualityLabel)) {
-        formatMap.set(format.qualityLabel, format);
-      }
-      const itagKey = String(format.itag);
-      if (!formatMap.has(itagKey)) {
-        formatMap.set(itagKey, format);
-      }
-    }
-  );
-
-  const videoData: VideoData = {
-    video_details: {
-      id: video.videoDetails.videoId,
-      title: video.videoDetails.title,
-      description: video.videoDetails.description || "",
-      duration: video.videoDetails.lengthSeconds,
-      thumbnail: video.videoDetails.thumbnails[0].url,
-      author: video.videoDetails.author.name,
-    },
-    format: Array.from(formatMap.values()),
-  };
-
-  if (!videoData) {
-    return new Response("An error occurred while fetching video data", {
-      status: 500,
-    });
+  const videoId = extractVideoId(url);
+  if (!videoId) {
+    return new Response("Invalid URL", { status: 400 });
   }
 
-  const date =
-    video.player_response.microformat.playerMicroformatRenderer.publishDate ||
-    new Date().toISOString();
-
-  const metadata = {
-    title: videoData.video_details.title || "Unknown title",
-    artist: videoData.video_details.author || "Unknown artist",
-    author: videoData.video_details.author || "Unknown author",
-    year: date.split("T")[0],
-    genre: video.videoDetails.keywords
-      ? video.videoDetails.keywords.join(", ")
-      : "Unknown genre",
-    album: videoData.video_details.title || "Unknown album",
-  };
+  const innertube = await getInnertube();
 
   if (quality === "audio") {
-    const ytdl = await selectYtDlpPath();
+    const audioDetails = (await innertube.getBasicInfo(videoId)).basic_info;
+    const metadata = {
+      title: audioDetails.title ?? "Unknown title",
+      artist: audioDetails.author ?? "Unknown artist",
+      author: audioDetails.author ?? "Unknown author",
+      year: new Date().getFullYear().toString(),
+      genre: "Unknown genre",
+      album: audioDetails.title ?? "Unknown album",
+    };
+
+    const thumbnails = audioDetails.thumbnail ?? [];
+    const bestThumb = thumbnails.reduce(
+      (best, t) => ((t.width ?? 0) > (best.width ?? 0) ? t : best),
+      thumbnails[0] ?? { url: "" },
+    );
+    const thumbPath = path.join(TEMP_DIR, "source", `thumb_${videoId}.jpg`);
+    let hasThumb = false;
+    if (bestThumb?.url) {
+      try {
+        const thumbRes = await fetch(bestThumb.url);
+        if (thumbRes.ok) {
+          await fs.promises.writeFile(
+            thumbPath,
+            Buffer.from(await thumbRes.arrayBuffer()),
+          );
+          hasThumb = true;
+        }
+      } catch {
+        // proceed without artwork
+      }
+    }
+
+    const ytdl = selectYtDlpPath();
     const audioStream = ytdl.exec(url, {
       noCheckCertificates: true,
       noWarnings: true,
-      preferFreeFormats: true,
       addHeader: ["referer:youtube.com", "user-agent:googlebot"],
       format: "ba",
       output: "-",
@@ -260,42 +244,116 @@ export async function GET(request: Request) {
       throw new Error("Failed to download audio stream");
     }
 
-    //Convert audio stream to mp3
-    const audioPassThrough = new PassThrough();
-    ffmpeg(audioStream)
-      .setFfmpegPath(ffmpegPath)
-      .audioCodec("libmp3lame")
-      .format("mp3")
-      .outputOptions("-preset", "ultrafast")
-      .outputOptions("-metadata", `title=${metadata.title}`)
-      .outputOptions("-metadata", `artist=${metadata.artist}`)
-      .outputOptions("-metadata", `author=${metadata.author}`)
-      .outputOptions("-metadata", `year=${metadata.year}`)
-      .outputOptions("-metadata", `genre=${metadata.genre}`)
-      .outputOptions("-metadata", `album=${metadata.album}`)
-      .on("end", () => {
-        console.log("Audio conversion finished");
-      })
-      .on("progress", (progress) => {
-        console.log("Processing: " + progress.timemark + "% done");
-      })
-      .on("error", (err) => {
-        console.error("An error occurred while converting audio", err);
-      })
-      .pipe(audioPassThrough, { end: true });
+    const mp3TempPath = path.join(
+      TEMP_DIR,
+      "source",
+      `audio_${videoId}_${Date.now()}.mp3`,
+    );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new NextResponse(audioPassThrough as any, {
+    const ffmpegArgs = [
+      "-i",
+      "pipe:0",
+      ...(hasThumb ? ["-i", thumbPath] : []),
+      "-map",
+      "0:a",
+      ...(hasThumb ? ["-map", "1:0"] : []),
+      "-codec:a",
+      "libmp3lame",
+      "-q:a",
+      "2",
+      ...(hasThumb
+        ? [
+            "-id3v2_version",
+            "3",
+            "-metadata:s:v",
+            "title=Album cover",
+            "-metadata:s:v",
+            "comment=Cover (front)",
+          ]
+        : []),
+      "-metadata",
+      `title=${metadata.title}`,
+      "-metadata",
+      `artist=${metadata.artist}`,
+      "-metadata",
+      `author=${metadata.author}`,
+      "-metadata",
+      `year=${metadata.year}`,
+      "-metadata",
+      `genre=${metadata.genre}`,
+      "-metadata",
+      `album=${metadata.album}`,
+      "-y",
+      mp3TempPath,
+    ];
+
+    await new Promise<void>((resolve, reject) => {
+      const ffmpegAudioProc = spawn(ffmpegPath, ffmpegArgs);
+      audioStream.pipe(ffmpegAudioProc.stdin);
+      ffmpegAudioProc.stderr.on("data", (d: Buffer) =>
+        process.stdout.write(d),
+      );
+      ffmpegAudioProc.on("error", reject);
+      ffmpegAudioProc.on("close", (code) => {
+        console.log("Audio conversion finished");
+        if (hasThumb) cleanPreviousFiles([thumbPath]);
+        if (code !== 0) {
+          reject(new Error(`ffmpeg exited with code ${code}`));
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    const mp3Stream = fs.createReadStream(mp3TempPath);
+    mp3Stream.on("close", () => cleanPreviousFiles([mp3TempPath]));
+
+    // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
+    return new NextResponse(mp3Stream as any, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          (metadata.title || "audio").normalize("NFKD")
+          (metadata.title || "audio").normalize("NFKD"),
         ).replace(/[\u0300-\u036f]/g, "")}.mp3"`,
       },
     });
   }
 
-  const prisma = new PrismaClient();
+  const [basicInfo, formats] = await Promise.all([
+    innertube.getBasicInfo(videoId),
+    getVideoFormats(url),
+  ]);
+
+  const details = basicInfo.basic_info;
+
+  const formatMap = new Map<string, FormatData>();
+  formats.forEach((f) => {
+    if (!formatMap.has(f.qualityLabel)) {
+      formatMap.set(f.qualityLabel, f);
+    }
+    formatMap.set(String(f.itag), f);
+  });
+
+  const videoData: VideoData = {
+    video_details: {
+      id: videoId,
+      title: details.title ?? "",
+      description: details.short_description ?? "",
+      duration: String(details.duration ?? 0),
+      thumbnail: details.thumbnail?.[0]?.url ?? "",
+      author: details.author ?? "",
+    },
+    format: formats as FormatData[],
+  };
+
+  const metadata = {
+    title: details.title ?? "Unknown title",
+    artist: details.author ?? "Unknown artist",
+    author: details.author ?? "Unknown author",
+    year: new Date().getFullYear().toString(),
+    genre: "Unknown genre",
+    album: details.title ?? "Unknown album",
+  };
 
   const SANITIZED_TITLE = await sanitizeFilename(metadata.title || "video");
 
@@ -303,84 +361,83 @@ export async function GET(request: Request) {
   const VIDEO_FILE_PATH = path.join(
     TEMP_DIR,
     "source",
-    `${VIDEO_FILE_NAME}.mp4`
+    `${VIDEO_FILE_NAME}.mp4`,
   );
 
   const AUDIO_FILE_NAME = `audio_${SANITIZED_TITLE}_${Date.now()}`;
   const AUDIO_FILE_PATH = path.join(
     TEMP_DIR,
     "source",
-    `${AUDIO_FILE_NAME}.mp3`
+    `${AUDIO_FILE_NAME}.mp3`,
   );
 
-  const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${videoData.video_details.title}`;
-  let merged_file_path = path.join(
+  const selectedFormat = formatMap.get(quality);
+  if (!selectedFormat) {
+    console.error(
+      `Cannot find the requested format: ${quality}. Available formats: ${Array.from(formatMap.keys()).join(", ")}`,
+    );
+    return new Response(
+      `Cannot find the requested format. Available formats: ${Array.from(formatMap.keys()).join(", ")}`,
+      { status: 400 },
+    );
+  }
+
+  const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${SANITIZED_TITLE}`;
+  const merged_file_path = path.join(
     TEMP_DIR,
     "cached",
-    `${MERGED_FILE_NAME}.mp4`
+    `${MERGED_FILE_NAME}.mp4`,
   );
-  const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
+  const cacheKey = `${videoId}:${quality}`;
 
-  try {
+  const resolveFilePath = async (): Promise<string> => {
     const requestedFile = await prisma.file.findFirst({
-      where: {
-        video: {
-          url: url,
-          id: videoData.video_details.id,
-        },
-        quality: quality,
-      },
+      where: { video: { url }, quality },
     });
+    if (requestedFile && fs.existsSync(requestedFile.path))
+      return requestedFile.path;
 
-    if (!requestedFile) {
-      const selectedFormat = formatMap.get(quality);
-      if (!selectedFormat) {
-        console.log("formatMap", formatMap);
-        console.log("quality", quality);
-        console.error(
-          `Cannot find the requested format: ${quality}. Available formats are: ${Array.from(
-            formatMap.keys()
-          ).join(", ")}`
-        );
-
-        return new Response(
-          `Cannot find the requested format. Available formats are: ${Array.from(
-            formatMap.keys()
-          ).join(", ")}`,
-          { status: 400 }
-        );
-      }
+    try {
       await downloadStreams(
         url,
         AUDIO_FILE_PATH,
         VIDEO_FILE_PATH,
-        String(selectedFormat.itag)
+        String(selectedFormat.itag),
       );
-
       await mergeAudioVideo(
         VIDEO_FILE_PATH,
         AUDIO_FILE_PATH,
         merged_file_path,
-        HAS_NVIDIA_GPU,
+        ffmpegPath,
         {
           title: metadata.title,
-          url: url,
-          quality: quality,
-          qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
-        }
+          url,
+          quality,
+        },
       );
-    } else {
-      merged_file_path = requestedFile.path;
+    } catch (err) {
+      cleanPreviousFiles([VIDEO_FILE_PATH, AUDIO_FILE_PATH]);
+      throw err;
     }
+    return merged_file_path;
+  };
 
-    const fileStream = fs.createReadStream(merged_file_path);
+  let pending = _inFlight.get(cacheKey);
+  if (!pending) {
+    pending = resolveFilePath().finally(() => _inFlight.delete(cacheKey));
+    _inFlight.set(cacheKey, pending);
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  try {
+    const filePath = await pending;
+    const fileStream = fs.createReadStream(filePath);
+
+    // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(fileStream as any, {
       headers: {
         "Content-Type": "video/mp4",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          (metadata.title || "video").normalize("NFKD")
+          (metadata.title || "video").normalize("NFKD"),
         ).replace(/[\u0300-\u036f]/g, "")}.mp4"`,
       },
     });

@@ -1,9 +1,9 @@
+import { CircleCheckBig } from "lucide-react";
+import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { VideoLoading } from "@/components/custom/VideoLoading";
 import { VideoSelect } from "@/components/custom/VideoSelect";
-import { CheckCircle2 } from "lucide-react";
-import { Suspense } from "react";
 
 export default async function QualityVideoSelection() {
   return (
@@ -14,11 +14,11 @@ export default async function QualityVideoSelection() {
         </h2>
         <div className="mx-auto my-4 flex w-1/2 flex-col justify-center md:flex-row">
           <div className="mx-auto my-2 flex">
-            <CheckCircle2 className="my-auto mr-2" size={24} />
+            <CircleCheckBig className="my-auto mr-2" size={24} />
             <p className="text-center">Unlimited downloads</p>
           </div>
           <div className="mx-auto my-2 flex">
-            <CheckCircle2 className="my-auto mr-2 " size={24} />
+            <CircleCheckBig className="my-auto mr-2 " size={24} />
             <p className="text-center">Ads free</p>
           </div>
         </div>

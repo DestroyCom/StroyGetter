@@ -1,4 +1,4 @@
-name: Trigger Release After Dependabot Merge
+name: Trigger release after Dependabot merge
 
 on:
   pull_request:
@@ -6,19 +6,21 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+
 jobs:
   trigger_release:
     if: github.event.pull_request.merged == true && github.actor == 'dependabot[bot]' && contains(github.event.pull_request.title, '@distube/')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Wait for other workflows
         run: sleep 30
 
       - name: Trigger release workflow
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: trigger-release

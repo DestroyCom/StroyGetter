@@ -1,19 +1,21 @@
 "use server";
 
+import { getInnertube } from "@/lib/innertube";
 import { yt_validate } from "@/lib/serverUtils";
-import ytsr from "@distube/ytsr";
 
 export const searchQuery = async (query: string) => {
-  if (await yt_validate(query)) {
+  if (yt_validate(query)) {
     return query;
   }
 
-  const search = await ytsr(query, { limit: 1 });
+  const innertube = await getInnertube();
+  const results = await innertube.search(query, { type: "video" });
 
-  if (search.items.length === 0) {
+  const firstVideo = results.results?.find((r) => r.type === "Video") as { id: string } | undefined;
+
+  if (!firstVideo?.id) {
     throw new Error("No video found");
   }
 
-  const video = search.items[0];
-  return video.url;
+  return `https://www.youtube.com/watch?v=${firstVideo.id}`;
 };

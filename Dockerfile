@@ -1,71 +1,60 @@
-# syntax=docker.io/docker/dockerfile:1
+# syntax=docker/dockerfile:1.7
 
-FROM node:22-bookworm AS base
+# ── base ─────────────────────────────────────────────────────────────────────
+FROM node:22-alpine3.21 AS base
+RUN apk add --no-cache ffmpeg python3
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-#install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg
-
-# 1. Install dependencies only when needed
+# ── deps ─────────────────────────────────────────────────────────────────────
 FROM base AS deps
-
-# No need as we using debian based image
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-#RUN apt-get update && apt-get install -y libc6-compat
-
 WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
-
-
-# 2. Rebuild the source code only when needed
+# ── builder ──────────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-COPY prisma ./prisma
-# This will do the trick, use the corresponding env file for each environment.
-#COPY .env.production.sample .env.production
-RUN npm install --save @ffmpeg-installer/ffmpeg
-RUN npx prisma migrate deploy
-RUN npx prisma generate
-RUN npm run build
+RUN pnpm prisma generate
+RUN pnpm run build
 
-# 3. Production image, copy all the files and run next
-FROM base AS runner
+# ── runner ───────────────────────────────────────────────────────────────────
+FROM node:22-alpine3.21 AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-#Create nodejs group and nextjs user
-RUN addgroup --system nodejs && adduser --system --ingroup nodejs nextjs
+RUN apk add --no-cache ffmpeg python3
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
+# Next.js standalone + static assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
-RUN npm install --save @ffmpeg-installer/ffmpeg
-RUN npm install --save-dev prisma
-RUN npm install @prisma/client --save
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 
-RUN mkdir -p /temp/stroygetter
-RUN mkdir -p /temp/stroygetter/source/
-RUN mkdir -p /temp/stroygetter/cached/
-RUN chown -R nextjs:nodejs /temp/stroygetter/
+# yt-dlp binary (resolved at runtime by selectYtDlpPath())
+COPY --from=deps --chown=nextjs:nodejs \
+    /app/node_modules/youtube-dl-exec/bin/yt-dlp \
+    ./node_modules/youtube-dl-exec/bin/yt-dlp
 
-RUN npx prisma migrate deploy
-RUN npx prisma generate
+# Migration tooling in an isolated directory (avoids conflicts with standalone)
+COPY --from=builder /app/node_modules   /migrate/node_modules
+COPY --from=builder /app/prisma         /migrate/prisma
+COPY --from=builder /app/prisma.config.ts /migrate/prisma.config.ts
+RUN chown -R nextjs:nodejs /migrate
+
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
+RUN mkdir -p /temp/stroygetter/source /temp/stroygetter/cached \
+    && chown -R nextjs:nodejs /temp/stroygetter/
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 USER nextjs
 EXPOSE 3000
-ENV PORT=3000
-
-
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD ["./docker-entrypoint.sh"]

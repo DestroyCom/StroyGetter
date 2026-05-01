@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SiGithub } from "@icons-pack/react-simple-icons";
-
+import { GoogleAnalytics } from "@next/third-parties/google";
+import Image from "next/image";
 import logo from "@/assets/logo.svg";
 import { Separator } from "@/components/ui/separator";
-import getConfig from "next/config";
-import Image from "next/image";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import packageJson from "@/package.json";
 
 const satoshi = localFont({
   src: [
@@ -84,17 +83,19 @@ export const metadata: Metadata = {
   keywords: ["video", "download", "audio", "free", "no ads", "converter"],
   publisher: "StroyCo",
   openGraph: {
+    type: "website",
     title: "StroyGetter",
     siteName: "StroyGetter - Download any video for free !",
     description: "Download any video for free in any resolution",
     url: "https://stroygetter.stroyco.eu/",
-    images: "/og-image.png",
   },
   twitter: {
+    card: "summary_large_image",
     title: "StroyGetter - Download any video for free !",
     description:
       "No ads. Unlimited downloads. Download videos at max quality (available) for free and without software !",
     site: "@ADSantoine",
+    images: ["https://stroygetter.stroyco.eu/twitter-image.png"],
   },
   verification: {
     google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo",
@@ -106,12 +107,32 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { publicRuntimeConfig } = getConfig();
-  const version = publicRuntimeConfig?.version;
+  const version = packageJson.version;
 
   return (
     <html lang="en">
       <body className={`${satoshi.className} font-satoshi antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "StroyGetter",
+              url: "https://stroygetter.stroyco.eu",
+              description:
+                "Free online video downloader. Download YouTube videos in any quality without software or ads.",
+              applicationCategory: "MultimediaApplication",
+              operatingSystem: "Any",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+              author: {
+                "@type": "Organization",
+                name: "StroyCo",
+                url: "https://portfolio.stroyco.eu/",
+              },
+            }),
+          }}
+        />
         <header className="flex justify-between bg-primary px-4 py-2">
           <div className="flex justify-start">
             <Image src={logo} height={96} alt="StroyGetter" />
@@ -132,10 +153,10 @@ export default function RootLayout({
         </header>
         <main>{children}</main>
         <section id="faq" className="mx-auto mt-4 w-11/12">
-          <h3 className="w-11/12 text-2xl font-bold">FAQ</h3>
+          <h2 className="w-11/12 text-2xl font-bold">FAQ</h2>
           <div className="flex flex-col lg:flex-row lg:justify-between">
             <div className="w-full lg:w-1/2">
-              <h2 className="my-2 text-xl">What is StroyGetter ?</h2>
+              <h3 className="my-2 text-xl">What is StroyGetter ?</h3>
               <p>
                 StroyGetter is a video downloader, so you can download almost
                 any video <span className="italic">(of your own)</span> in any
@@ -150,9 +171,9 @@ export default function RootLayout({
             />
             <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
             <div className="w-full lg:w-1/2">
-              <h2 className="my-2 text-xl">
+              <h3 className="my-2 text-xl">
                 Why use StroyGetter and not another alternative?
-              </h2>
+              </h3>
               <p>
                 StroyGetter is totally free and requires no software download to
                 achieve maximum video quality.
@@ -166,9 +187,9 @@ export default function RootLayout({
           <Separator className="my-4 h-0.5 w-full bg-primary/50" />
           <div className="flex flex-col lg:flex-row lg:justify-between">
             <div className="w-full lg:w-1/2">
-              <h2 className="my-2 text-xl">
+              <h3 className="my-2 text-xl">
                 Totally free, where&apos;s the catch ?
-              </h2>
+              </h3>
               <p>
                 There&apos;s no catch, we just use statistical tools to find out
                 how people use the site and count visitors, and that&apos;s it.
@@ -182,7 +203,7 @@ export default function RootLayout({
             />
             <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
             <div className="w-full lg:w-1/2">
-              <h2 className="my-2 text-xl">Why is my conversion slow ?</h2>
+              <h3 className="my-2 text-xl">Why is my conversion slow ?</h3>
               <p>
                 The conversion speed depends on the quality of the video you
                 want to download. The higher the quality, the longer the

@@ -1,10 +1,10 @@
 "use client";
 
-import { searchQuery } from "@/functions/getYoutubeUrl";
 import clsx from "clsx";
 import { ClipboardCopy } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { searchQuery } from "@/functions/getYoutubeUrl";
 
 export const GetterInput = () => {
   const router = useRouter();
@@ -16,30 +16,15 @@ export const GetterInput = () => {
   const [permission, setPermission] = useState(false);
 
   useEffect(() => {
-    checkPermission();
-  }, []);
-
-  const checkPermission = async () => {
     const queryOpts = { name: "clipboard-read", allowWithoutGesture: false };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const permissionStatus = await navigator.permissions.query(queryOpts);
-
-    if (permissionStatus.state === "granted") {
-      setPermission(true);
-    } else {
-      setPermission(false);
-    }
-
-    // Listen for changes to the permission state
-    permissionStatus.onchange = () => {
-      if (permissionStatus.state === "granted") {
-        setPermission(true);
-      } else {
-        setPermission(false);
-      }
-    };
-  };
+    // @ts-expect-error clipboard-read is not in the standard PermissionName type
+    navigator.permissions.query(queryOpts).then((permissionStatus) => {
+      setPermission(permissionStatus.state === "granted");
+      permissionStatus.onchange = () => {
+        setPermission(permissionStatus.state === "granted");
+      };
+    });
+  }, []);
 
   const submitUrl = async (url: string) => {
     const getUrl = await searchQuery(url);
@@ -93,7 +78,7 @@ export const GetterInput = () => {
         className="border-1 m-auto mx-auto rounded-md border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white transition-all duration-200 ease-in-out hover:cursor-pointer hover:border-[#205D83] hover:bg-[#102F42] hover:ring-[#205D83] focus:outline-none focus:ring-2 focus:ring-blue-300 sm:w-auto disabled:opacity-50"
         disabled={url.length === 0}
       >
-        {false ? "Loading..." : "Search"}
+        Search
       </button>
     </form>
   );

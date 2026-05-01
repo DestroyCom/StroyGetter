@@ -4,11 +4,10 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model Video {
-  id             String   @id @default(cuid())
+  id             String   @id @default(cuid(2))
   title          String
   url            String   @unique
   availableFiles File[]   
@@ -19,12 +18,10 @@ model Video {
 }
 
 model File {
-  id           String   @id @default(cuid())
-  path         String   @unique
-  hash         String   @unique        
-  quality      String                 
-  qualityLabel String                 
-  videoId      String                
-  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid(2))
+  path      String   @unique
+  quality   String
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
