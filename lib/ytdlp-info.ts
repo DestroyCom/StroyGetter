@@ -1,5 +1,5 @@
 import { selectYtDlpPath } from "@/lib/serverUtils";
-import { FormatData } from "@/lib/types";
+import type { FormatData } from "@/lib/types";
 
 type RawFormat = {
   format_id: string;
@@ -19,14 +19,11 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
   });
 
-  const rawFormats = ((info as { formats?: RawFormat[] }).formats) ?? [];
+  const rawFormats = (info as { formats?: RawFormat[] }).formats ?? [];
 
   const seen = new Set<string>();
   return rawFormats
-    .filter(
-      (f) =>
-        f.vcodec && f.vcodec !== "none" && f.acodec === "none" && f.height
-    )
+    .filter((f) => f.vcodec && f.vcodec !== "none" && f.acodec === "none" && f.height)
     .reduce<FormatData[]>((acc, f) => {
       const label = f.format_note || `${f.height}p`;
       if (!seen.has(label)) {

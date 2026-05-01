@@ -1,7 +1,7 @@
 "use server";
 
-import { yt_validate } from "@/lib/serverUtils";
 import { getInnertube } from "@/lib/innertube";
+import { yt_validate } from "@/lib/serverUtils";
 
 export const searchQuery = async (query: string) => {
   if (await yt_validate(query)) {
@@ -11,9 +11,7 @@ export const searchQuery = async (query: string) => {
   const innertube = await getInnertube();
   const results = await innertube.search(query, { type: "video" });
 
-  const firstVideo = results.results?.find((r) => r.type === "Video") as
-    | { id: string }
-    | undefined;
+  const firstVideo = results.results?.find((r) => r.type === "Video") as { id: string } | undefined;
 
   if (!firstVideo?.id) {
     throw new Error("No video found");

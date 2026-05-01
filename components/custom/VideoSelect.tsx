@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getVideoInfos } from "@/functions/fetchVideoinfos";
-import { useRouter, useSearchParams } from "next/navigation";
+import clsx from "clsx";
 import { Download } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -11,19 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import clsx from "clsx";
-import { VideoData } from "@/lib/types";
-import { VideoLoading } from "./VideoLoading";
+import { getVideoInfos } from "@/functions/fetchVideoinfos";
+import type { VideoData } from "@/lib/types";
 import { Progress } from "../ui/progress";
+import { VideoLoading } from "./VideoLoading";
 
 export const VideoSelect = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
 
-  const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(
-    null
-  );
+  const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
 
   const [selectedQuality, setSelectedQuality] = useState<string>("audio");
@@ -82,8 +80,7 @@ export const VideoSelect = () => {
         const currentTime = Date.now();
         const elapsedTime = currentTime - startTime;
 
-        const newProgress =
-          maxProgress * (1 - Math.exp(-elapsedTime / incrementDuration));
+        const newProgress = maxProgress * (1 - Math.exp(-elapsedTime / incrementDuration));
 
         setLoadProgress(newProgress);
 
@@ -215,17 +212,14 @@ export const VideoSelect = () => {
                   a.click();
                 } catch (e) {
                   console.error(e);
-                  setDownloadError(
-                    "An error occurred while downloading the video"
-                  );
+                  setDownloadError("An error occurred while downloading the video");
                 }
                 setIsDownloading(false);
               }}
               className={clsx(
                 "flex w-full flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out",
                 "md:mx-2",
-                !isDownloading &&
-                  "hover:cursor-pointer hover:border-primary hover:bg-secondary",
+                !isDownloading && "hover:cursor-pointer hover:border-primary hover:bg-secondary",
                 isDownloading && "hidden opacity-50 md:flex"
               )}
             >
@@ -241,9 +235,7 @@ export const VideoSelect = () => {
               isDownloading || downloadError ? "flex" : "hidden"
             )}
           >
-            {isDownloading && (
-              <Progress value={loadProgress} className="my-auto" />
-            )}
+            {isDownloading && <Progress value={loadProgress} className="my-auto" />}
 
             {downloadError && (
               <p className="my-auto mx-auto text-center font-bold text-white md:text-xl">

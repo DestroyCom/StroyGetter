@@ -1,10 +1,10 @@
 "use server";
 
-import { FormatData, VideoData } from "@/lib/types";
-import { getInnertube, extractVideoId } from "@/lib/innertube";
-import { getVideoFormats } from "@/lib/ytdlp-info";
-import { yt_validate } from "@/lib/serverUtils";
 import { PrismaClient } from "@prisma/client";
+import { extractVideoId, getInnertube } from "@/lib/innertube";
+import { yt_validate } from "@/lib/serverUtils";
+import type { FormatData, VideoData } from "@/lib/types";
+import { getVideoFormats } from "@/lib/ytdlp-info";
 
 const prisma = new PrismaClient();
 
@@ -34,8 +34,7 @@ export const getVideoInfos = async (url: string) => {
       title: details.title ?? "",
       description: details.short_description ?? "",
       duration: String(details.duration ?? 0),
-      thumbnail:
-        thumbnails[thumbnails.length - 1]?.url ?? thumbnails[0]?.url ?? "",
+      thumbnail: thumbnails[thumbnails.length - 1]?.url ?? thumbnails[0]?.url ?? "",
       author: details.author ?? "",
     },
     format: formats as FormatData[],

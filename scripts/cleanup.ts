@@ -1,16 +1,13 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
-import cron from "node-cron";
 import fs from "fs";
+import cron from "node-cron";
 
-const DEFAULT_CLEANUP_INTERVAL =
-  process.env.NODE_ENV === "production" ? "7" : "1";
-const CLEANUP_INTERVAL =
-  process.env.CLEANUP_INTERVAL || DEFAULT_CLEANUP_INTERVAL;
+const DEFAULT_CLEANUP_INTERVAL = process.env.NODE_ENV === "production" ? "7" : "1";
+const CLEANUP_INTERVAL = process.env.CLEANUP_INTERVAL || DEFAULT_CLEANUP_INTERVAL;
 
-const DEFAULT_CRON =
-  process.env.NODE_ENV === "production" ? "0 0 * * *" : "*/1 * * * *";
+const DEFAULT_CRON = process.env.NODE_ENV === "production" ? "0 0 * * *" : "*/1 * * * *";
 const CRON = process.env.CRON || DEFAULT_CRON;
 
 export const initializeCleanup = async () => {
@@ -20,9 +17,7 @@ export const initializeCleanup = async () => {
     try {
       console.log("Starting cleanup...");
       const expirationDate = new Date();
-      expirationDate.setDate(
-        expirationDate.getDate() - parseInt(CLEANUP_INTERVAL)
-      );
+      expirationDate.setDate(expirationDate.getDate() - parseInt(CLEANUP_INTERVAL));
 
       const oldFiles = await prisma.file.findMany({
         where: {
