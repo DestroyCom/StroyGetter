@@ -43,14 +43,12 @@ export const getVideoInfos = async (url: string) => {
     format: formats as FormatData[],
   };
 
-  const dbVideo = await prisma.video.findUnique({ where: { id: videoId } });
+  const dbVideo = await prisma.video.findUnique({ where: { url: url } });
   if (!dbVideo) {
     await prisma.video.create({
       data: {
-        id: videoId,
         title: details.title ?? "Unknown",
         url: url,
-        updatedAt: new Date(),
       },
     });
   }

@@ -1,11 +1,11 @@
 "use server";
 
-import { spawn } from "child_process";
-import { createHash } from "crypto";
-import * as fs from "fs";
+import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
+import * as fs from "node:fs";
+import path from "node:path";
+import { PassThrough, type Readable } from "node:stream";
 import { NextResponse } from "next/server";
-import path from "path";
-import { PassThrough, type Readable } from "stream";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { prisma } from "@/lib/prisma";
 import { initializeConf, sanitizeFilename, selectYtDlpPath } from "@/lib/serverUtils";
@@ -20,6 +20,8 @@ let CONF = {
   ffmpegPath: "",
   hasNvidiaCapabilities: false,
 };
+let _confInitPromise: Promise<typeof CONF> | null = null;
+const _inFlight = new Map<string, Promise<string>>();
 
 const generateFileHash = (filePath: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -41,10 +43,9 @@ const cleanPreviousFiles = (oldPaths: string[]) => {
 };
 
 const waitForStreamClose = (stream: Readable) => {
-  return new Promise<void>((resolve) => {
-    stream.on("end", () => {
-      resolve();
-    });
+  return new Promise<void>((resolve, reject) => {
+    stream.on("end", resolve);
+    stream.on("error", reject);
   });
 };
 
@@ -179,8 +180,9 @@ export async function GET(request: Request) {
     return new Response("Missing quality parameter", { status: 400 });
   }
 
-  if (CONF.isInitialized === false) {
-    CONF = await initializeConf(CONF);
+  if (!CONF.isInitialized) {
+    if (!_confInitPromise) _confInitPromise = initializeConf(CONF);
+    CONF = await _confInitPromise;
   }
 
   const ffmpegPath = CONF.ffmpegPath;
@@ -250,7 +252,7 @@ export async function GET(request: Request) {
     ffmpegAudioProc.stdout.pipe(audioPassThrough, { end: true });
     ffmpegAudioProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
     ffmpegAudioProc.on("error", (err: Error) => console.error("ffmpeg audio error", err));
-    ffmpegAudioProc.on("end", () => console.log("Audio conversion finished"));
+    ffmpegAudioProc.on("close", () => console.log("Audio conversion finished"));
 
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(audioPassThrough as any, {
@@ -313,59 +315,52 @@ export async function GET(request: Request) {
   const AUDIO_FILE_NAME = `audio_${SANITIZED_TITLE}_${Date.now()}`;
   const AUDIO_FILE_PATH = path.join(TEMP_DIR, "source", `${AUDIO_FILE_NAME}.mp3`);
 
-  const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${videoData.video_details.title}`;
-  let merged_file_path = path.join(TEMP_DIR, "cached", `${MERGED_FILE_NAME}.mp4`);
+  const selectedFormat = formatMap.get(quality);
+  if (!selectedFormat) {
+    console.error(
+      `Cannot find the requested format: ${quality}. Available formats: ${Array.from(formatMap.keys()).join(", ")}`
+    );
+    return new Response(
+      `Cannot find the requested format. Available formats: ${Array.from(formatMap.keys()).join(", ")}`,
+      { status: 400 }
+    );
+  }
+
+  const MERGED_FILE_NAME = `${videoData.video_details.id}_${quality}_${SANITIZED_TITLE}`;
+  const merged_file_path = path.join(TEMP_DIR, "cached", `${MERGED_FILE_NAME}.mp4`);
   const HAS_NVIDIA_GPU = CONF.hasNvidiaCapabilities;
+  const cacheKey = `${videoId}:${quality}`;
+
+  const resolveFilePath = async (): Promise<string> => {
+    const requestedFile = await prisma.file.findFirst({
+      where: { video: { url }, quality },
+    });
+    if (requestedFile) return requestedFile.path;
+
+    try {
+      await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, String(selectedFormat.itag));
+      await mergeAudioVideo(VIDEO_FILE_PATH, AUDIO_FILE_PATH, merged_file_path, HAS_NVIDIA_GPU, ffmpegPath, {
+        title: metadata.title,
+        url,
+        quality,
+        qualityLabel: selectedFormat.qualityLabel,
+      });
+    } catch (err) {
+      cleanPreviousFiles([VIDEO_FILE_PATH, AUDIO_FILE_PATH]);
+      throw err;
+    }
+    return merged_file_path;
+  };
+
+  let pending = _inFlight.get(cacheKey);
+  if (!pending) {
+    pending = resolveFilePath().finally(() => _inFlight.delete(cacheKey));
+    _inFlight.set(cacheKey, pending);
+  }
 
   try {
-    const requestedFile = await prisma.file.findFirst({
-      where: {
-        video: {
-          url: url,
-          id: videoData.video_details.id,
-        },
-        quality: quality,
-      },
-    });
-
-    if (!requestedFile) {
-      const selectedFormat = formatMap.get(quality);
-      if (!selectedFormat) {
-        console.log("formatMap", formatMap);
-        console.log("quality", quality);
-        console.error(
-          `Cannot find the requested format: ${quality}. Available formats are: ${Array.from(
-            formatMap.keys()
-          ).join(", ")}`
-        );
-
-        return new Response(
-          `Cannot find the requested format. Available formats are: ${Array.from(
-            formatMap.keys()
-          ).join(", ")}`,
-          { status: 400 }
-        );
-      }
-      await downloadStreams(url, AUDIO_FILE_PATH, VIDEO_FILE_PATH, String(selectedFormat.itag));
-
-      await mergeAudioVideo(
-        VIDEO_FILE_PATH,
-        AUDIO_FILE_PATH,
-        merged_file_path,
-        HAS_NVIDIA_GPU,
-        ffmpegPath,
-        {
-          title: metadata.title,
-          url: url,
-          quality: quality,
-          qualityLabel: formatMap.get(quality)?.qualityLabel || "Unknown",
-        }
-      );
-    } else {
-      merged_file_path = requestedFile.path;
-    }
-
-    const fileStream = fs.createReadStream(merged_file_path);
+    const filePath = await pending;
+    const fileStream = fs.createReadStream(filePath);
 
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(fileStream as any, {
@@ -378,8 +373,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error occurred:", error);
-    return new Response("An error occurred while processing the video", {
-      status: 500,
-    });
+    return new Response("An error occurred while processing the video", { status: 500 });
   }
 }

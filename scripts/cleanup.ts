@@ -1,6 +1,6 @@
 "use server";
 
-import fs from "fs";
+import fs from "node:fs";
 import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
 
@@ -26,17 +26,10 @@ export const initializeCleanup = async () => {
       });
 
       for (const file of oldFiles) {
-        const filePath = file.path;
-
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-
-          await prisma.file.delete({
-            where: {
-              id: file.id,
-            },
-          });
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
         }
+        await prisma.file.delete({ where: { id: file.id } });
       }
     } catch (error) {
       console.error("Error during cleanup:", error);

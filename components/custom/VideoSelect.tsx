@@ -210,6 +210,7 @@ export const VideoSelect = () => {
                   a.href = url;
                   a.download = `${videoData.title}.${extension}`;
                   a.click();
+                  URL.revokeObjectURL(url);
                 } catch (e) {
                   console.error(e);
                   setDownloadError("An error occurred while downloading the video");

@@ -12,7 +12,8 @@ type Conf = {
   hasNvidiaCapabilities: boolean;
 };
 
-const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
+const PARENT_PATH =
+  process.env.NODE_ENV === "production" ? "/temp/stroygetter" : "./temp";
 const TEMP_DIR = path.join(PARENT_PATH);
 
 const createTempDir = (tmp_dir: string) => {
@@ -51,7 +52,8 @@ async function detectFfmpegCapabilities() {
 
   const hwaccelOutput = execSync("ffmpeg -hwaccels").toString();
 
-  const hasCuda = hwaccelOutput.includes("cuda") || hwaccelOutput.includes("nvenc");
+  const hasCuda =
+    hwaccelOutput.includes("cuda") || hwaccelOutput.includes("nvenc");
 
   if (!hasCuda) {
     console.warn("CUDA or NVENC not detected in hardware acceleration output.");
@@ -71,15 +73,19 @@ async function detectNvidiaGpuAvailable() {
   }
 }
 
-async function locateFfmpegPath() {
-  const detectCommand = os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
-
-  const localPath = execSync(detectCommand).toString().trim();
-
-  return localPath;
+async function locateFfmpegPath(): Promise<string> {
+  try {
+    const detectCommand =
+      os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
+    const localPath = execSync(detectCommand).toString().trim();
+    if (localPath) return localPath;
+  } catch {}
+  const { default: staticPath } = await import("ffmpeg-static");
+  if (staticPath) return staticPath;
+  throw new Error("FFmpeg not found in PATH and ffmpeg-static unavailable");
 }
 
-export async function sanitizeFilename(filename: string) {
+export function sanitizeFilename(filename: string) {
   return (
     filename
       .normalize("NFD")
@@ -95,13 +101,14 @@ export async function sanitizeFilename(filename: string) {
 const video_id_pattern = /^[a-zA-Z\d_-]{11,12}$/;
 const video_pattern =
   /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|shorts\/|embed\/|live\/|v\/)?)([\w-]+)(\S+)?$/;
-export async function yt_validate(url: string): Promise<"video" | false> {
+export function yt_validate(url: string): "video" | false {
   const url_ = url.trim();
   if (url_.indexOf("list=") === -1) {
     if (url_.startsWith("https")) {
       if (url_.match(video_pattern)) {
         let id: string;
-        if (url_.includes("youtu.be/")) id = url_.split("youtu.be/")[1].split(/(\?|\/|&)/)[0];
+        if (url_.includes("youtu.be/"))
+          id = url_.split("youtu.be/")[1].split(/(\?|\/|&)/)[0];
         else if (url_.includes("youtube.com/embed/"))
           id = url_.split("youtube.com/embed/")[1].split(/(\?|\/|&)/)[0];
         else if (url_.includes("youtube.com/shorts/"))
@@ -115,16 +122,15 @@ export async function yt_validate(url: string): Promise<"video" | false> {
   return false;
 }
 
-export async function selectYtDlpPath() {
-  let youtubedl: ReturnType<typeof createYoutubeDl>;
+let _ytdl: ReturnType<typeof createYoutubeDl> | null = null;
 
-  if (process.env.NODE_ENV === "development") {
-    const devBinaryPath = path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
-    youtubedl = createYoutubeDl(devBinaryPath);
-  } else {
-    const prodBinaryPath = path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
-    youtubedl = createYoutubeDl(prodBinaryPath);
+export function selectYtDlpPath() {
+  if (!_ytdl) {
+    const binaryPath = path.join(
+      process.cwd(),
+      "node_modules/youtube-dl-exec/bin/yt-dlp",
+    );
+    _ytdl = createYoutubeDl(binaryPath);
   }
-
-  return youtubedl;
+  return _ytdl;
 }
