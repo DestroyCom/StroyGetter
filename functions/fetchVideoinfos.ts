@@ -26,13 +26,18 @@ export const getVideoInfos = async (url: string) => {
 
   const details = basicInfo.basic_info;
   const thumbnails = details.thumbnail ?? [];
+  const bestThumbnail = thumbnails.reduce(
+    (best, t) =>
+      (t.width ?? 0) * (t.height ?? 0) > (best.width ?? 0) * (best.height ?? 0) ? t : best,
+    thumbnails[0] ?? { url: "" }
+  );
 
   const videoData: VideoData = {
     video_details: {
       title: details.title ?? "",
       description: details.short_description ?? "",
       duration: String(details.duration ?? 0),
-      thumbnail: thumbnails[thumbnails.length - 1]?.url ?? thumbnails[0]?.url ?? "",
+      thumbnail: bestThumbnail.url ?? "",
       author: details.author ?? "",
     },
     format: formats as FormatData[],
