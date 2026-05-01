@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump type
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # ── 1. Bump version, commit, tag ──────────────────────────────────────────
+  bump:
+    name: Bump version & tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version in package.json
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          NEW=$(npm version "$BUMP" --no-git-tag-version)
+          echo "value=${NEW}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit, tag & push
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          git add package.json
+          git commit -m "chore: release $VERSION"
+          git tag "$VERSION"
+          git push && git push origin "$VERSION"
+
+  # ── 2. Build & push Docker image ──────────────────────────────────────────
+  docker:
+    name: Build & push image
+    needs: bump
+    uses: ./.github/workflows/build_web_image.yml
+    with:
+      tag: ${{ needs.bump.outputs.version }}
+    secrets: inherit
+
+  # ── 3. Create GitHub release ──────────────────────────────────────────────
+  github-release:
+    name: Create GitHub release
+    needs: [bump, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          tag_name: ${{ needs.bump.outputs.version }}
+          name: ${{ needs.bump.outputs.version }}

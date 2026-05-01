@@ -87,42 +87,24 @@ Videos are persisted in `./docker_videos` (mounted as `/temp/stroygetter`).
 
 ## Releasing a new version
 
-The release pipeline is fully automated. Triggering it requires two steps:
+Go to **GitHub → Actions → Release → Run workflow**, pick a bump type, and everything runs automatically.
 
-### 1. Bump the version
+| Bump type | Example: current `3.3.0` | When to use |
+| --- | --- | --- |
+| `patch` | `3.3.0` → `3.3.1` | Bug fixes, minor tweaks |
+| `minor` | `3.3.0` → `3.4.0` | New features, backwards-compatible |
+| `major` | `3.3.0` → `4.0.0` | Breaking changes |
 
-Update `version` in `package.json`:
-
-```bash
-# example — bump to 3.4.0
-npm version 3.4.0 --no-git-tag-version
-# or edit package.json manually
-```
-
-### 2. Push to the `prod` branch
-
-```bash
-git add package.json
-git commit -m "3.4.0"
-git push origin HEAD:prod
-```
-
-The commit message becomes the Git tag. Keep it clean — alphanumeric, dots, hyphens only (other characters are replaced with `-`).
-
-### What the pipeline does automatically
+### What happens automatically
 
 ```text
-push to prod
-  └─ create_tag       — creates Git tag from commit message
-  └─ build_web_image  — builds Docker image, pushes destcom/stroygetter:<version> + :latest
-  └─ create_release   — creates GitHub release with auto-generated changelog
+release.yml (workflow_dispatch: patch | minor | major)
+  └─ bump     — increments package.json, commits "chore: release vX.Y.Z", creates & pushes git tag
+  └─ docker   — builds Docker image, pushes destcom/stroygetter:vX.Y.Z + :latest
+  └─ github-release — creates GitHub release with auto-generated changelog (runs only if docker succeeds)
 ```
 
-All jobs are defined in [`.github/workflows/deploy_version.yml`](.github/workflows/deploy_version.yml).
-
-### Manual trigger
-
-Each sub-workflow (`build_web_image`, `deploy_prerelease`, `create_release`) can also be triggered manually from the **Actions** tab with an optional custom tag.
+If the Docker build fails, the GitHub release is not created. The `package.json` commit and git tag are still pushed — re-run the `docker` and `github-release` jobs manually from the Actions UI if needed.
 
 ---
 
@@ -130,11 +112,12 @@ Each sub-workflow (`build_web_image`, `deploy_prerelease`, `create_release`) can
 
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
-| `deploy_version.yml` | Push to `prod` | Full release pipeline |
+| `release.yml` | Manual (Actions tab) | **Main release pipeline** — bump, tag, Docker, GitHub release |
 | `build_web_image.yml` | Called / manual | Build & push Docker image |
 | `deploy_prerelease.yml` | Called / manual | Build & push `alpha` image |
 | `create_tag.yml` | Called / manual | Create Git tag from commit message |
 | `create_release.yml` | Called / manual | Create GitHub release |
+| `deploy_version.yml` | Push to `prod` | Legacy release pipeline (push-based) |
 | `dependabot_release.yml` | Dependabot PR merged | Auto-release on `@distube/` dep update |
 | `dependabot_auto_approve.yml` | Dependabot PR opened | Auto-approve Dependabot PRs |
 
