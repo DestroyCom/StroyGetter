@@ -10,7 +10,7 @@ type RawFormat = {
 };
 
 export async function getVideoFormats(url: string): Promise<FormatData[]> {
-  const ytdl = await selectYtDlpPath();
+  const ytdl = selectYtDlpPath();
 
   const info = await ytdl(url, {
     dumpJson: true,
@@ -23,7 +23,12 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
 
   const seen = new Set<string>();
   return rawFormats
-    .filter((f) => f.vcodec && f.vcodec !== "none" && f.acodec === "none" && f.height)
+    .filter(
+      (f) =>
+        f.vcodec?.startsWith("avc") &&
+        f.acodec === "none" &&
+        f.height,
+    )
     .reduce<FormatData[]>((acc, f) => {
       const itag = parseInt(f.format_id, 10);
       if (!Number.isFinite(itag)) return acc;

@@ -64,16 +64,14 @@ const downloadStreams = async (
   const audioProc = ytdl.exec(url, {
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-    format: "ba",
+    format: "ba[ext=m4a]/ba[acodec^=mp4a]/ba",
     output: "-",
   });
 
   const videoProc = ytdl.exec(url, {
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
     format: formatSelector,
     output: "-",
@@ -238,7 +236,6 @@ export async function GET(request: Request) {
     const audioStream = ytdl.exec(url, {
       noCheckCertificates: true,
       noWarnings: true,
-      preferFreeFormats: true,
       addHeader: ["referer:youtube.com", "user-agent:googlebot"],
       format: "ba",
       output: "-",

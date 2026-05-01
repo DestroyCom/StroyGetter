@@ -4,7 +4,7 @@ import { getInnertube } from "@/lib/innertube";
 import { yt_validate } from "@/lib/serverUtils";
 
 export const searchQuery = async (query: string) => {
-  if (await yt_validate(query)) {
+  if (yt_validate(query)) {
     return query;
   }
 

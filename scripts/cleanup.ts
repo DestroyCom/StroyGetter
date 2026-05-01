@@ -26,13 +26,18 @@ export const initializeCleanup = async () => {
       });
 
       for (const file of oldFiles) {
+        let unlinkOk = false;
         try {
           await fs.promises.unlink(file.path);
+          unlinkOk = true;
         } catch (err) {
-          if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+          if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+            unlinkOk = true;
+          } else {
             console.error(`Failed to delete file ${file.path}:`, err);
           }
         }
+        if (!unlinkOk) continue;
         try {
           await prisma.file.delete({ where: { id: file.id } });
         } catch (err) {

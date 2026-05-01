@@ -7,7 +7,7 @@ import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
 
 export const getVideoInfos = async (url: string) => {
-  if (!(await yt_validate(url))) {
+  if (!yt_validate(url)) {
     console.error("Invalid URL");
     return { error: "Invalid URL" };
   }

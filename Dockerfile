@@ -40,6 +40,10 @@ RUN addgroup --system nodejs && adduser --system --ingroup nodejs nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+
+# dotenv is required by prisma.config.ts at migrate-deploy time
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/dotenv ./node_modules/dotenv
 
 # yt-dlp binary (required at runtime by selectYtDlpPath())
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/youtube-dl-exec/bin/yt-dlp \
