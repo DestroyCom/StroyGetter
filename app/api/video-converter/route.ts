@@ -1,7 +1,6 @@
 "use server";
 
 import ffmpeg from "fluent-ffmpeg";
-import * as oldYtdl from "@distube/ytdl-core";
 import { PassThrough, Readable } from "stream";
 import path from "path";
 import * as fs from "fs";
@@ -14,6 +13,8 @@ import { FormatData, VideoData } from "@/lib/types";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
+import { getInnertube, extractVideoId } from "@/lib/innertube";
+import { getVideoFormats } from "@/lib/ytdlp-info";
 
 const prisma = new PrismaClient();
 
@@ -199,54 +200,24 @@ export async function GET(request: Request) {
     ffmpeg.setFfmpegPath(ffmpegPath);
   }
 
-  const video = await oldYtdl.getBasicInfo(url);
-  const formatMap = new Map();
-  (video.player_response.streamingData.adaptiveFormats as FormatData[]).forEach(
-    (format: FormatData) => {
-      if (format.qualityLabel && !formatMap.has(format.qualityLabel)) {
-        formatMap.set(format.qualityLabel, format);
-      }
-      const itagKey = String(format.itag);
-      if (!formatMap.has(itagKey)) {
-        formatMap.set(itagKey, format);
-      }
-    }
-  );
-
-  const videoData: VideoData = {
-    video_details: {
-      id: video.videoDetails.videoId,
-      title: video.videoDetails.title,
-      description: video.videoDetails.description || "",
-      duration: video.videoDetails.lengthSeconds,
-      thumbnail: video.videoDetails.thumbnails[0].url,
-      author: video.videoDetails.author.name,
-    },
-    format: Array.from(formatMap.values()),
-  };
-
-  if (!videoData) {
-    return new Response("An error occurred while fetching video data", {
-      status: 500,
-    });
+  const videoId = extractVideoId(url);
+  if (!videoId) {
+    return new Response("Invalid URL", { status: 400 });
   }
 
-  const date =
-    video.player_response.microformat.playerMicroformatRenderer.publishDate ||
-    new Date().toISOString();
-
-  const metadata = {
-    title: videoData.video_details.title || "Unknown title",
-    artist: videoData.video_details.author || "Unknown artist",
-    author: videoData.video_details.author || "Unknown author",
-    year: date.split("T")[0],
-    genre: video.videoDetails.keywords
-      ? video.videoDetails.keywords.join(", ")
-      : "Unknown genre",
-    album: videoData.video_details.title || "Unknown album",
-  };
+  const innertube = await getInnertube();
 
   if (quality === "audio") {
+    const audioDetails = (await innertube.getBasicInfo(videoId)).basic_info;
+    const metadata = {
+      title: audioDetails.title ?? "Unknown title",
+      artist: audioDetails.author ?? "Unknown artist",
+      author: audioDetails.author ?? "Unknown author",
+      year: new Date().getFullYear().toString(),
+      genre: "Unknown genre",
+      album: audioDetails.title ?? "Unknown album",
+    };
+
     const ytdl = await selectYtDlpPath();
     const audioStream = ytdl.exec(url, {
       noCheckCertificates: true,
@@ -295,7 +266,47 @@ export async function GET(request: Request) {
     });
   }
 
-  const prisma = new PrismaClient();
+  const [basicInfo, formats] = await Promise.all([
+    innertube.getBasicInfo(videoId),
+    getVideoFormats(url),
+  ]);
+
+  const details = basicInfo.basic_info;
+
+  const formatMap = new Map<string, FormatData>();
+  formats.forEach((f) => {
+    if (!formatMap.has(f.qualityLabel)) {
+      formatMap.set(f.qualityLabel, f);
+    }
+    formatMap.set(String(f.itag), f);
+  });
+
+  const videoData: VideoData = {
+    video_details: {
+      id: videoId,
+      title: details.title ?? "",
+      description: details.short_description ?? "",
+      duration: String(details.duration ?? 0),
+      thumbnail: details.thumbnail?.[0]?.url ?? "",
+      author: details.author ?? "",
+    },
+    format: formats as FormatData[],
+  };
+
+  if (!videoData) {
+    return new Response("An error occurred while fetching video data", {
+      status: 500,
+    });
+  }
+
+  const metadata = {
+    title: details.title ?? "Unknown title",
+    artist: details.author ?? "Unknown artist",
+    author: details.author ?? "Unknown author",
+    year: new Date().getFullYear().toString(),
+    genre: "Unknown genre",
+    album: details.title ?? "Unknown album",
+  };
 
   const SANITIZED_TITLE = await sanitizeFilename(metadata.title || "video");
 
