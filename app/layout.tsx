@@ -3,10 +3,10 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import getConfig from "next/config";
 import Image from "next/image";
 import logo from "@/assets/logo.svg";
 import { Separator } from "@/components/ui/separator";
+import packageJson from "@/package.json";
 
 const satoshi = localFont({
   src: [
@@ -105,8 +105,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { publicRuntimeConfig } = getConfig();
-  const version = publicRuntimeConfig?.version;
+  const version = packageJson.version;
 
   return (
     <html lang="en">
