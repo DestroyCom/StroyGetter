@@ -1,8 +1,8 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import cron from "node-cron";
+import { prisma } from "@/lib/prisma";
 
 const DEFAULT_CLEANUP_INTERVAL = process.env.NODE_ENV === "production" ? "7" : "1";
 const CLEANUP_INTERVAL = process.env.CLEANUP_INTERVAL || DEFAULT_CLEANUP_INTERVAL;
@@ -12,8 +12,6 @@ const CRON = process.env.CRON || DEFAULT_CRON;
 
 export const initializeCleanup = async () => {
   cron.schedule(CRON, async () => {
-    const prisma = new PrismaClient();
-
     try {
       console.log("Starting cleanup...");
       const expirationDate = new Date();
@@ -44,7 +42,6 @@ export const initializeCleanup = async () => {
       console.error("Error during cleanup:", error);
     } finally {
       console.log("Cleanup finished.");
-      await prisma.$disconnect();
     }
   });
 };
