@@ -21,7 +21,9 @@ export const VideoSelect = () => {
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
 
-  const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
+  const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(
+    null,
+  );
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
 
   const [selectedQuality, setSelectedQuality] = useState<string>("audio");
@@ -80,7 +82,8 @@ export const VideoSelect = () => {
         const currentTime = Date.now();
         const elapsedTime = currentTime - startTime;
 
-        const newProgress = maxProgress * (1 - Math.exp(-elapsedTime / incrementDuration));
+        const newProgress =
+          maxProgress * (1 - Math.exp(-elapsedTime / incrementDuration));
 
         setLoadProgress(newProgress);
 
@@ -136,7 +139,7 @@ export const VideoSelect = () => {
           <div
             className={clsx(
               "mx-2 flex flex-col justify-end md:my-2 md:flex-row",
-              isDownloading || downloadError ? "hidden" : "flex"
+              isDownloading || downloadError ? "hidden" : "flex",
             )}
           >
             <Select
@@ -168,14 +171,27 @@ export const VideoSelect = () => {
                         className="flex justify-between"
                         id={`quality-select-${format.qualityLabel}`}
                       >
-                        <span className="my-auto">{format.qualityLabel}</span>{" "}
+                        <span className="my-auto">
+                          {format.qualityLabel}
+                        </span>{" "}
                       </p>
                     </SelectItem>
                   );
                 })}
+                <SelectItem
+                  value="audio-library-ready"
+                  id="quality-select-library"
+                >
+                  <p
+                    className="flex justify-between"
+                    id="quality-select-library"
+                  >
+                    <span className="my-auto">Audio - Library Ready</span>
+                  </p>
+                </SelectItem>
                 <SelectItem value="audio" id="quality-select-music">
                   <p className="flex justify-between" id="quality-select-music">
-                    <span className="my-auto">Audio (mp3)</span>{" "}
+                    <span className="my-auto">Audio - mp3</span>
                   </p>
                 </SelectItem>
               </SelectContent>
@@ -190,18 +206,26 @@ export const VideoSelect = () => {
                 setIsDownloading(true);
 
                 try {
-                  const video = await fetch(
-                    `/api/video-converter?url=${videoUrl}&quality=${selectedQuality}`,
-                    {
-                      method: "GET",
-                    }
-                  );
+                  let apiUrl: string;
+                  if (selectedQuality === "audio") {
+                    apiUrl = `/api/download/audio?url=${videoUrl}`;
+                  } else if (selectedQuality === "audio-library-ready") {
+                    apiUrl = `/api/download/audio-library-ready?url=${videoUrl}`;
+                  } else {
+                    apiUrl = `/api/download/video?url=${videoUrl}&quality=${selectedQuality}`;
+                  }
+
+                  const video = await fetch(apiUrl, { method: "GET" });
 
                   if (!video.ok) {
                     throw new Error("An error occurred while fetching video");
                   }
 
-                  const extension = selectedQuality === "audio" ? "mp3" : "mp4";
+                  const extension =
+                    selectedQuality === "audio" ||
+                    selectedQuality === "audio-library-ready"
+                      ? "mp3"
+                      : "mp4";
 
                   const blob = await video.blob();
                   const url = URL.createObjectURL(blob);
@@ -212,15 +236,18 @@ export const VideoSelect = () => {
                   URL.revokeObjectURL(url);
                 } catch (e) {
                   console.error(e);
-                  setDownloadError("An error occurred while downloading the video");
+                  setDownloadError(
+                    "An error occurred while downloading the video",
+                  );
                 }
                 setIsDownloading(false);
               }}
               className={clsx(
                 "flex w-full flex-row justify-center rounded-lg border-2 border-transparent bg-[#102F42] px-4 py-2 text-center font-bold text-white transition-all ease-in-out",
                 "md:mx-2",
-                !isDownloading && "hover:cursor-pointer hover:border-primary hover:bg-secondary",
-                isDownloading && "hidden opacity-50 md:flex"
+                !isDownloading &&
+                  "hover:cursor-pointer hover:border-primary hover:bg-secondary",
+                isDownloading && "hidden opacity-50 md:flex",
               )}
             >
               Download <Download className="ml-2" size={24} />
@@ -232,10 +259,12 @@ export const VideoSelect = () => {
               "mx-2 my-auto flex h-auto flex-col justify-end",
               "md:my-2 md:h-10 md:flex-row",
               isDownloading || downloadError ? "!h-10" : null,
-              isDownloading || downloadError ? "flex" : "hidden"
+              isDownloading || downloadError ? "flex" : "hidden",
             )}
           >
-            {isDownloading && <Progress value={loadProgress} className="my-auto" />}
+            {isDownloading && (
+              <Progress value={loadProgress} className="my-auto" />
+            )}
 
             {downloadError && (
               <p className="my-auto mx-auto text-center font-bold text-white md:text-xl">
