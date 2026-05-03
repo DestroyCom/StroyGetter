@@ -9,10 +9,7 @@ export interface EmbedOptions {
   lyricsLanguage?: string;
 }
 
-export async function embedId3Tags(
-  mp3Path: string,
-  opts: EmbedOptions,
-): Promise<void> {
+export async function embedId3Tags(mp3Path: string, opts: EmbedOptions): Promise<void> {
   const { metadata, sylt, plainLyrics, lyricsLanguage = "eng" } = opts;
 
   const tags: NodeID3.Tags = {
@@ -28,7 +25,7 @@ export async function embedId3Tags(
   // Cover art — fetched from external URL (MusicBrainz CAA or iTunes)
   if (metadata.coverUrl) {
     try {
-      const res = await fetch(metadata.coverUrl);
+      const res = await fetch(metadata.coverUrl, { signal: AbortSignal.timeout(5000) });
       if (res.ok) {
         const buf = Buffer.from(await res.arrayBuffer());
         const ct = res.headers.get("content-type") ?? "image/jpeg";
@@ -69,7 +66,7 @@ export async function embedId3Tags(
   const hasSylt = (sylt?.length ?? 0) > 0;
   const hasUslt = !!plainLyrics;
   console.log(
-    `[embed] writing tags — sylt=${hasSylt} (${sylt?.length ?? 0} lines) uslt=${hasUslt}`,
+    `[embed] writing tags — sylt=${hasSylt} (${sylt?.length ?? 0} lines) uslt=${hasUslt}`
   );
 
   const result = NodeID3.write(tags, mp3Path);

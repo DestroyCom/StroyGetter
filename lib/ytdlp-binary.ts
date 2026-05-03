@@ -11,7 +11,6 @@ export function getYtDlpBinaryPath(): string {
     path.join(process.cwd(), "node_modules/youtube-dl-exec/bin", filename),
   ];
   _bin = candidates.find((p) => fs.existsSync(p)) ?? null;
-  if (!_bin)
-    throw new Error(`yt-dlp not found. Searched: ${candidates.join(", ")}`);
+  if (!_bin) throw new Error(`yt-dlp not found. Searched: ${candidates.join(", ")}`);
   return _bin;
 }

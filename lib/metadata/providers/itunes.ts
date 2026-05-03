@@ -7,6 +7,7 @@ export const itunesProvider: MetadataProvider = {
       const term = encodeURIComponent(`${artist} ${title}`);
       const res = await fetch(
         `https://itunes.apple.com/search?term=${term}&media=music&entity=song&limit=5`,
+        { signal: AbortSignal.timeout(8000) }
       );
       if (!res.ok) return null;
 
@@ -16,7 +17,7 @@ export const itunesProvider: MetadataProvider = {
 
       const artworkUrl = (track.artworkUrl100 as string | undefined)?.replace(
         "100x100bb",
-        "600x600bb",
+        "600x600bb"
       );
 
       const releaseYear = track.releaseDate

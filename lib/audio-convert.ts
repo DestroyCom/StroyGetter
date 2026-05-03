@@ -6,11 +6,16 @@ const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 const YT_DLP_FLAGS = [
   "--no-check-certificates",
   "--no-warnings",
-  "--max-filesize", MAX_FILESIZE,
-  "--add-header", "referer:youtube.com",
-  "--add-header", "user-agent:googlebot",
-  "-f", "ba",
-  "-o", "-",
+  "--max-filesize",
+  MAX_FILESIZE,
+  "--add-header",
+  "referer:youtube.com",
+  "--add-header",
+  "user-agent:googlebot",
+  "-f",
+  "ba",
+  "-o",
+  "-",
 ];
 
 function spawnFfmpeg(ffmpegPath: string, args: string[]) {
@@ -21,17 +26,21 @@ function spawnFfmpeg(ffmpegPath: string, args: string[]) {
 export async function downloadAndConvertToMp3(
   url: string,
   mp3OutPath: string,
-  ffmpegPath: string,
+  ffmpegPath: string
 ): Promise<void> {
   const ytDlpBin = getYtDlpBinaryPath();
 
   await new Promise<void>((resolve, reject) => {
     const ytdlProc = spawn(ytDlpBin, [...YT_DLP_FLAGS, url]);
     const ffmpegProc = spawnFfmpeg(ffmpegPath, [
-      "-i", "pipe:0",
-      "-codec:a", "libmp3lame",
-      "-q:a", "2",
-      "-y", mp3OutPath,
+      "-i",
+      "pipe:0",
+      "-codec:a",
+      "libmp3lame",
+      "-q:a",
+      "2",
+      "-y",
+      mp3OutPath,
     ]);
 
     ytdlProc.stdout.pipe(ffmpegProc.stdin);
@@ -62,35 +71,48 @@ export async function downloadAudioWithFfmpegTags(
   url: string,
   mp3OutPath: string,
   ffmpegPath: string,
-  opts: { thumbPath?: string; tags?: AudioFfmpegTags } = {},
+  opts: { thumbPath?: string; tags?: AudioFfmpegTags } = {}
 ): Promise<void> {
   const { thumbPath, tags } = opts;
   const ytDlpBin = getYtDlpBinaryPath();
 
   const ffmpegArgs: string[] = [
-    "-i", "pipe:0",
+    "-i",
+    "pipe:0",
     ...(thumbPath ? ["-i", thumbPath] : []),
-    "-map", "0:a",
+    "-map",
+    "0:a",
     ...(thumbPath ? ["-map", "1:0"] : []),
-    "-codec:a", "libmp3lame",
-    "-q:a", "2",
+    "-codec:a",
+    "libmp3lame",
+    "-q:a",
+    "2",
     ...(thumbPath
       ? [
-          "-id3v2_version", "3",
-          "-metadata:s:v", "title=Album cover",
-          "-metadata:s:v", "comment=Cover (front)",
+          "-id3v2_version",
+          "3",
+          "-metadata:s:v",
+          "title=Album cover",
+          "-metadata:s:v",
+          "comment=Cover (front)",
         ]
       : []),
     ...(tags
       ? [
-          "-metadata", `title=${tags.title}`,
-          "-metadata", `artist=${tags.artist}`,
-          "-metadata", `year=${tags.year}`,
-          "-metadata", `genre=${tags.genre}`,
-          "-metadata", `album=${tags.album}`,
+          "-metadata",
+          `title=${tags.title}`,
+          "-metadata",
+          `artist=${tags.artist}`,
+          "-metadata",
+          `year=${tags.year}`,
+          "-metadata",
+          `genre=${tags.genre}`,
+          "-metadata",
+          `album=${tags.album}`,
         ]
       : []),
-    "-y", mp3OutPath,
+    "-y",
+    mp3OutPath,
   ];
 
   await new Promise<void>((resolve, reject) => {

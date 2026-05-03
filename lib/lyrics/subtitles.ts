@@ -14,7 +14,7 @@ function findVttUrl(tracks: SubTrack): string | null {
  */
 export async function fetchSubtitles(
   subsMap: Record<string, SubTrack> | undefined,
-  targetLang: string | null | undefined = "en",
+  targetLang: string | null | undefined = "en"
 ): Promise<SyltEntry[] | null> {
   if (!subsMap) return null;
 
@@ -25,9 +25,7 @@ export async function fetchSubtitles(
   // Exact match first, then regional variants of the same base language
   const preferred = [
     lang,
-    ...allLangs.filter(
-      (k) => k !== lang && (k === baseLang || k.startsWith(`${baseLang}-`)),
-    ),
+    ...allLangs.filter((k) => k !== lang && (k === baseLang || k.startsWith(`${baseLang}-`))),
   ];
 
   for (const candidate of preferred) {
@@ -38,7 +36,7 @@ export async function fetchSubtitles(
     if (!url) continue;
 
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
       if (!res.ok) continue;
       const entries = vttToSylt(await res.text());
       if (entries.length > 0) return entries;

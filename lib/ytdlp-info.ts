@@ -23,12 +23,7 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
 
   const seen = new Set<string>();
   return rawFormats
-    .filter(
-      (f) =>
-        f.vcodec?.startsWith("avc") &&
-        f.acodec === "none" &&
-        f.height,
-    )
+    .filter((f) => f.vcodec?.startsWith("avc") && f.acodec === "none" && f.height)
     .sort((a, b) => (b.height ?? 0) - (a.height ?? 0))
     .reduce<FormatData[]>((acc, f) => {
       const itag = parseInt(f.format_id, 10);

@@ -11,7 +11,7 @@ export const musicbrainzProvider: MetadataProvider = {
       const query = `recording:"${title}" AND artist:"${artist}"`;
       const res = await fetch(
         `${MB_BASE}/recording?query=${encodeURIComponent(query)}&fmt=json&limit=5`,
-        { headers: { "User-Agent": UA } },
+        { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(8000) }
       );
       if (!res.ok) return null;
 
@@ -36,8 +36,6 @@ export const musicbrainzProvider: MetadataProvider = {
       };
 
       if (releaseId) {
-        // MusicBrainz rate-limit: 1 req/s — add delay before second request
-        await new Promise((r) => setTimeout(r, 1000));
         metadata.coverUrl = `${CAA_BASE}/release/${releaseId}/front`;
       }
 

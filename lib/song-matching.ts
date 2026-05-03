@@ -37,9 +37,7 @@ export async function getYtDlpFullInfo(url: string): Promise<YtDlpFullInfo> {
 // Matches "Artist - Title" and variants like "Artist – Title (Official Video)"
 const SEPARATOR_RE = /^(.+?)\s*[-–—]\s*(.+?)(?:\s*[\(\[].*[\)\]])*\s*$/;
 
-function parseTitleArtist(
-  ytTitle: string,
-): { artist: string; title: string } | null {
+function parseTitleArtist(ytTitle: string): { artist: string; title: string } | null {
   const match = ytTitle.match(SEPARATOR_RE);
   if (!match) return null;
 
@@ -55,7 +53,7 @@ function parseTitleArtist(
 export function matchSong(
   info: YtDlpFullInfo,
   fallbackTitle: string,
-  fallbackArtist: string,
+  fallbackArtist: string
 ): CanonicalMatch {
   const common = {
     duration: info.duration,

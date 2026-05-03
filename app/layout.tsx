@@ -146,8 +146,7 @@ export default function RootLayout({
               rel="noreferrer noopener"
               title="Code source of StroyGetter"
             >
-              <SiGithub className="mr-4" />{" "}
-              <p className="underline">The project code</p>
+              <SiGithub className="mr-4" /> <p className="underline">The project code</p>
             </a>
           </div>
         </header>
@@ -158,9 +157,8 @@ export default function RootLayout({
             <div className="w-full lg:w-1/2">
               <h3 className="my-2 text-xl">What is StroyGetter ?</h3>
               <p>
-                StroyGetter is a video downloader, so you can download almost
-                any video <span className="italic">(of your own)</span> in any
-                available quality.
+                StroyGetter is a video downloader, so you can download almost any video{" "}
+                <span className="italic">(of your own)</span> in any available quality.
                 <br />
                 Audio-only conversion is also available.
               </p>
@@ -171,30 +169,24 @@ export default function RootLayout({
             />
             <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
             <div className="w-full lg:w-1/2">
-              <h3 className="my-2 text-xl">
-                Why use StroyGetter and not another alternative?
-              </h3>
+              <h3 className="my-2 text-xl">Why use StroyGetter and not another alternative?</h3>
               <p>
-                StroyGetter is totally free and requires no software download to
-                achieve maximum video quality.
+                StroyGetter is totally free and requires no software download to achieve maximum
+                video quality.
                 <br />
-                What&apos;s more, StroyGetter is Open-Source, meaning that
-                anyone can view the code or contribute to it, which limits any
-                possible security loopholes.
+                What&apos;s more, StroyGetter is Open-Source, meaning that anyone can view the code
+                or contribute to it, which limits any possible security loopholes.
               </p>
             </div>
           </div>
           <Separator className="my-4 h-0.5 w-full bg-primary/50" />
           <div className="flex flex-col lg:flex-row lg:justify-between">
             <div className="w-full lg:w-1/2">
-              <h3 className="my-2 text-xl">
-                Totally free, where&apos;s the catch ?
-              </h3>
+              <h3 className="my-2 text-xl">Totally free, where&apos;s the catch ?</h3>
               <p>
-                There&apos;s no catch, we just use statistical tools to find out
-                how people use the site and count visitors, and that&apos;s it.
-                Of course, depending on traffic, we reserve the right to add
-                non-intrusive ads to finance server costs.
+                There&apos;s no catch, we just use statistical tools to find out how people use the
+                site and count visitors, and that&apos;s it. Of course, depending on traffic, we
+                reserve the right to add non-intrusive ads to finance server costs.
               </p>
             </div>
             <Separator
@@ -205,13 +197,11 @@ export default function RootLayout({
             <div className="w-full lg:w-1/2">
               <h3 className="my-2 text-xl">Why is my conversion slow ?</h3>
               <p>
-                The conversion speed depends on the quality of the video you
-                want to download. The higher the quality, the longer the
-                conversion time.
+                The conversion speed depends on the quality of the video you want to download. The
+                higher the quality, the longer the conversion time.
                 <br />
-                If you have a slow internet connection or if a lot of people are
-                using the site at the same time, the conversion may be impacted
-                as well.
+                If you have a slow internet connection or if a lot of people are using the site at
+                the same time, the conversion may be impacted as well.
               </p>
             </div>
           </div>

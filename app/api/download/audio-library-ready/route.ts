@@ -1,5 +1,3 @@
-"use server";
-
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -45,21 +43,18 @@ export async function GET(request: Request) {
   console.log(`[library-ready] Matched: "${match.artist}" - "${match.title}"`);
 
   try {
-    const [{ meta, lyrics }] = await Promise.all([
-      (async () => {
-        const [meta, lyrics] = await Promise.all([
-          fetchSongMetadata({ artist: match.artist, title: match.title }),
-          fetchLyrics({
-            artist: match.artist,
-            title: match.title,
-            duration: match.duration,
-            language: match.language,
-            subtitles: match.subtitles,
-            automatic_captions: match.automatic_captions,
-          }),
-        ]);
-        return { meta, lyrics };
-      })(),
+    const [[meta, lyrics]] = await Promise.all([
+      Promise.all([
+        fetchSongMetadata({ artist: match.artist, title: match.title }),
+        fetchLyrics({
+          artist: match.artist,
+          title: match.title,
+          duration: match.duration,
+          language: match.language,
+          subtitles: match.subtitles,
+          automatic_captions: match.automatic_captions,
+        }),
+      ]),
       downloadAndConvertToMp3(url, mp3Path, ffmpegPath),
     ]);
 

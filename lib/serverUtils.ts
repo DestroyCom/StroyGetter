@@ -41,14 +41,15 @@ export async function initializeConf(conf: Conf) {
   return conf;
 }
 
-
 async function locateFfmpegPath(): Promise<string> {
   const detectCommand = os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
   try {
     const localPath = execSync(detectCommand).toString().trim();
     if (localPath) return localPath;
   } catch (err) {
-    console.debug(`System FFmpeg lookup via "${detectCommand}" failed: ${err instanceof Error ? err.message : err}`);
+    console.debug(
+      `System FFmpeg lookup via "${detectCommand}" failed: ${err instanceof Error ? err.message : err}`
+    );
   }
   const { default: staticPath } = await import("ffmpeg-static");
   if (staticPath) return staticPath;

@@ -1,5 +1,3 @@
-"use server";
-
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
@@ -21,16 +19,21 @@ function mergeAudioVideo(
   audioPath: string,
   mergedPath: string,
   ffmpegPath: string,
-  queryData: { title: string; url: string; quality: string },
+  queryData: { title: string; url: string; quality: string }
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
     const proc = spawn(ffmpegPath, [
-      "-i", videoPath,
-      "-i", audioPath,
-      "-c:v", "copy",
-      "-c:a", "copy",
-      "-y", mergedPath,
+      "-i",
+      videoPath,
+      "-i",
+      audioPath,
+      "-c:v",
+      "copy",
+      "-c:a",
+      "copy",
+      "-y",
+      mergedPath,
     ]);
 
     proc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
@@ -95,10 +98,9 @@ export async function GET(request: Request) {
 
   const selectedFormat = formatMap.get(quality);
   if (!selectedFormat) {
-    return new Response(
-      `Format not found. Available: ${Array.from(formatMap.keys()).join(", ")}`,
-      { status: 400 },
-    );
+    return new Response(`Format not found. Available: ${Array.from(formatMap.keys()).join(", ")}`, {
+      status: 400,
+    });
   }
 
   const videoData: VideoData = {
@@ -115,7 +117,11 @@ export async function GET(request: Request) {
 
   const sanitizedTitle = sanitizeFilename(title || "video");
   const audioPath = path.join(TEMP_DIR, "source", `audio_${sanitizedTitle}_${Date.now()}.mp4`);
-  const videoPath = path.join(TEMP_DIR, "source", `video_${sanitizedTitle}_${quality}_${Date.now()}.mp4`);
+  const videoPath = path.join(
+    TEMP_DIR,
+    "source",
+    `video_${sanitizedTitle}_${quality}_${Date.now()}.mp4`
+  );
   const mergedName = `${videoData.video_details.id}_${quality}_${sanitizedTitle}`;
   const mergedPath = path.join(TEMP_DIR, "cached", `${mergedName}.mp4`);
   const cacheKey = `${videoId}:${quality}`;

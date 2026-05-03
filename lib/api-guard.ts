@@ -1,9 +1,10 @@
 /**
- * Blocks requests that do not originate from the StroyGetter frontend.
+ * Best-effort check that a request likely came from the StroyGetter frontend.
  *
- * Browsers automatically set Sec-Fetch-Site: same-origin for same-origin
- * fetch() calls. curl and direct navigation do not, so they get a 403.
- * A Referer fallback covers the (rare) case of browsers that omit Sec-Fetch-Site.
+ * Sec-Fetch-Site and Referer are trivially spoofable — they are not suitable
+ * for access control and only act as a client fingerprint for ordinary
+ * browsers. For real protection, add auth (Authorization header / signed
+ * cookie) or issue short-lived HMAC tokens tied to the user session.
  */
 export function guardApiRequest(request: Request): Response | null {
   const fetchSite = request.headers.get("sec-fetch-site");

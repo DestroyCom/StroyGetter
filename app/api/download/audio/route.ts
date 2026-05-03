@@ -1,13 +1,11 @@
-"use server";
-
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { guardApiRequest } from "@/lib/api-guard";
 import { downloadAudioWithFfmpegTags } from "@/lib/audio-convert";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
-import { guardApiRequest } from "@/lib/api-guard";
-import { getServerConf } from "@/lib/server-conf";
 import { TEMP_DIR, buildContentDisposition, cleanFiles } from "@/lib/route-utils";
+import { getServerConf } from "@/lib/server-conf";
 
 export async function GET(request: Request) {
   const guard = guardApiRequest(request);
@@ -31,7 +29,7 @@ export async function GET(request: Request) {
   const thumbnails = info.thumbnail ?? [];
   const bestThumb = thumbnails.reduce(
     (best, t) => ((t.width ?? 0) > (best.width ?? 0) ? t : best),
-    thumbnails[0] ?? { url: "" },
+    thumbnails[0] ?? { url: "" }
   );
 
   const thumbPath = path.join(TEMP_DIR, "source", `thumb_${videoId}.jpg`);
@@ -51,28 +49,36 @@ export async function GET(request: Request) {
   const mp3Path = path.join(TEMP_DIR, "source", `audio_${videoId}_${Date.now()}.mp3`);
 
   try {
-    await downloadAudioWithFfmpegTags(url, mp3Path, ffmpegPath, {
-      thumbPath: hasThumb ? thumbPath : undefined,
-      tags: {
-        title,
-        artist,
-        year: new Date().getFullYear().toString(),
-        genre: "Unknown",
-        album: title,
+    try {
+      await downloadAudioWithFfmpegTags(url, mp3Path, ffmpegPath, {
+        thumbPath: hasThumb ? thumbPath : undefined,
+        tags: {
+          title,
+          artist,
+          year: new Date().getFullYear().toString(),
+          genre: "Unknown",
+          album: title,
+        },
+      });
+    } catch (err) {
+      cleanFiles([mp3Path]);
+      throw err;
+    } finally {
+      if (hasThumb) cleanFiles([thumbPath]);
+    }
+
+    const stream = fs.createReadStream(mp3Path);
+    stream.on("close", () => cleanFiles([mp3Path]));
+
+    // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
+    return new NextResponse(stream as any, {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Content-Disposition": buildContentDisposition(title, "mp3"),
       },
     });
-  } finally {
-    if (hasThumb) cleanFiles([thumbPath]);
+  } catch (err) {
+    console.error("[audio] Error:", err);
+    return new Response("An error occurred while processing", { status: 500 });
   }
-
-  const stream = fs.createReadStream(mp3Path);
-  stream.on("close", () => cleanFiles([mp3Path]));
-
-  // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
-  return new NextResponse(stream as any, {
-    headers: {
-      "Content-Type": "audio/mpeg",
-      "Content-Disposition": buildContentDisposition(title, "mp3"),
-    },
-  });
 }
