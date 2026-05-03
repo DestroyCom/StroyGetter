@@ -73,6 +73,7 @@ pnpm dev                      # starts on http://localhost:3000
 | `DATABASE_URL` | — | **Required.** SQLite path, e.g. `file:./database/dev.db` |
 | `CLEANUP_INTERVAL` | `7` (prod) / `1` (dev) | Days before cached files expire |
 | `CRON` | `0 0 * * *` (prod) / `*/1 * * * *` (dev) | Cleanup cron schedule |
+| `MAX_FILESIZE` | `8G` | Max size per downloaded stream passed to yt-dlp (`--max-filesize`). Prevents disk exhaustion from oversized videos. |
 
 ### With Docker (local)
 

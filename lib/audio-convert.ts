@@ -1,9 +1,12 @@
 import { spawn } from "node:child_process";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 
+const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
+
 const YT_DLP_FLAGS = [
   "--no-check-certificates",
   "--no-warnings",
+  "--max-filesize", MAX_FILESIZE,
   "--add-header", "referer:youtube.com",
   "--add-header", "user-agent:googlebot",
   "-f", "ba",

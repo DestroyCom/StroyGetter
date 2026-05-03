@@ -258,7 +258,7 @@ export const VideoSelect = () => {
             className={clsx(
               "mx-2 my-auto flex h-auto flex-col justify-end",
               "md:my-2 md:h-10 md:flex-row",
-              isDownloading || downloadError ? "!h-10" : null,
+              isDownloading || downloadError ? "h-10!" : null,
               isDownloading || downloadError ? "flex" : "hidden",
             )}
           >

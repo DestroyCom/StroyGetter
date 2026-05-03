@@ -3,10 +3,12 @@ import * as fs from "node:fs";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
+const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 
 const YT_DLP_BASE = [
   "--no-check-certificates",
   "--no-warnings",
+  "--max-filesize", MAX_FILESIZE,
   "--add-header", "referer:youtube.com",
   "--add-header", "user-agent:googlebot",
   "-o", "-",
