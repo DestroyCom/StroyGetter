@@ -1,3 +1,4 @@
+import { iso6393 } from "iso-639-3";
 import { fetchLrclib } from "./lrclib";
 import { fetchSubtitles } from "./subtitles";
 import type { SyltEntry } from "./types";
@@ -7,6 +8,15 @@ export type { SyltEntry };
 export interface LyricsResult {
   sylt: SyltEntry[];
   plain?: string;
+  /** ISO 639-2 3-letter code (e.g. "fra", "jpn") — defaults to "eng" if unknown */
+  language: string;
+}
+
+function toIso6392(bcp47?: string): string {
+  if (!bcp47) return "eng";
+  const code = bcp47.split("-")[0].toLowerCase();
+  const entry = iso6393.find((l) => l.iso6391 === code);
+  return entry?.iso6393 ?? "eng";
 }
 
 // Allow ±20% duration drift before discarding synced lyrics
@@ -33,11 +43,13 @@ export interface LyricsQuery {
 export async function fetchLyrics(query: LyricsQuery): Promise<LyricsResult | null> {
   const tag = `[lyrics] "${query.artist} - ${query.title}"`;
 
+  const lang = toIso6392(query.language);
+
   // 1. Manual YouTube subs — artist-uploaded, best quality, no duration check needed
   const manualSubs = await fetchSubtitles(query.subtitles, query.language);
   if (manualSubs && manualSubs.length > 0) {
     console.log(`${tag} source=youtube-manual lines=${manualSubs.length}`);
-    return { sylt: manualSubs };
+    return { sylt: manualSubs, language: lang };
   }
 
   // 2. LRClib (canonical title/artist improves match accuracy)
@@ -45,11 +57,11 @@ export async function fetchLyrics(query: LyricsQuery): Promise<LyricsResult | nu
   if (lrcResult) {
     if (lrcResult.sylt.length > 0 && validateDuration(lrcResult.sylt, query.duration)) {
       console.log(`${tag} source=lrclib synced lines=${lrcResult.sylt.length}`);
-      return { sylt: lrcResult.sylt, plain: lrcResult.plain || undefined };
+      return { sylt: lrcResult.sylt, plain: lrcResult.plain || undefined, language: lang };
     }
     if (lrcResult.plain) {
       console.log(`${tag} source=lrclib plain-only (sylt duration mismatch or unavailable)`);
-      return { sylt: [], plain: lrcResult.plain };
+      return { sylt: [], plain: lrcResult.plain, language: lang };
     }
   }
 
@@ -57,7 +69,7 @@ export async function fetchLyrics(query: LyricsQuery): Promise<LyricsResult | nu
   const autoSubs = await fetchSubtitles(query.automatic_captions, query.language);
   if (autoSubs && autoSubs.length > 0 && validateDuration(autoSubs, query.duration)) {
     console.log(`${tag} source=youtube-auto lines=${autoSubs.length}`);
-    return { sylt: autoSubs };
+    return { sylt: autoSubs, language: lang };
   }
 
   console.log(`${tag} source=none — no lyrics found`);

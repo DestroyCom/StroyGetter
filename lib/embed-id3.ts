@@ -6,13 +6,14 @@ export interface EmbedOptions {
   metadata: SongMetadata;
   sylt?: SyltEntry[];
   plainLyrics?: string;
+  lyricsLanguage?: string;
 }
 
 export async function embedId3Tags(
   mp3Path: string,
   opts: EmbedOptions,
 ): Promise<void> {
-  const { metadata, sylt, plainLyrics } = opts;
+  const { metadata, sylt, plainLyrics, lyricsLanguage = "eng" } = opts;
 
   const tags: NodeID3.Tags = {
     title: metadata.title,
@@ -52,7 +53,7 @@ export async function embedId3Tags(
   if (sylt && sylt.length > 0) {
     tags.synchronisedLyrics = [
       {
-        language: "eng",
+        language: lyricsLanguage,
         timeStampFormat: NodeID3.TagConstants.TimeStampFormat.MILLISECONDS,
         contentType: NodeID3.TagConstants.SynchronisedLyrics.ContentType.LYRICS,
         synchronisedText: sylt,
@@ -62,7 +63,7 @@ export async function embedId3Tags(
 
   // USLT — plain lyrics fallback
   if (plainLyrics) {
-    tags.unsynchronisedLyrics = { language: "eng", text: plainLyrics };
+    tags.unsynchronisedLyrics = { language: lyricsLanguage, text: plainLyrics };
   }
 
   const hasSylt = (sylt?.length ?? 0) > 0;

@@ -81,6 +81,7 @@ export async function GET(request: Request) {
       metadata: songMeta,
       sylt: lyrics?.sylt,
       plainLyrics: lyrics?.plain,
+      lyricsLanguage: lyrics?.language,
     });
 
     const stream = fs.createReadStream(mp3Path);
