@@ -35,6 +35,7 @@ prisma/schema.prisma  # SQLite: Video (url unique) → File (hash unique)
 DATABASE_URL=file:./database/dev.db   # SQLite path (required)
 CLEANUP_INTERVAL=7                    # Days before file expiry (default: 7 prod, 1 dev)
 CRON=0 0 * * *                        # Cleanup schedule (default: daily prod, every min dev)
+MAX_FILESIZE=8G                       # Max size per yt-dlp stream (default: 8G). Passed as --max-filesize to yt-dlp.
 ```
 
 ## Key Patterns

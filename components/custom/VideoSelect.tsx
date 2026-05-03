@@ -173,9 +173,14 @@ export const VideoSelect = () => {
                     </SelectItem>
                   );
                 })}
+                <SelectItem value="audio-library-ready" id="quality-select-library">
+                  <p className="flex justify-between" id="quality-select-library">
+                    <span className="my-auto">Audio - Library Ready</span>
+                  </p>
+                </SelectItem>
                 <SelectItem value="audio" id="quality-select-music">
                   <p className="flex justify-between" id="quality-select-music">
-                    <span className="my-auto">Audio (mp3)</span>{" "}
+                    <span className="my-auto">Audio - mp3</span>
                   </p>
                 </SelectItem>
               </SelectContent>
@@ -190,18 +195,26 @@ export const VideoSelect = () => {
                 setIsDownloading(true);
 
                 try {
-                  const video = await fetch(
-                    `/api/video-converter?url=${videoUrl}&quality=${selectedQuality}`,
-                    {
-                      method: "GET",
-                    }
-                  );
+                  let apiUrl: string;
+                  const encodedUrl = encodeURIComponent(videoUrl ?? "");
+                  if (selectedQuality === "audio") {
+                    apiUrl = `/api/download/audio?url=${encodedUrl}`;
+                  } else if (selectedQuality === "audio-library-ready") {
+                    apiUrl = `/api/download/audio-library-ready?url=${encodedUrl}`;
+                  } else {
+                    apiUrl = `/api/download/video?url=${encodedUrl}&quality=${selectedQuality}`;
+                  }
+
+                  const video = await fetch(apiUrl, { method: "GET" });
 
                   if (!video.ok) {
                     throw new Error("An error occurred while fetching video");
                   }
 
-                  const extension = selectedQuality === "audio" ? "mp3" : "mp4";
+                  const extension =
+                    selectedQuality === "audio" || selectedQuality === "audio-library-ready"
+                      ? "mp3"
+                      : "mp4";
 
                   const blob = await video.blob();
                   const url = URL.createObjectURL(blob);
@@ -231,7 +244,7 @@ export const VideoSelect = () => {
             className={clsx(
               "mx-2 my-auto flex h-auto flex-col justify-end",
               "md:my-2 md:h-10 md:flex-row",
-              isDownloading || downloadError ? "!h-10" : null,
+              isDownloading || downloadError ? "h-10!" : null,
               isDownloading || downloadError ? "flex" : "hidden"
             )}
           >
