@@ -7,7 +7,9 @@ import { embedId3Tags } from "@/lib/embed-id3";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { fetchLyrics } from "@/lib/lyrics";
 import { fetchSongMetadata } from "@/lib/metadata";
+import { deezerProvider } from "@/lib/metadata/providers/deezer";
 import { itunesProvider } from "@/lib/metadata/providers/itunes";
+import { youtubeMusicProvider } from "@/lib/metadata/providers/youtube-music";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
 import { getYtDlpFullInfo, matchSong } from "@/lib/song-matching";
@@ -44,10 +46,12 @@ export async function GET(request: Request) {
   console.log(`[library-ready] Matched: "${match.artist}" - "${match.title}"`);
 
   try {
-    const [[meta, itunesMeta, lyrics]] = await Promise.all([
+    const [[meta, itunesMeta, deezerMeta, ytMusicMeta, lyrics]] = await Promise.all([
       Promise.all([
         fetchSongMetadata({ artist: match.artist, title: match.title }),
         itunesProvider.search({ artist: match.artist, title: match.title }),
+        deezerProvider.search({ artist: match.artist, title: match.title }),
+        youtubeMusicProvider.search({ artist: match.artist, title: match.title }),
         fetchLyrics({
           artist: match.artist,
           title: match.title,
@@ -76,7 +80,7 @@ export async function GET(request: Request) {
 
     await embedId3Tags(mp3Path, {
       metadata: songMeta,
-      coverFallbacks: itunesMeta?.coverUrl ? [itunesMeta.coverUrl] : [],
+      coverFallbacks: [itunesMeta?.coverUrl, deezerMeta?.coverUrl, ytMusicMeta?.coverUrl].filter(Boolean) as string[],
       ytThumbnail,
       sylt: lyrics?.sylt,
       plainLyrics: lyrics?.plain,

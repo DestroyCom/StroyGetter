@@ -1,8 +1,9 @@
+import { deezerProvider } from "./providers/deezer";
 import { itunesProvider } from "./providers/itunes";
 import { musicbrainzProvider } from "./providers/musicbrainz";
 import type { SongMetadata } from "./types";
 
-const providers = [musicbrainzProvider, itunesProvider];
+const providers = [musicbrainzProvider, deezerProvider, itunesProvider];
 
 export async function fetchSongMetadata(query: {
   artist: string;
