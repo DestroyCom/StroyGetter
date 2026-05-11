@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site-config";
+import { updates } from "@/lib/updates";
 
 const BASE = siteConfig.url;
 
@@ -12,6 +13,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${BASE}/updates`,
+      lastModified: new Date(updates[0].date),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    ...updates.map((u) => ({
+      url: `${BASE}/updates/${u.slug}`,
+      lastModified: new Date(u.date),
+      changeFrequency: "never" as const,
+      priority: 0.6,
+    })),
     {
       url: `${BASE}/legal/terms`,
       lastModified: new Date("2026-05-07"),

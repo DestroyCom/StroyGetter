@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { label: "Formats", href: "/#formats" },
   { label: "FAQ", href: "/#faq" },
   { label: "Guide", href: "/how-to-download-youtube-videos" },
+  { label: "Updates", href: "/updates" },
 ];
 
 export function SiteHeader() {

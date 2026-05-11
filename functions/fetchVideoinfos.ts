@@ -19,10 +19,18 @@ export const getVideoInfos = async (url: string) => {
 
   const innertube = await getInnertube();
 
-  const [basicInfo, formats] = await Promise.all([
-    innertube.getBasicInfo(videoId),
-    getVideoFormats(url),
-  ]);
+  let basicInfo: Awaited<ReturnType<typeof innertube.getBasicInfo>>;
+  let formats: Awaited<ReturnType<typeof getVideoFormats>>;
+  try {
+    [basicInfo, formats] = await Promise.all([
+      innertube.getBasicInfo(videoId),
+      getVideoFormats(url),
+    ]);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to fetch video info";
+    const ytErr = msg.match(/ERROR: \[youtube\] [^:]+: (.+)/)?.[1];
+    return { error: ytErr ?? msg };
+  }
 
   const details = basicInfo.basic_info;
   const thumbnails = details.thumbnail ?? [];

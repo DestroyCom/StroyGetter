@@ -83,6 +83,14 @@ export function SiteFooter() {
             <ul className="flex flex-col gap-2.5 text-sm text-white/78">
               <li>
                 <Link
+                  href="/updates"
+                  className="hover:text-white transition-colors"
+                >
+                  Updates &amp; changelog
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/how-to-download-youtube-videos"
                   className="hover:text-white transition-colors"
                 >

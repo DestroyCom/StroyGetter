@@ -5,7 +5,9 @@ import type { SongMetadata } from "./metadata/types";
 
 export interface EmbedOptions {
   metadata: SongMetadata;
-  /** YouTube thumbnail URL used as fallback if the provider cover (metadata.coverUrl) fails */
+  /** Extra cover URLs tried in order after metadata.coverUrl, before ytThumbnail */
+  coverFallbacks?: string[];
+  /** YouTube thumbnail URL used as last-resort fallback */
   ytThumbnail?: string;
   sylt?: SyltEntry[];
   plainLyrics?: string;
@@ -48,7 +50,7 @@ async function fetchCoverBuffer(url: string): Promise<{ buf: Buffer; mime: strin
 }
 
 export async function embedId3Tags(mp3Path: string, opts: EmbedOptions): Promise<void> {
-  const { metadata, ytThumbnail, sylt, plainLyrics, lyricsLanguage = "eng" } = opts;
+  const { metadata, coverFallbacks, ytThumbnail, sylt, plainLyrics, lyricsLanguage = "eng" } = opts;
 
   const tags: NodeID3.Tags = {
     title: metadata.title,
@@ -60,8 +62,8 @@ export async function embedId3Tags(mp3Path: string, opts: EmbedOptions): Promise
     publisher: metadata.label,
   };
 
-  // Cover art — try provider cover (MusicBrainz CAA / iTunes) first, then YouTube thumbnail
-  const coverCandidates = [metadata.coverUrl, ytThumbnail].filter(Boolean) as string[];
+  // Cover art — try provider cover first, then extra fallbacks, then YouTube thumbnail
+  const coverCandidates = [metadata.coverUrl, ...(coverFallbacks ?? []), ytThumbnail].filter(Boolean) as string[];
   for (const url of coverCandidates) {
     const cover = await fetchCoverBuffer(url);
     if (cover) {

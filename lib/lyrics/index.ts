@@ -19,8 +19,14 @@ function toIso6392(bcp47?: string): string {
   return entry?.iso6393 ?? "eng";
 }
 
-// Allow ±20% duration drift before discarding synced lyrics
 const DURATION_THRESHOLD = 0.2;
+
+function syltToPlain(entries: SyltEntry[]): string {
+  return entries
+    .map((e) => e.text)
+    .filter(Boolean)
+    .join("\n");
+}
 
 function validateDuration(entries: SyltEntry[], durationSec?: number): boolean {
   if (!durationSec || entries.length === 0) return true;
@@ -49,7 +55,7 @@ export async function fetchLyrics(query: LyricsQuery): Promise<LyricsResult | nu
   const manualSubs = await fetchSubtitles(query.subtitles, query.language);
   if (manualSubs && manualSubs.length > 0) {
     console.log(`${tag} source=youtube-manual lines=${manualSubs.length}`);
-    return { sylt: manualSubs, language: lang };
+    return { sylt: manualSubs, plain: syltToPlain(manualSubs), language: lang };
   }
 
   // 2. LRClib (canonical title/artist improves match accuracy)
@@ -69,7 +75,7 @@ export async function fetchLyrics(query: LyricsQuery): Promise<LyricsResult | nu
   const autoSubs = await fetchSubtitles(query.automatic_captions, query.language);
   if (autoSubs && autoSubs.length > 0 && validateDuration(autoSubs, query.duration)) {
     console.log(`${tag} source=youtube-auto lines=${autoSubs.length}`);
-    return { sylt: autoSubs, language: lang };
+    return { sylt: autoSubs, plain: syltToPlain(autoSubs), language: lang };
   }
 
   console.log(`${tag} source=none — no lyrics found`);

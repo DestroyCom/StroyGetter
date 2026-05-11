@@ -65,17 +65,22 @@ export const VideoSelect = () => {
     setDownloadError(null);
     setIsLoading(true);
 
-    getVideoInfos(videoUrl).then((value) => {
-      if (value.error) {
-        setError(value.error);
+    getVideoInfos(videoUrl)
+      .then((value) => {
+        if (value.error) {
+          setError(value.error);
+          setIsLoading(false);
+          return;
+        }
+        setVideoData(value.video_details);
+        setFormats(value.format);
+        if (value.format?.[0]) setSelectedItag(value.format[0].itag.toString());
         setIsLoading(false);
-        return;
-      }
-      setVideoData(value.video_details);
-      setFormats(value.format);
-      if (value.format?.[0]) setSelectedItag(value.format[0].itag.toString());
-      setIsLoading(false);
-    });
+      })
+      .catch(() => {
+        setError("An error occurred while fetching video info.");
+        setIsLoading(false);
+      });
   }, [videoUrl]);
 
   useEffect(() => {
