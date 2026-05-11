@@ -1,34 +1,28 @@
-import { CircleCheckBig } from "lucide-react";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { VideoLoading } from "@/components/custom/VideoLoading";
 import { VideoSelect } from "@/components/custom/VideoSelect";
 
-export default async function QualityVideoSelection() {
+export const metadata = {
+  title: "Download video",
+  robots: { index: false },
+};
+
+export default function QualityVideoSelection() {
   return (
-    <>
-      <div className="bg-primary py-8">
-        <h2 className="mx-4 my-4 text-center text-5xl font-bold md:mx-auto md:w-1/3">
-          Download any youtube video for free !
-        </h2>
-        <div className="mx-auto my-4 flex w-1/2 flex-col justify-center md:flex-row">
-          <div className="mx-auto my-2 flex">
-            <CircleCheckBig className="my-auto mr-2" size={24} />
-            <p className="text-center">Unlimited downloads</p>
-          </div>
-          <div className="mx-auto my-2 flex">
-            <CircleCheckBig className="my-auto mr-2 " size={24} />
-            <p className="text-center">Ads free</p>
-          </div>
-        </div>
+    <section className="bg-stroy-500 px-4 py-8 md:px-14">
+      {/* URL recap / edit bar */}
+      <div className="mx-auto mb-10 max-w-5xl">
         <Suspense fallback={<SkeletonInput />}>
           <GetterInput />
         </Suspense>
       </div>
+
+      {/* Result card + format picker */}
       <Suspense fallback={<VideoLoading />}>
         <VideoSelect />
       </Suspense>
-    </>
+    </section>
   );
 }

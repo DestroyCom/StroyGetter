@@ -68,12 +68,13 @@ export async function GET(request: Request) {
       year: meta?.year,
       trackNumber: meta?.trackNumber,
       genre: meta?.genre,
-      coverUrl: meta?.coverUrl ?? ytThumbnail,
+      coverUrl: meta?.coverUrl, // provider cover only (MusicBrainz CAA or iTunes)
       label: meta?.label,
     };
 
     await embedId3Tags(mp3Path, {
       metadata: songMeta,
+      ytThumbnail, // fallback if provider cover fetch fails
       sylt: lyrics?.sylt,
       plainLyrics: lyrics?.plain,
       lyricsLanguage: lyrics?.language,

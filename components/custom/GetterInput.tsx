@@ -1,84 +1,80 @@
 "use client";
 
-import clsx from "clsx";
-import { ClipboardCopy } from "lucide-react";
+import { ArrowRight, Clipboard, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { searchQuery } from "@/functions/getYoutubeUrl";
 
 export const GetterInput = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const videoUrl = searchParams.get("videoUrl");
 
   const [url, setUrl] = useState(videoUrl || "");
-  const [permission, setPermission] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const queryOpts = { name: "clipboard-read", allowWithoutGesture: false };
-    // @ts-expect-error clipboard-read is not in the standard PermissionName type
-    navigator.permissions.query(queryOpts).then((permissionStatus) => {
-      setPermission(permissionStatus.state === "granted");
-      permissionStatus.onchange = () => {
-        setPermission(permissionStatus.state === "granted");
-      };
-    });
-  }, []);
+  const submitUrl = async (value: string) => {
+    const resolvedUrl = await searchQuery(value);
+    router.push(`/fetch?videoUrl=${resolvedUrl}`);
+  };
 
-  const submitUrl = async (url: string) => {
-    const getUrl = await searchQuery(url);
-
-    router.push(`/fetch?videoUrl=${getUrl}`);
+  const handlePaste = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const clipText = await navigator.clipboard.readText();
+      setUrl(clipText);
+      setTimeout(() => submitUrl(clipText), 100);
+    } catch {
+      inputRef.current?.focus();
+    }
   };
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        const videoUrl = e.currentTarget["video-url"].value;
-        return submitUrl(videoUrl);
+        const v = (e.currentTarget.elements.namedItem("video-url") as HTMLInputElement).value;
+        return submitUrl(v);
       }}
-      className="mx-4 flex flex-col justify-center md:mx-auto md:w-4/6"
+      className="mx-auto w-full max-w-2xl"
     >
-      <div className="relative my-4 w-full">
+      {/* Search bar — label forwards clicks to the input natively */}
+      <label
+        htmlFor="video-url"
+        className="mb-4 flex cursor-text items-center gap-3 rounded-2xl border border-white/16 bg-stroy-950 px-4 py-3.5 transition-colors focus-within:border-white/35"
+      >
+        <Search size={18} className="shrink-0 text-white/50" />
         <input
+          ref={inputRef}
           type="text"
-          placeholder="Please enter a youtube video URL or a search query"
+          placeholder="Paste a YouTube URL or search query…"
           id="video-url"
           name="video-url"
-          className="block w-full rounded-md border border-[#081721] bg-[#081721] p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
+          autoComplete="off"
+          className="flex-1 bg-transparent font-mono text-sm text-white/55 outline-none placeholder:text-white/35 focus:text-white"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
         <button
           type="button"
-          id="clipboard-copy"
-          className={clsx(
-            "absolute inset-y-0 right-0 flex items-center overflow-hidden rounded-r-md bg-secondary px-4 transition-all",
-            permission ? "opacity-100" : "bg-secondary/25",
-            "hover:pointer-events-auto hover:cursor-pointer hover:bg-secondary/60 hover:opacity-100"
-          )}
-          title="Copy from clipboard"
-          onClick={() => {
-            navigator.clipboard.readText().then((clipText) => {
-              setUrl(clipText);
-              setTimeout(() => {
-                submitUrl(clipText);
-              }, 200);
-            });
-          }}
+          title="Paste from clipboard"
+          className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/6 px-2.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+          onClick={handlePaste}
         >
-          <ClipboardCopy size={24} />
+          <Clipboard size={12} />
+          Paste
         </button>
-      </div>
+      </label>
+
+      {/* CTA button */}
       <button
         type="submit"
         id="search-button"
-        className="border-1 m-auto mx-auto rounded-md border border-solid border-transparent bg-[#205D83] px-5 py-2.5 text-center text-lg font-medium text-white transition-all duration-200 ease-in-out hover:cursor-pointer hover:border-[#205D83] hover:bg-[#102F42] hover:ring-[#205D83] focus:outline-none focus:ring-2 focus:ring-blue-300 sm:w-auto disabled:opacity-50"
         disabled={url.length === 0}
+        className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-stroy-900 px-8 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-stroy-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Search
+        Search video
+        <ArrowRight size={18} />
       </button>
     </form>
   );

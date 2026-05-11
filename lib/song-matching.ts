@@ -35,7 +35,7 @@ export async function getYtDlpFullInfo(url: string): Promise<YtDlpFullInfo> {
 }
 
 // Matches "Artist - Title" and variants like "Artist – Title (Official Video)"
-const SEPARATOR_RE = /^(.+?)\s*[-–—]\s*(.+?)(?:\s*[\(\[].*[\)\]])*\s*$/;
+const SEPARATOR_RE = /^(.+?)\s*[-–—]\s*(.+?)(?:\s*[([].*[)\]])*\s*$/;
 
 function parseTitleArtist(ytTitle: string): { artist: string; title: string } | null {
   const match = ytTitle.match(SEPARATOR_RE);
@@ -43,7 +43,7 @@ function parseTitleArtist(ytTitle: string): { artist: string; title: string } | 
 
   // Strip common YouTube suffixes from the title part
   const title = match[2]
-    .replace(/\s*[\(\[](?:official|lyrics?|audio|video|hd|hq|mv|4k|clip)[^\)\]]*[\)\]]/gi, "")
+    .replace(/\s*[([](?:official|lyrics?|audio|video|hd|hq|mv|4k|clip)[^)\]]*[)\]]/gi, "")
     .trim();
 
   if (!title) return null;

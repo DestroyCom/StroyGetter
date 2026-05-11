@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { siteConfig } from "@/lib/site-config";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/fetch/",
     },
-    sitemap: "https://stroygetter.stroyco.eu/sitemap.xml",
+    sitemap: `${siteConfig.url}/sitemap.xml`,
   };
 }
