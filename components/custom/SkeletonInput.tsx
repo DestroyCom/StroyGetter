@@ -2,7 +2,7 @@ import { Skeleton } from "../ui/skeleton";
 
 export const SkeletonInput = () => {
   return (
-    <form className="mx-4 flex flex-col justify-center md:mx-auto md:w-4/6">
+    <form className="mx-4 flex flex-col justify-center md:mx-auto md:w-4/6 mb-24">
       <div className="relative my-4 w-full">
         <Skeleton className="w-full bg-black/60 h-[3em] rounded-full" />
       </div>

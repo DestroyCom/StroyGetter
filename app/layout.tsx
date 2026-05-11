@@ -1,219 +1,100 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import Image from "next/image";
-import logo from "@/assets/logo.svg";
-import { Separator } from "@/components/ui/separator";
-import packageJson from "@/package.json";
+import { JsonLd } from "@/components/custom/JsonLd";
+import { SiteFooter } from "@/components/custom/SiteFooter";
+import { SiteHeader } from "@/components/custom/SiteHeader";
+import { siteConfig } from "@/lib/site-config";
 
 const satoshi = localFont({
   src: [
-    {
-      path: "./fonts/Satoshi-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Satoshi-LightItalic.woff2",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Satoshi-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Satoshi-Italic.woff2",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Satoshi-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Satoshi-MediumItalic.woff2",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Satoshi-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Satoshi-BoldItalic.woff2",
-      weight: "700",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Satoshi-Black.woff2",
-      weight: "900",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Satoshi-BlackItalic.woff2",
-      weight: "900",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Satoshi-Variable.woff2",
-      weight: "300 900",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Satoshi-VariableItalic.woff2",
-      weight: "300 900",
-      style: "italic",
-    },
+    { path: "./fonts/Satoshi-Light.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/Satoshi-LightItalic.woff2", weight: "300", style: "italic" },
+    { path: "./fonts/Satoshi-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Satoshi-Italic.woff2", weight: "400", style: "italic" },
+    { path: "./fonts/Satoshi-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/Satoshi-MediumItalic.woff2", weight: "500", style: "italic" },
+    { path: "./fonts/Satoshi-Bold.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/Satoshi-BoldItalic.woff2", weight: "700", style: "italic" },
+    { path: "./fonts/Satoshi-Black.woff2", weight: "900", style: "normal" },
+    { path: "./fonts/Satoshi-BlackItalic.woff2", weight: "900", style: "italic" },
+    { path: "./fonts/Satoshi-Variable.woff2", weight: "300 900", style: "normal" },
+    { path: "./fonts/Satoshi-VariableItalic.woff2", weight: "300 900", style: "italic" },
   ],
+  variable: "--font-satoshi",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://stroygetter.stroyco.eu"),
-  alternates: {
-    canonical: "/",
+  metadataBase: new URL(siteConfig.url),
+  alternates: { canonical: "/" },
+  title: {
+    default: "StroyGetter — Free YouTube Video Downloader",
+    template: "%s — StroyGetter",
   },
-  title: "StroyGetter",
-  description: "Get your videos, the easy way.",
-  keywords: ["video", "download", "audio", "free", "no ads", "converter"],
+  description:
+    "Download YouTube videos as MP4 or MP3 for free. No signup, no ads, no install. Supports up to 4K, MP3 audio at 190 kbps, and Library Ready with cover art, ID3 tags and synced lyrics.",
+  keywords: [
+    "youtube downloader free",
+    "télécharger vidéo youtube mp4",
+    "youtube to mp3",
+    "download youtube video",
+    "stroygetter",
+    "stroy",
+    "free video downloader",
+    "youtube mp4 download",
+    "youtube mp3 converter",
+  ],
   publisher: "StroyCo",
   openGraph: {
     type: "website",
-    title: "StroyGetter",
-    siteName: "StroyGetter - Download any video for free !",
-    description: "Download any video for free in any resolution",
-    url: "https://stroygetter.stroyco.eu/",
+    title: "StroyGetter — Free YouTube Video Downloader",
+    siteName: "StroyGetter",
+    description:
+      "Download YouTube videos as MP4 or MP3, free and without software. Supports up to 4K, MP3 audio, and Library Ready with full ID3 metadata.",
+    url: `${siteConfig.url}/`,
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "StroyGetter - Download any video for free !",
+    title: "StroyGetter — Free YouTube Video Downloader",
     description:
-      "No ads. Unlimited downloads. Download videos at max quality (available) for free and without software !",
-    site: "@ADSantoine",
-    images: ["https://stroygetter.stroyco.eu/twitter-image.png"],
+      "No ads. Unlimited downloads. Download videos at max quality for free — no software required.",
+    images: [`${siteConfig.url}/twitter-image.png`],
   },
-  verification: {
-    google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo",
-  },
+  verification: { google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const version = packageJson.version;
+const webAppJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "StroyGetter",
+  url: siteConfig.url,
+  description:
+    "Free online YouTube video downloader. Download YouTube videos as MP4 (up to 4K) or MP3 audio (190 kbps), or as Library Ready MP3 with cover art, ID3 tags and synced lyrics. No signup, no ads, no install.",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Any",
+  browserRequirements: "Requires a modern browser (Chrome, Firefox, Safari, Edge 2023+)",
+  featureList: [
+    "Download YouTube videos as MP4",
+    "Download YouTube audio as MP3",
+    "Library Ready MP3 with ID3 tags and synced lyrics",
+    "No signup required",
+    "No ads",
+    "Open source",
+  ],
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+  author: { "@type": "Organization", name: "StroyCo", url: siteConfig.stroycoUrl },
+};
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${satoshi.className} font-satoshi antialiased`}>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "StroyGetter",
-              url: "https://stroygetter.stroyco.eu",
-              description:
-                "Free online video downloader. Download YouTube videos in any quality without software or ads.",
-              applicationCategory: "MultimediaApplication",
-              operatingSystem: "Any",
-              offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-              author: {
-                "@type": "Organization",
-                name: "StroyCo",
-                url: "https://portfolio.stroyco.eu/",
-              },
-            }),
-          }}
-        />
-        <header className="flex justify-between bg-primary px-4 py-2">
-          <div className="flex justify-start">
-            <Image src={logo} height={96} alt="StroyGetter" />
-            <h1 className="my-auto ml-4 text-5xl font-semibold">StroyGetter</h1>
-          </div>
-          <div className="hidden flex-col md:flex">
-            <a
-              className="flex transition-all hover:opacity-50"
-              href="https://github.com/DestroyCom/StroyGetter"
-              target="_blank"
-              rel="noreferrer noopener"
-              title="Code source of StroyGetter"
-            >
-              <SiGithub className="mr-4" /> <p className="underline">The project code</p>
-            </a>
-          </div>
-        </header>
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className={`${satoshi.variable} font-satoshi antialiased`}>
+        <JsonLd data={webAppJsonLd} />
+        <SiteHeader />
         <main>{children}</main>
-        <section id="faq" className="mx-auto mt-4 w-11/12">
-          <h2 className="w-11/12 text-2xl font-bold">FAQ</h2>
-          <div className="flex flex-col lg:flex-row lg:justify-between">
-            <div className="w-full lg:w-1/2">
-              <h3 className="my-2 text-xl">What is StroyGetter ?</h3>
-              <p>
-                StroyGetter is a video downloader, so you can download almost any video{" "}
-                <span className="italic">(of your own)</span> in any available quality.
-                <br />
-                Audio-only conversion is also available.
-              </p>
-            </div>
-            <Separator
-              orientation="vertical"
-              className="mx-4 hidden h-40 w-0.5 bg-primary/50 lg:block"
-            />
-            <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
-            <div className="w-full lg:w-1/2">
-              <h3 className="my-2 text-xl">Why use StroyGetter and not another alternative?</h3>
-              <p>
-                StroyGetter is totally free and requires no software download to achieve maximum
-                video quality.
-                <br />
-                What&apos;s more, StroyGetter is Open-Source, meaning that anyone can view the code
-                or contribute to it, which limits any possible security loopholes.
-              </p>
-            </div>
-          </div>
-          <Separator className="my-4 h-0.5 w-full bg-primary/50" />
-          <div className="flex flex-col lg:flex-row lg:justify-between">
-            <div className="w-full lg:w-1/2">
-              <h3 className="my-2 text-xl">Totally free, where&apos;s the catch ?</h3>
-              <p>
-                There&apos;s no catch, we just use statistical tools to find out how people use the
-                site and count visitors, and that&apos;s it. Of course, depending on traffic, we
-                reserve the right to add non-intrusive ads to finance server costs.
-              </p>
-            </div>
-            <Separator
-              orientation="vertical"
-              className="mx-4 hidden h-40 w-0.5 bg-primary/50 lg:block"
-            />
-            <Separator className="my-4 h-0.5 w-full bg-primary/50 lg:hidden" />
-            <div className="w-full lg:w-1/2">
-              <h3 className="my-2 text-xl">Why is my conversion slow ?</h3>
-              <p>
-                The conversion speed depends on the quality of the video you want to download. The
-                higher the quality, the longer the conversion time.
-                <br />
-                If you have a slow internet connection or if a lot of people are using the site at
-                the same time, the conversion may be impacted as well.
-              </p>
-            </div>
-          </div>
-        </section>
-        <footer className="mx-auto my-4 text-center">
-          <a
-            className="text-sm hover:cursor-pointer hover:underline hover:opacity-75"
-            href="https://portfolio.stroyco.eu/"
-          >
-            StroyGetter - {version}
-          </a>
-        </footer>
+        <SiteFooter />
       </body>
       <GoogleAnalytics gaId="G-X2X4B9LKDW" />
     </html>

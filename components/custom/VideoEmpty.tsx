@@ -1,8 +1,10 @@
 export const VideoEmpty = () => {
   return (
-    <section className="py-8" id="error-search">
-      <div className="mx-auto my-2 flex h-auto w-11/12 rounded-lg border-2 border-dashed border-[#102F42]">
-        <p className="mx-auto my-10 md:my-24">Please search a video first !</p>
+    <section className="px-4 py-10" id="video-empty">
+      <div className="mx-auto flex min-h-48 w-full max-w-5xl items-center justify-center rounded-2xl border-2 border-dashed border-stroy-800">
+        <p className="text-center text-sm text-white/50">
+          Search for a video above to get started.
+        </p>
       </div>
     </section>
   );

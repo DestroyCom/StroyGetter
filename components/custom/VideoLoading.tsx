@@ -2,9 +2,9 @@ import { Loader2 } from "lucide-react";
 
 export const VideoLoading = () => {
   return (
-    <section className="py-8" id="loading-search">
-      <div className="mx-auto my-2 flex min-h-40 w-11/12 rounded-lg border-2 border-dashed border-[#102F42]">
-        <Loader2 className="m-auto animate-spin text-primary" size={64} />
+    <section className="px-4 py-10 mb-32" id="loading-search">
+      <div className="mx-auto flex min-h-64 w-full max-w-5xl items-center justify-center rounded-2xl border-2 border-dashed border-stroy-800">
+        <Loader2 className="animate-spin text-stroy-300" size={48} />
       </div>
     </section>
   );

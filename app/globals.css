@@ -6,6 +6,19 @@
 @theme inline {
   --font-satoshi: var(--font-satoshi);
 
+  /* StroyGetter petrol-blue design system */
+  --color-stroy-50:  #E6EEF4;
+  --color-stroy-100: #C7D8E4;
+  --color-stroy-200: #9BB9CD;
+  --color-stroy-300: #6E99B5;
+  --color-stroy-400: #437B9C;
+  --color-stroy-500: #206083;
+  --color-stroy-600: #1B5273;
+  --color-stroy-700: #144059;
+  --color-stroy-800: #102F42;
+  --color-stroy-900: #0A1F2C;
+  --color-stroy-950: #081721;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -36,10 +49,16 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: sans-serif;
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #102F42; /* stroy-800 — matches last content section, prevents white flash */
+  color: white;
 }
 
 @layer utilities {
@@ -50,63 +69,34 @@ body {
 
 @layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-rgb: 32, 96, 131;
-
+    /* shadcn/ui tokens — kept for shadcn component compatibility */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    /* Manually changed */
-    --primary: 203 61% 16%;
+    /* primary = stroy-500 #206083 */
+    --primary: 203 61% 32%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 203 61% 32%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    /* End */
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    /* secondary = stroy-800 #102F42 */
+    --secondary: 203 61% 16%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 203 30% 20%;
+    --muted-foreground: 203 20% 60%;
+    --accent: 203 40% 25%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --border: 203 30% 25%;
+    --input: 203 50% 8%;
+    --ring: 203 61% 60%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
   }
 }
 
@@ -115,6 +105,6 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-stroy-500 text-white;
   }
 }
