@@ -3,7 +3,7 @@
 # ── base ─────────────────────────────────────────────────────────────────────
 FROM node:22-alpine3.21 AS base
 RUN apk add --no-cache ffmpeg python3
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
 # ── deps ─────────────────────────────────────────────────────────────────────
 FROM base AS deps

@@ -1,6 +1,13 @@
 import { getInnertube } from "@/lib/innertube";
 import type { MetadataProvider, SongMetadata } from "../types";
 
+interface MusicSong {
+  thumbnail?: { contents?: { url: string; width?: number }[] } | null;
+  title?: string;
+  artists?: { name: string }[];
+  album?: { name: string };
+}
+
 export const youtubeMusicProvider: MetadataProvider = {
   name: "youtube-music",
   async search({ artist, title }) {
@@ -10,14 +17,13 @@ export const youtubeMusicProvider: MetadataProvider = {
         type: "song",
       });
 
-      const song = results.contents?.[0]?.contents?.[0];
+      const song = results.contents?.[0]?.contents?.[0] as MusicSong | undefined;
       if (!song) return null;
 
-      // Thumbnails are actual album art on YT Music (lh3.googleusercontent.com)
-      const thumbs = song.thumbnails ?? [];
-      const best = thumbs.sort(
-        (a: { width?: number }, b: { width?: number }) =>
-          (b.width ?? 0) - (a.width ?? 0)
+      // thumbnail.contents holds the array of sized thumbnails on YT Music
+      const thumbs = song.thumbnail?.contents ?? [];
+      const best = [...thumbs].sort(
+        (a, b) => (b.width ?? 0) - (a.width ?? 0)
       )[0];
       const coverUrl: string | undefined = best?.url;
 
