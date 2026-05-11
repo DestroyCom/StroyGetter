@@ -7,7 +7,7 @@
 
 export const siteConfig = {
   /** Canonical base URL, no trailing slash */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://stroygetter.stroyco.eu",
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://stroygetter.stroyco.eu").replace(/\/+$/, ""),
 
   /** GitHub repository URL */
   githubUrl:

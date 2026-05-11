@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   verification: { google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo" },
 };
 
-const webAppJsonLd = JSON.stringify({
+const webAppJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "StroyGetter",
@@ -85,13 +85,13 @@ const webAppJsonLd = JSON.stringify({
   ],
   offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
   author: { "@type": "Organization", name: "StroyCo", url: siteConfig.stroycoUrl },
-});
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className={`${satoshi.variable} font-satoshi antialiased`}>
-        <JsonLd data={JSON.parse(webAppJsonLd)} />
+        <JsonLd data={webAppJsonLd} />
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />

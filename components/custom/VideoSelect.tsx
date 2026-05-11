@@ -74,7 +74,7 @@ export const VideoSelect = () => {
         }
         setVideoData(value.video_details);
         setFormats(value.format);
-        if (value.format?.[0]) setSelectedItag(value.format[0].itag.toString());
+        if (value.format?.[0]?.itag) setSelectedItag(value.format[0].itag.toString());
         setIsLoading(false);
       })
       .catch(() => {
@@ -224,14 +224,13 @@ export const VideoSelect = () => {
                   <SelectValue placeholder="Select quality" />
                 </SelectTrigger>
                 <SelectContent>
-                  {formats.map((f) => {
-                    if (!f.qualityLabel || !f.itag) return null;
-                    return (
+                  {formats
+                    .filter((f) => f.qualityLabel && f.itag)
+                    .map((f) => (
                       <SelectItem key={f.itag} value={f.itag.toString()}>
                         {f.qualityLabel}
                       </SelectItem>
-                    );
-                  })}
+                    ))}
                 </SelectContent>
               </Select>
             </div>

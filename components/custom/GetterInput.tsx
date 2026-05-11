@@ -11,6 +11,7 @@ export const GetterInput = () => {
   const videoUrl = searchParams.get("videoUrl");
 
   const [url, setUrl] = useState(videoUrl || "");
+  const [pasteError, setPasteError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const submitUrl = async (value: string) => {
@@ -23,9 +24,11 @@ export const GetterInput = () => {
     try {
       const clipText = await navigator.clipboard.readText();
       setUrl(clipText);
-      setTimeout(() => submitUrl(clipText), 100);
+      await submitUrl(clipText);
     } catch {
+      setPasteError("Please paste manually or grant clipboard permission");
       inputRef.current?.focus();
+      setTimeout(() => setPasteError(""), 4000);
     }
   };
 
@@ -65,6 +68,10 @@ export const GetterInput = () => {
           Paste
         </button>
       </label>
+
+      {pasteError && (
+        <p className="mb-2 text-center text-xs text-red-400">{pasteError}</p>
+      )}
 
       {/* CTA button */}
       <button

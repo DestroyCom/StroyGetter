@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo-white.svg";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,7 @@ export function SiteHeader() {
         className="flex items-center gap-3 text-white no-underline"
         aria-label="StroyGetter home"
       >
-        <Image src={logo} height={36} alt="" aria-hidden="true" className="brightness-0 invert" />
+        <Image src={logo} height={36} alt="" aria-hidden="true" />
         <span className="text-xl font-bold tracking-tight">StroyGetter</span>
       </Link>
 

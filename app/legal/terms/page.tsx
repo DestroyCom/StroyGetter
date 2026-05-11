@@ -22,7 +22,7 @@ const SECTIONS = [
   {
     n: "03",
     title: "Privacy",
-    body: "We don't store your downloads — files are streamed directly from our converter to your browser and discarded immediately. We collect anonymous usage statistics (page views, conversion counts, error rates) to understand how the site is used. No cookies, no third-party tracking, no profile-building.",
+    body: "We don't store your downloads — files are streamed directly from our converter to your browser and discarded immediately. We collect anonymous usage statistics (page views, conversion counts, error rates) via Google Analytics 4, which may set cookies (e.g. _ga) in your browser. No personal profiles are built and no data is sold to third parties.",
   },
   {
     n: "04",
