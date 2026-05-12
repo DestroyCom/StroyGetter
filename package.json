@@ -1,6 +1,6 @@
 {
   "name": "stroygetter",
-  "version": "3.5.4",
+  "version": "3.6.0",
   "private": true,
   "scripts": {
     "dev": "next dev && node copy-binaries.js",
