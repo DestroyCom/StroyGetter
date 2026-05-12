@@ -55,5 +55,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.2,
     },
+    {
+      url: `${BASE}/legal/acceptable-use`,
+      lastModified: new Date("2026-05-12"),
+      changeFrequency: "yearly",
+      priority: 0.4,
+    }
   ];
 }
