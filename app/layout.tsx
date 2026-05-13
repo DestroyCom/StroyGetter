@@ -86,7 +86,10 @@ export const metadata: Metadata = {
       "No ads. Unlimited downloads. Download videos at max quality for free — no software required.",
     images: [`${siteConfig.url}/twitter-image.png`],
   },
-  verification: { google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo" },
+  verification: {
+    google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo",
+    yandex: "be615c3f5ef3d5fb",
+  },
   other: { "msvalidate.01": "486F933C672E42FA6F606CDF0B603A83" },
 };
 
