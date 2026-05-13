@@ -66,6 +66,7 @@ export default function HowToDownloadYouTube() {
             "Free, no-install walkthrough using StroyGetter — the open-source YouTube downloader.",
           author: { "@type": "Organization", name: "StroyCo", url: siteConfig.stroycoUrl },
           publisher: { "@type": "Organization", name: "StroyCo", url: siteConfig.stroycoUrl },
+          datePublished: "2026-05-01",
           dateModified: "2026-05-11",
           mainEntityOfPage: {
             "@type": "WebPage",

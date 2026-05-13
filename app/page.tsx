@@ -1,5 +1,6 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { Check, Disc3, Download, Film, Link as LinkIcon, Music, Scale } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
@@ -12,6 +13,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 

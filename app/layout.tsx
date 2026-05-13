@@ -51,7 +51,6 @@ const satoshi = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  alternates: { canonical: "/" },
   title: {
     default: "StroyGetter — Free YouTube Video Downloader",
     template: "%s — StroyGetter",
@@ -72,6 +71,7 @@ export const metadata: Metadata = {
   publisher: "StroyCo",
   openGraph: {
     type: "website",
+    locale: "en_US",
     title: "StroyGetter — Free YouTube Video Downloader",
     siteName: "StroyGetter",
     description:
