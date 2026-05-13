@@ -10,17 +10,41 @@ import { siteConfig } from "@/lib/site-config";
 const satoshi = localFont({
   src: [
     { path: "./fonts/Satoshi-Light.woff2", weight: "300", style: "normal" },
-    { path: "./fonts/Satoshi-LightItalic.woff2", weight: "300", style: "italic" },
+    {
+      path: "./fonts/Satoshi-LightItalic.woff2",
+      weight: "300",
+      style: "italic",
+    },
     { path: "./fonts/Satoshi-Regular.woff2", weight: "400", style: "normal" },
     { path: "./fonts/Satoshi-Italic.woff2", weight: "400", style: "italic" },
     { path: "./fonts/Satoshi-Medium.woff2", weight: "500", style: "normal" },
-    { path: "./fonts/Satoshi-MediumItalic.woff2", weight: "500", style: "italic" },
+    {
+      path: "./fonts/Satoshi-MediumItalic.woff2",
+      weight: "500",
+      style: "italic",
+    },
     { path: "./fonts/Satoshi-Bold.woff2", weight: "700", style: "normal" },
-    { path: "./fonts/Satoshi-BoldItalic.woff2", weight: "700", style: "italic" },
+    {
+      path: "./fonts/Satoshi-BoldItalic.woff2",
+      weight: "700",
+      style: "italic",
+    },
     { path: "./fonts/Satoshi-Black.woff2", weight: "900", style: "normal" },
-    { path: "./fonts/Satoshi-BlackItalic.woff2", weight: "900", style: "italic" },
-    { path: "./fonts/Satoshi-Variable.woff2", weight: "300 900", style: "normal" },
-    { path: "./fonts/Satoshi-VariableItalic.woff2", weight: "300 900", style: "italic" },
+    {
+      path: "./fonts/Satoshi-BlackItalic.woff2",
+      weight: "900",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Satoshi-VariableItalic.woff2",
+      weight: "300 900",
+      style: "italic",
+    },
   ],
   variable: "--font-satoshi",
 });
@@ -63,6 +87,7 @@ export const metadata: Metadata = {
     images: [`${siteConfig.url}/twitter-image.png`],
   },
   verification: { google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo" },
+  other: { "msvalidate.01": "486F933C672E42FA6F606CDF0B603A83" },
 };
 
 const webAppJsonLd = {
@@ -74,7 +99,8 @@ const webAppJsonLd = {
     "Free online YouTube video downloader. Download YouTube videos as MP4 (up to 4K) or MP3 audio (190 kbps), or as Library Ready MP3 with cover art, ID3 tags and synced lyrics. No signup, no ads, no install.",
   applicationCategory: "MultimediaApplication",
   operatingSystem: "Any",
-  browserRequirements: "Requires a modern browser (Chrome, Firefox, Safari, Edge 2023+)",
+  browserRequirements:
+    "Requires a modern browser (Chrome, Firefox, Safari, Edge 2023+)",
   featureList: [
     "Download YouTube videos as MP4",
     "Download YouTube audio as MP3",
@@ -84,10 +110,18 @@ const webAppJsonLd = {
     "Open source",
   ],
   offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-  author: { "@type": "Organization", name: "StroyCo", url: siteConfig.stroycoUrl },
+  author: {
+    "@type": "Organization",
+    name: "StroyCo",
+    url: siteConfig.stroycoUrl,
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className={`${satoshi.variable} font-satoshi antialiased`}>
