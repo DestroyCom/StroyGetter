@@ -41,9 +41,13 @@ function parseTitleArtist(ytTitle: string): { artist: string; title: string } | 
   const match = ytTitle.match(SEPARATOR_RE);
   if (!match) return null;
 
-  // Strip common YouTube suffixes from the title part
   const title = match[2]
-    .replace(/\s*[([](?:official|lyrics?|audio|video|hd|hq|mv|4k|clip)[^)\]]*[)\]]/gi, "")
+    // 1. Supprime les (...) ou [...] contenant des mots "parasites"
+    .replace(/\s*[([][^)\]]*(?:official|officiel|lyrics?|audio|video|music|hd|hq|mv|4k|8k|clip|visualizer|live|remaster(?:ed)?|version|edit|performance|acoustic)[^)\]]*[)\]]/gi, "")
+    // 2. Supprime TOUT ce qui suit un pipe "|"
+    .replace(/\s*\|.*$/g, "")
+    // 3. Supprime les suffixes non parenthésés (ex: "- Official Music Video" ou "– Clip Officiel")
+    .replace(/\s*[-–—]\s*(?:official|officiel|lyrics?|audio|video|music|visualizer|mv|clip|live|performance|remaster).*/gi, "")
     .trim();
 
   if (!title) return null;
