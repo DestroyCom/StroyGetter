@@ -1,0 +1,6 @@
+allowBuilds:
+  '@prisma/engines': true
+  ffmpeg-static: true
+  prisma: true
+  sharp: true
+  youtube-dl-exec: true

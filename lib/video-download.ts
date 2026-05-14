@@ -14,6 +14,8 @@ const YT_DLP_BASE = [
   "referer:youtube.com",
   "--add-header",
   "user-agent:googlebot",
+  "--extractor-args",
+  "youtube:player_client=tv_embedded",
   "-o",
   "-",
 ];
@@ -51,9 +53,13 @@ export async function downloadStreamsToFiles(
   formatItag: string
 ): Promise<void> {
   const bin = getYtDlpBinaryPath();
+  const audioArgs = [...YT_DLP_BASE, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url];
+  const videoArgs = [...YT_DLP_BASE, "-f", formatItag, url];
+  console.log("[video-download] audio args:", audioArgs.join(" "));
+  console.log("[video-download] video args:", videoArgs.join(" "));
 
-  const audioProc = spawn(bin, [...YT_DLP_BASE, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
-  const videoProc = spawn(bin, [...YT_DLP_BASE, "-f", formatItag, url]);
+  const audioProc = spawn(bin, audioArgs);
+  const videoProc = spawn(bin, videoArgs);
 
   if (!audioProc.stdout || !videoProc.stdout) {
     audioProc.kill();
@@ -64,8 +70,14 @@ export async function downloadStreamsToFiles(
   const audioOut = audioProc.stdout;
   const videoOut = videoProc.stdout;
 
-  audioProc.stderr?.resume();
-  videoProc.stderr?.resume();
+  let audioStderr = "";
+  let videoStderr = "";
+  audioProc.stderr?.on("data", (d: Buffer) => {
+    audioStderr += d.toString();
+  });
+  videoProc.stderr?.on("data", (d: Buffer) => {
+    videoStderr += d.toString();
+  });
 
   audioOut.pipe(fs.createWriteStream(audioPath));
   videoOut.pipe(fs.createWriteStream(videoPath));
@@ -90,10 +102,18 @@ export async function downloadStreamsToFiles(
       });
   });
 
+  if (audioStderr) console.warn("[video-download] audio stderr:", audioStderr.trim());
+  if (videoStderr) console.warn("[video-download] video stderr:", videoStderr.trim());
+
   if ((audioProc.exitCode ?? 0) !== 0) {
-    throw new Error(`yt-dlp audio exited with code ${audioProc.exitCode}`);
+    throw new Error(
+      audioStderr.trim() || `yt-dlp audio exited with code ${audioProc.exitCode}`
+    );
   }
   if ((videoProc.exitCode ?? 0) !== 0) {
-    throw new Error(`yt-dlp video exited with code ${videoProc.exitCode}`);
+    throw new Error(
+      videoStderr.trim() || `yt-dlp video exited with code ${videoProc.exitCode}`
+    );
   }
+  console.log("[video-download] Both streams downloaded successfully.");
 }
