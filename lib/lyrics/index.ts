@@ -1,5 +1,6 @@
 import { iso6393 } from "iso-639-3";
 import { fetchLrclib } from "./lrclib";
+import { fetchLyricsOvh } from "./lyrics-ovh";
 import { fetchSubtitles } from "./subtitles";
 import type { SyltEntry } from "./types";
 
@@ -48,34 +49,38 @@ export interface LyricsQuery {
 
 export async function fetchLyrics(query: LyricsQuery): Promise<LyricsResult | null> {
   const tag = `[lyrics] "${query.artist} - ${query.title}"`;
-
   const lang = toIso6392(query.language);
 
-  // 1. Manual YouTube subs — artist-uploaded, best quality, no duration check needed
+  // 1. SYLT fiable — LRClib synced + duration validation
+  const lrcResult = await fetchLrclib(query.artist, query.title);
+  if (lrcResult && lrcResult.sylt.length > 0 && validateDuration(lrcResult.sylt, query.duration)) {
+    console.log(`${tag} source=lrclib-sylt lines=${lrcResult.sylt.length}`);
+    return { sylt: lrcResult.sylt, plain: lrcResult.plain || undefined, language: lang };
+  }
+
+  // 2. SYLT YouTube manuel — artist-uploaded, no duration check needed
   const manualSubs = await fetchSubtitles(query.subtitles, query.language);
   if (manualSubs && manualSubs.length > 0) {
-    console.log(`${tag} source=youtube-manual lines=${manualSubs.length}`);
+    console.log(`${tag} source=youtube-manual-sylt lines=${manualSubs.length}`);
     return { sylt: manualSubs, plain: syltToPlain(manualSubs), language: lang };
   }
 
-  // 2. LRClib (canonical title/artist improves match accuracy)
-  const lrcResult = await fetchLrclib(query.artist, query.title);
-  if (lrcResult) {
-    if (lrcResult.sylt.length > 0 && validateDuration(lrcResult.sylt, query.duration)) {
-      console.log(`${tag} source=lrclib synced lines=${lrcResult.sylt.length}`);
-      return { sylt: lrcResult.sylt, plain: lrcResult.plain || undefined, language: lang };
-    }
-    if (lrcResult.plain) {
-      console.log(`${tag} source=lrclib plain-only (sylt duration mismatch or unavailable)`);
-      return { sylt: [], plain: lrcResult.plain, language: lang };
-    }
+  // 3. Statique fiable — LRClib plain, puis lyrics.ovh
+  if (lrcResult?.plain) {
+    console.log(`${tag} source=lrclib-plain`);
+    return { sylt: [], plain: lrcResult.plain, language: lang };
+  }
+  const ovhLyrics = await fetchLyricsOvh(query.artist, query.title);
+  if (ovhLyrics) {
+    console.log(`${tag} source=lyrics-ovh`);
+    return { sylt: [], plain: ovhLyrics, language: lang };
   }
 
-  // 3. Auto-generated YouTube subs (ASR — synced but text quality varies)
+  // 4. Statique YouTube — auto-generated captions degraded en texte brut
   const autoSubs = await fetchSubtitles(query.automatic_captions, query.language);
-  if (autoSubs && autoSubs.length > 0 && validateDuration(autoSubs, query.duration)) {
-    console.log(`${tag} source=youtube-auto lines=${autoSubs.length}`);
-    return { sylt: autoSubs, plain: syltToPlain(autoSubs), language: lang };
+  if (autoSubs && autoSubs.length > 0) {
+    console.log(`${tag} source=youtube-auto-plain lines=${autoSubs.length}`);
+    return { sylt: [], plain: syltToPlain(autoSubs), language: lang };
   }
 
   console.log(`${tag} source=none — no lyrics found`);
