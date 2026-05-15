@@ -1,12 +1,19 @@
-/**
- * Best-effort check that a request likely came from the StroyGetter frontend.
- *
- * Sec-Fetch-Site and Referer are trivially spoofable — they are not suitable
- * for access control and only act as a client fingerprint for ordinary
- * browsers. For real protection, add auth (Authorization header / signed
- * cookie) or issue short-lived HMAC tokens tied to the user session.
- */
+import { isRateLimited } from "@/lib/rate-limiter";
+
+function getClientIp(request: Request): string {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown"
+  );
+}
+
 export function guardApiRequest(request: Request): Response | null {
+  const ip = getClientIp(request);
+  if (isRateLimited(ip)) {
+    return new Response("Too Many Requests", { status: 429 });
+  }
+
   const fetchSite = request.headers.get("sec-fetch-site");
   if (fetchSite === "same-origin" || fetchSite === "same-site") return null;
 
