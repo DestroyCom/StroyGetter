@@ -8,7 +8,7 @@ RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 # ── deps ─────────────────────────────────────────────────────────────────────
 FROM base AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .ytdlp-version ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 

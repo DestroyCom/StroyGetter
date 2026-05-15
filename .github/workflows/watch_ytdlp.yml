@@ -1,0 +1,52 @@
+name: Watch yt-dlp & rebuild
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check yt-dlp version
+    runs-on: ubuntu-latest
+    outputs:
+      updated: ${{ steps.check.outputs.updated }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check & update yt-dlp version
+        id: check
+        run: |
+          LATEST=$(curl -sf https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest | jq -r '.tag_name')
+          CURRENT=$(cat .ytdlp-version 2>/dev/null | tr -d '[:space:]' || echo "")
+          echo "Latest: $LATEST — Current: $CURRENT"
+          echo "version=$LATEST" >> "$GITHUB_OUTPUT"
+          if [ "$LATEST" != "$CURRENT" ]; then
+            echo "$LATEST" > .ytdlp-version
+            git add .ytdlp-version
+            git commit -m "chore: update yt-dlp to $LATEST"
+            git push
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Rebuild Docker image
+    needs: check
+    if: needs.check.outputs.updated == 'true'
+    uses: ./.github/workflows/build_web_image.yml
+    secrets: inherit
