@@ -31,11 +31,19 @@ prisma/schema.prisma  # SQLite: Video (url unique) → File (hash unique)
 
 ## Environment Variables
 
+All vars are **server-only runtime** — no `NEXT_PUBLIC_*`. Configure in docker-compose; never rebuild the image to change these.
+
 ```
 DATABASE_URL=file:./database/dev.db   # SQLite path (required)
 CLEANUP_INTERVAL=7                    # Days before file expiry (default: 7 prod, 1 dev)
 CRON=0 0 * * *                        # Cleanup schedule (default: daily prod, every min dev)
 MAX_FILESIZE=8G                       # Max size per yt-dlp stream (default: 8G). Passed as --max-filesize to yt-dlp.
+SITE_URL=https://stroygetter.fr       # Canonical base URL — sitemap, robots.txt, OpenGraph, JSON-LD (default: stroygetter.fr)
+GOOGLE_SITE_VERIFICATION=<token>      # Google Search Console verification token
+YANDEX_SITE_VERIFICATION=<token>      # Yandex Webmaster verification token
+BING_SITE_VERIFICATION=<token>        # Bing Webmaster token (msvalidate.01)
+EMAIL_DMCA=dmca@...                   # DMCA contact email shown in legal pages
+EMAIL_PRIVACY=privacy@...            # Privacy contact email shown in legal pages
 ```
 
 ## Key Patterns
@@ -59,6 +67,8 @@ MAX_FILESIZE=8G                       # Max size per yt-dlp stream (default: 8G)
 ## Deployment
 
 **Docker**: `docker-compose up -d` (uses `Dockerfile`, mounts SQLite + temp via volume).
+
+**Live URL**: `https://stroygetter.fr` (configured via `SITE_URL` env var at runtime).
 
 **Release pipeline**: Push to the `prod` branch (not `master`) triggers CI: creates git tag from commit message → builds Docker image → publishes GitHub release.
 

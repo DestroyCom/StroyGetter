@@ -2,7 +2,7 @@
 
 An open-source YouTube video downloader built with Next.js. Paste a URL, pick a quality, download — audio or video.
 
-Live at [stroygetter.stroyco.eu](https://stroygetter.stroyco.eu).
+Live at [stroygetter.fr](https://stroygetter.fr).
 
 > **DISCLAIMER** — For personal and educational use only. By using this project you agree not to download content you do not hold the copyright for. Contributors cannot be held responsible for misuse or violation of any platform's terms of service.
 
@@ -74,6 +74,12 @@ pnpm dev                      # starts on http://localhost:3000
 | `CLEANUP_INTERVAL` | `7` (prod) / `1` (dev) | Days before cached files expire |
 | `CRON` | `0 0 * * *` (prod) / `*/1 * * * *` (dev) | Cleanup cron schedule |
 | `MAX_FILESIZE` | `8G` | Max size per downloaded stream passed to yt-dlp (`--max-filesize`). Prevents disk exhaustion from oversized videos. |
+| `SITE_URL` | `https://stroygetter.fr` | Canonical base URL — used in sitemap, robots.txt, OpenGraph and JSON-LD |
+| `GOOGLE_SITE_VERIFICATION` | — | Google Search Console verification token |
+| `YANDEX_SITE_VERIFICATION` | — | Yandex Webmaster verification token |
+| `BING_SITE_VERIFICATION` | — | Bing Webmaster verification token (msvalidate.01) |
+| `EMAIL_DMCA` | `dmca@contact-stroygetter.stroyco.eu` | DMCA takedown contact email shown in legal pages |
+| `EMAIL_PRIVACY` | `privacy@contact-stroygetter.stroyco.eu` | Privacy policy contact email shown in legal pages |
 
 ### With Docker (local)
 
