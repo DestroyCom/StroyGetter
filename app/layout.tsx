@@ -87,10 +87,10 @@ export const metadata: Metadata = {
     images: [`${siteConfig.url}/twitter-image.png`],
   },
   verification: {
-    google: "ZO0XEa1dBNGM8tkB6TiNCSxOss9mLdtQZD8iJF49dIo",
-    yandex: "be615c3f5ef3d5fb",
+    google: siteConfig.googleVerification || undefined,
+    yandex: siteConfig.yandexVerification || undefined,
   },
-  other: { "msvalidate.01": "486F933C672E42FA6F606CDF0B603A83" },
+  other: siteConfig.bingVerification ? { "msvalidate.01": siteConfig.bingVerification } : {},
 };
 
 const webAppJsonLd = {
