@@ -49,49 +49,51 @@ const satoshi = localFont({
   variable: "--font-satoshi",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: "StroyGetter — Free YouTube Video Downloader",
-    template: "%s — StroyGetter",
-  },
-  description:
-    "Download YouTube videos as MP4 or MP3 for free. No signup, no ads, no install. Supports up to 4K, MP3 audio at 190 kbps, and Library Ready with cover art, ID3 tags and synced lyrics.",
-  keywords: [
-    "youtube downloader free",
-    "télécharger vidéo youtube mp4",
-    "youtube to mp3",
-    "download youtube video",
-    "stroygetter",
-    "stroy",
-    "free video downloader",
-    "youtube mp4 download",
-    "youtube mp3 converter",
-  ],
-  publisher: "StroyCo",
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    title: "StroyGetter — Free YouTube Video Downloader",
-    siteName: "StroyGetter",
+export function generateMetadata(): Metadata {
+  return {
+    metadataBase: new URL(siteConfig.url),
+    title: {
+      default: "StroyGetter — Free YouTube Video Downloader",
+      template: "%s — StroyGetter",
+    },
     description:
-      "Download YouTube videos as MP4 or MP3, free and without software. Supports up to 4K, MP3 audio, and Library Ready with full ID3 metadata.",
-    url: `${siteConfig.url}/`,
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "StroyGetter — Free YouTube Video Downloader",
-    description:
-      "No ads. Unlimited downloads. Download videos at max quality for free — no software required.",
-    images: [`${siteConfig.url}/twitter-image.png`],
-  },
-  verification: {
-    google: siteConfig.googleVerification || undefined,
-    yandex: siteConfig.yandexVerification || undefined,
-  },
-  other: siteConfig.bingVerification ? { "msvalidate.01": siteConfig.bingVerification } : {},
-};
+      "Download YouTube videos as MP4 or MP3 for free. No signup, no ads, no install. Supports up to 4K, MP3 audio at 190 kbps, and Library Ready with cover art, ID3 tags and synced lyrics.",
+    keywords: [
+      "youtube downloader free",
+      "télécharger vidéo youtube mp4",
+      "youtube to mp3",
+      "download youtube video",
+      "stroygetter",
+      "stroy",
+      "free video downloader",
+      "youtube mp4 download",
+      "youtube mp3 converter",
+    ],
+    publisher: "StroyCo",
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      title: "StroyGetter — Free YouTube Video Downloader",
+      siteName: "StroyGetter",
+      description:
+        "Download YouTube videos as MP4 or MP3, free and without software. Supports up to 4K, MP3 audio, and Library Ready with full ID3 metadata.",
+      url: `${siteConfig.url}/`,
+      images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "StroyGetter — Free YouTube Video Downloader",
+      description:
+        "No ads. Unlimited downloads. Download videos at max quality for free — no software required.",
+      images: [`${siteConfig.url}/twitter-image.png`],
+    },
+    verification: {
+      google: siteConfig.googleVerification || undefined,
+      yandex: siteConfig.yandexVerification || undefined,
+    },
+    other: siteConfig.bingVerification ? { "msvalidate.01": siteConfig.bingVerification } : {},
+  };
+}
 
 const webAppJsonLd = {
   "@context": "https://schema.org",
