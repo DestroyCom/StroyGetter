@@ -19,9 +19,9 @@ import { VideoLoading } from "./VideoLoading";
 type Fmt = "mp4" | "mp3" | "library-ready";
 
 const FORMAT_TABS: { id: Fmt; label: string; sub: string; Icon: typeof Film }[] = [
+  { id: "library-ready", label: "Library Ready", sub: "MP3 + tags + lyrics", Icon: Disc3 },
   { id: "mp4", label: "MP4 video", sub: "H.264 · source resolution", Icon: Film },
   { id: "mp3", label: "MP3 audio", sub: "190 kbps", Icon: Music },
-  { id: "library-ready", label: "Library Ready", sub: "MP3 + tags + lyrics", Icon: Disc3 },
 ];
 
 const EDU_CARDS = [
@@ -197,17 +197,17 @@ export const VideoSelect = () => {
                   type="button"
                   onClick={() => setFmt(t.id)}
                   className={cn(
-                    "flex flex-1 flex-col items-start gap-1 rounded-xl px-3.5 py-3 text-left transition-all",
+                    "flex flex-1 flex-col items-start justify-center gap-1 rounded-xl px-2 py-2.5 text-left transition-all sm:px-3.5 sm:py-3",
                     fmt === t.id
                       ? "bg-stroy-500 text-white"
                       : "text-white/65 hover:bg-white/4 hover:text-white"
                   )}
                 >
-                  <span className="flex items-center gap-2 text-[13px] font-bold">
-                    <t.Icon size={14} />
+                  <span className="flex items-center gap-1.5 text-[12px] font-bold sm:gap-2 sm:text-[13px]">
+                    <t.Icon size={13} />
                     {t.label}
                   </span>
-                  <span className="font-mono text-[11px] opacity-75">{t.sub}</span>
+                  <span className="hidden font-mono text-[11px] opacity-75 sm:block">{t.sub}</span>
                 </button>
               ))}
             </div>
@@ -238,8 +238,8 @@ export const VideoSelect = () => {
 
           {/* Library Ready callout */}
           {fmt === "library-ready" && (
-            <div className="grid grid-cols-[56px_1fr_auto] items-center gap-4 rounded-xl border border-white/10 bg-stroy-700 p-4">
-              <div className="flex size-14 items-center justify-center rounded-lg border border-white/10 bg-stroy-900 text-2xl text-white/40">
+            <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-stroy-700 p-4 sm:grid sm:grid-cols-[56px_1fr_auto] sm:items-center sm:gap-4">
+              <div className="hidden size-14 items-center justify-center rounded-lg border border-white/10 bg-stroy-900 text-2xl text-white/40 sm:flex">
                 ♪
               </div>
               <div>
@@ -250,7 +250,7 @@ export const VideoSelect = () => {
                   Cover art 1400×1400, ID3 tags, synced lyrics · adds ~20s to processing.
                 </p>
               </div>
-              <div className="flex flex-col gap-1 whitespace-nowrap font-mono text-[10px] text-white/55">
+              <div className="flex flex-row gap-3 font-mono text-[10px] text-white/55 sm:flex-col sm:gap-1 sm:whitespace-nowrap">
                 <span className="before:mr-1 before:text-stroy-200 before:content-['✓']">
                   Cover art
                 </span>
