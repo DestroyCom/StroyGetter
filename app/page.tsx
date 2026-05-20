@@ -1,7 +1,15 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
-import { Check, Disc3, Download, Film, Link as LinkIcon, Music, Scale } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  Check,
+  Disc3,
+  Download,
+  Film,
+  Link as LinkIcon,
+  Music,
+  Scale,
+} from "lucide-react";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
@@ -31,7 +39,7 @@ const HOW_STEPS = [
     Icon: Scale,
     n: "02",
     title: "Pick MP4, MP3 or Library Ready",
-    body: "MP4 keeps the video at source resolution (up to 4K). MP3 is audio-only at 190 kbps. Library Ready adds cover art, ID3 tags and synced lyrics.",
+    body: "MP4 keeps the video at source resolution (up to 4K). MP3 is audio-only at 190 kbps. Library Ready is the unique option: cover art, ID3 tags and synced lyrics embedded — ready for Apple Music, Plex or your favourite music player.",
   },
   {
     Icon: Download,
@@ -43,11 +51,30 @@ const HOW_STEPS = [
 
 const FORMATS = [
   {
+    Icon: Disc3,
+    title: "Library Ready",
+    meta: "MP3 + ID3v2.4 + lyrics",
+    badge: "Only on StroyGetter",
+    desc: "MP3 at 190 kbps with cover art, title, artist, album, year and synced lyrics baked in. Drops cleanly into Apple Music, Plex, Rekordbox, foobar2000 or your favourite music player.",
+    features: [
+      "Cover art",
+      "ID3 tags",
+      "Synced lyrics",
+      "Auto-detected from YouTube Music",
+    ],
+    featured: true,
+  },
+  {
     Icon: Film,
     title: "MP4 video",
     meta: "H.264 · up to 2160p",
     desc: "Full video at the source resolution YouTube serves — 360p, 720p, 1080p, 1440p or 2160p when the original has it. We never upscale or re-encode the picture.",
-    features: ["1080p typical", "4K when available", "AAC audio track", "Plays everywhere"],
+    features: [
+      "1080p typical",
+      "4K when available",
+      "AAC audio track",
+      "Plays everywhere",
+    ],
     featured: false,
     badge: undefined,
   },
@@ -59,15 +86,6 @@ const FORMATS = [
     features: ["Stereo 44.1 kHz", "Universal compat"],
     featured: false,
     badge: undefined,
-  },
-  {
-    Icon: Disc3,
-    title: "Library Ready",
-    meta: "MP3 + ID3v2.4 + lyrics",
-    badge: "Most popular",
-    desc: "MP3 at 190 kbps with cover art, title, artist, album, year and synced lyrics baked in. Drops cleanly into Apple Music, Plex, Rekordbox, foobar2000.",
-    features: ["Cover art", "ID3 tags", "Synced lyrics", "Auto-detected from YouTube Music"],
-    featured: true,
   },
 ];
 
@@ -144,14 +162,20 @@ export default function Home() {
           <h1 className="mb-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight md:text-6xl">
             Download YouTube videos
             <br />
-            as MP4 or MP3.
+            as MP4, MP3 or Library Ready.
             <br />
-            <em className="font-light italic text-white/78">free, online, no signup.</em>
+            <em className="font-light italic text-white/78">
+              free, online, no signup.
+            </em>
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/78">
-            The open-source YouTube downloader. Paste any public link, choose your format, and save
-            it for offline viewing or archiving. No browser extension, no desktop app required.
+            The open-source YouTube downloader. Get a plain video or audio file
+            or pick{" "}
+            <strong className="font-semibold text-white">Library Ready</strong>{" "}
+            and receive a fully tagged MP3 with cover art, ID3 tags and synced
+            lyrics, ready for your favourite music player. No browser extension,
+            no desktop app, no signup.
           </p>
 
           <Suspense fallback={<SkeletonInput />}>
@@ -168,6 +192,10 @@ export default function Home() {
             <span className="flex items-center gap-1.5">
               <Check size={14} className="text-stroy-300" /> Open source
             </span>
+            <span className="flex items-center gap-1.5">
+              <Check size={14} className="text-stroy-300" /> Library Ready —
+              only here
+            </span>
           </div>
           <p className="mt-3 text-xs italic text-white/50">
             Please only download content you own or have the rights to.
@@ -176,7 +204,10 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="bg-stroy-800 px-4 py-20 md:px-14 md:py-24" id="how-it-works">
+      <section
+        className="bg-stroy-800 px-4 py-20 md:px-14 md:py-24"
+        id="how-it-works"
+      >
         <div className="mx-auto max-w-9xl">
           <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -188,7 +219,8 @@ export default function Home() {
               </h2>
             </div>
             <p className="max-w-xs text-sm leading-relaxed text-white/70 md:text-right">
-              No browser extension, no desktop app, no signup. Everything runs in your tab.
+              No browser extension, no desktop app, no signup. Everything runs
+              in your tab.
             </p>
           </div>
 
@@ -196,7 +228,7 @@ export default function Home() {
             {HOW_STEPS.map((s) => (
               <div
                 key={s.n}
-                className="relative rounded-2xl border border-white/10 bg-white/[0.025] p-8"
+                className="relative rounded-2xl border border-white/10 bg-white/2.5 p-8"
               >
                 <span className="absolute right-7 top-7 font-mono text-xs tracking-wider text-white/40">
                   {s.n}
@@ -204,8 +236,12 @@ export default function Home() {
                 <div className="mb-5 flex size-11 items-center justify-center rounded-xl border border-white/6 bg-stroy-950 text-stroy-200">
                   <s.Icon size={20} />
                 </div>
-                <h3 className="mb-2 text-lg font-bold tracking-tight">{s.title}</h3>
-                <p className="text-sm leading-relaxed text-white/70">{s.body}</p>
+                <h3 className="mb-2 text-lg font-bold tracking-tight">
+                  {s.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-white/70">
+                  {s.body}
+                </p>
               </div>
             ))}
           </div>
@@ -213,7 +249,10 @@ export default function Home() {
       </section>
 
       {/* ── FORMATS ── */}
-      <section className="bg-stroy-500 px-4 py-20 md:px-14 md:py-24" id="formats">
+      <section
+        className="bg-stroy-500 px-4 py-20 md:px-14 md:py-24"
+        id="formats"
+      >
         <div className="mx-auto max-w-9xl">
           <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -225,8 +264,8 @@ export default function Home() {
               </h2>
             </div>
             <p className="max-w-xs text-sm leading-relaxed text-white/70 md:text-right">
-              Video stays at source resolution — we don&apos;t transcode. Audio at constant 190
-              kbps.
+              Video stays at source resolution — we don&apos;t transcode. Audio
+              at constant 190 kbps.
             </p>
           </div>
 
@@ -235,7 +274,9 @@ export default function Home() {
               <div
                 key={f.title}
                 className={`flex flex-col gap-4 rounded-2xl border p-7 ${
-                  f.featured ? "border-stroy-300/30 bg-stroy-700" : "border-white/6 bg-stroy-800"
+                  f.featured
+                    ? "border-stroy-300/30 bg-stroy-700"
+                    : "border-white/6 bg-stroy-800"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -249,12 +290,16 @@ export default function Home() {
                   )}
                 </div>
                 <div>
-                  <h3 className="mb-1 text-[19px] font-bold tracking-tight">{f.title}</h3>
+                  <h3 className="mb-1 text-[19px] font-bold tracking-tight">
+                    {f.title}
+                  </h3>
                   <p className="font-mono text-[11px] uppercase tracking-wider text-stroy-300">
                     {f.meta}
                   </p>
                 </div>
-                <p className="flex-1 text-sm leading-relaxed text-white/75">{f.desc}</p>
+                <p className="flex-1 text-sm leading-relaxed text-white/75">
+                  {f.desc}
+                </p>
                 <ul className="flex flex-wrap gap-1.5">
                   {f.features.map((feat) => (
                     <li
@@ -265,12 +310,20 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
+                {f.featured && (
+                  <Link
+                    href="/library-ready"
+                    className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
+                  >
+                    Learn more about Library Ready →
+                  </Link>
+                )}
               </div>
             ))}
           </div>
           <p className="mt-5 text-xs italic text-white/50">
-            Video resolution is inherited from the YouTube source. We never upscale or re-encode the
-            picture stream.
+            Video resolution is inherited from the YouTube source. We never
+            upscale or re-encode the picture stream.
           </p>
         </div>
       </section>
@@ -287,12 +340,16 @@ export default function Home() {
               <h2 className="mb-8 text-balance text-4xl font-bold leading-tight tracking-tight">
                 Common questions, plain answers.
               </h2>
-              <Accordion type="single" collapsible className="flex flex-col gap-2">
+              <Accordion
+                type="single"
+                collapsible
+                className="flex flex-col gap-2"
+              >
                 {FAQS.map((item, i) => (
                   <AccordionItem
                     key={item.q}
                     value={`faq-${i}`}
-                    className="rounded-xl border border-white/10 bg-white/[0.02] px-5 data-[state=open]:border-white/20 data-[state=open]:bg-white/[0.04]"
+                    className="rounded-xl border border-white/10 bg-white/2 px-5 data-[state=open]:border-white/20 data-[state=open]:bg-white/4"
                   >
                     <AccordionTrigger className="py-4 text-left text-[15px] font-semibold hover:no-underline">
                       {item.q}
@@ -321,7 +378,9 @@ export default function Home() {
                       className="flex cursor-default items-center justify-between rounded-lg px-3.5 py-3 text-sm transition-colors hover:bg-white/5"
                     >
                       <span className="font-semibold">{g.term}</span>
-                      <span className="font-mono text-[11px] text-white/50">{g.def}</span>
+                      <span className="font-mono text-[11px] text-white/50">
+                        {g.def}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -331,14 +390,16 @@ export default function Home() {
                 href={siteConfig.githubUrl}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="flex items-center gap-4 rounded-2xl border border-white/10 p-5 transition-colors hover:border-white/20 hover:bg-white/[0.02]"
+                className="flex items-center gap-4 rounded-2xl border border-white/10 p-5 transition-colors hover:border-white/20 hover:bg-white/2"
               >
                 <div className="flex size-9 items-center justify-center rounded-lg bg-stroy-700">
                   <SiGithub size={18} />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-bold">Open source on GitHub</p>
-                  <p className="text-xs text-white/65">Self-host or contribute · MIT licensed</p>
+                  <p className="text-xs text-white/65">
+                    Self-host or contribute · MIT licensed
+                  </p>
                 </div>
                 <span className="text-white/60">→</span>
               </Link>

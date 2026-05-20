@@ -67,10 +67,6 @@ export const updates: UpdateEntry[] = [
         body: "Library Ready fetches synchronised lyrics from open music databases. That means the words scroll in time with the track — the same experience you get on streaming platforms, but in a file you actually own. Can't find lyrics for a specific song? You'll still get all the other tags and artwork, so the file is never incomplete.",
       },
       {
-        heading: "Pick the language that's right for you",
-        body: "Some artists release lyrics in multiple languages. Library Ready lets you choose which version to embed, so if you prefer the original Japanese or want the English translation, it's your call.",
-      },
-      {
         heading: "Tougher downloads, fewer surprises",
         body: "We also hardened the download engine under the hood. Long videos, slow connections, and large files are handled much more gracefully now — timeouts are smarter, errors are caught early, and temporary files are always cleaned up properly. Downloads that used to hang now either complete or fail fast with a clear message.",
       },

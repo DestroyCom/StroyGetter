@@ -57,14 +57,18 @@ export function generateMetadata(): Metadata {
       template: "%s — StroyGetter",
     },
     description:
-      "Download YouTube videos as MP4 or MP3 for free. No signup, no ads, no install. Supports up to 4K, MP3 audio at 190 kbps, and Library Ready with cover art, ID3 tags and synced lyrics.",
+      "Download YouTube music as Library Ready MP3 — cover art, ID3 tags and synced lyrics embedded automatically. Also supports MP4 up to 4K and plain MP3. Free, no signup, no ads.",
     keywords: [
+      "youtube to mp3 with album art",
+      "youtube to mp3 id3 tags",
+      "youtube to mp3 with cover art",
+      "youtube mp3 with lyrics",
+      "library ready mp3",
       "youtube downloader free",
       "télécharger vidéo youtube mp4",
       "youtube to mp3",
       "download youtube video",
       "stroygetter",
-      "stroy",
       "free video downloader",
       "youtube mp4 download",
       "youtube mp3 converter",
@@ -76,7 +80,7 @@ export function generateMetadata(): Metadata {
       title: "StroyGetter — Free YouTube Video Downloader",
       siteName: "StroyGetter",
       description:
-        "Download YouTube videos as MP4 or MP3, free and without software. Supports up to 4K, MP3 audio, and Library Ready with full ID3 metadata.",
+        "Download YouTube music as Library Ready MP3 with cover art, ID3 tags and synced lyrics or grab MP4 up to 4K. Free, no signup, no ads.",
       url: `${siteConfig.url}/`,
       images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     },
@@ -91,7 +95,9 @@ export function generateMetadata(): Metadata {
       google: siteConfig.googleVerification || undefined,
       yandex: siteConfig.yandexVerification || undefined,
     },
-    other: siteConfig.bingVerification ? { "msvalidate.01": siteConfig.bingVerification } : {},
+    other: siteConfig.bingVerification
+      ? { "msvalidate.01": siteConfig.bingVerification }
+      : {},
   };
 }
 
