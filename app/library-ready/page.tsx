@@ -282,46 +282,54 @@ export default function LibraryReadyPage() {
             </div>
 
             <div className="rounded-2xl border border-white/8 bg-stroy-800 p-8">
-              <h3 className="mb-6 text-lg font-bold tracking-tight">
+              <h3 className="mb-5 text-lg font-bold tracking-tight">
                 Without Library Ready vs. with it
               </h3>
-              <div className="space-y-3">
+              {/* Column headers */}
+              <div className="mb-2 grid grid-cols-3 gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.12em]">
+                <span />
+                <span className="text-center text-red-400/70">Without</span>
+                <span className="text-center text-stroy-300">With</span>
+              </div>
+              <div className="space-y-2">
                 {[
                   {
-                    label: "Artist name in your library",
+                    label: "Artist name",
                     without: "Unknown Artist",
                     with: "Auto-detected",
                   },
                   {
                     label: "Album art",
                     without: "Grey placeholder",
-                    with: "HR from YT Music",
+                    with: "Hi-res cover",
                   },
                   {
-                    label: "Lyrics in your player",
+                    label: "Lyrics",
                     without: "None",
-                    with: "Synced, scrolling",
+                    with: "Synced & scrolling",
                   },
                   {
-                    label: "Album name & year",
+                    label: "Album & year",
                     without: "Missing",
                     with: "Embedded",
                   },
                   {
-                    label: "Time spent tagging",
-                    without: "5–10 min per track",
+                    label: "Time to tag",
+                    without: "5–10 min / track",
                     with: "0 seconds",
                   },
                 ].map(({ label, without, with: withVal }) => (
                   <div
                     key={label}
-                    className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-xl bg-white/[0.04] px-4 py-3 text-sm"
+                    className="grid grid-cols-3 items-center gap-2 rounded-xl bg-white/4 px-4 py-3 text-sm"
                   >
-                    <span className="text-white/75">{label}</span>
-                    <span className="rounded-md bg-red-500/15 px-2.5 py-1 text-[11px] font-semibold text-red-300">
+                    <span className="text-xs font-medium text-white/70">
+                      {label}
+                    </span>
+                    <span className="rounded-md bg-red-500/15 px-2 py-1 text-center text-[11px] font-semibold text-red-300">
                       {without}
                     </span>
-                    <span className="rounded-md bg-stroy-400/20 px-2.5 py-1 text-[11px] font-semibold text-stroy-200">
+                    <span className="rounded-md bg-stroy-400/20 px-2 py-1 text-center text-[11px] font-semibold text-stroy-200">
                       {withVal}
                     </span>
                   </div>
