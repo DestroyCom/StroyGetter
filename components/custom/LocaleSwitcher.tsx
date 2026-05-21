@@ -7,7 +7,7 @@ import { routing } from "@/i18n/routing";
 const LOCALE_LABELS: Record<string, string> = {
   en: "EN",
   "fr-FR": "FR",
-  "es-ES": "ES",
+  "es-419": "ES",
   "pt-BR": "PT",
 };
 
