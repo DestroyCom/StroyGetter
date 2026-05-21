@@ -1,19 +1,19 @@
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import logo from "@/assets/logo.svg";
+import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 
 export function SiteFooter() {
+  const t = useTranslations("footer");
+
   return (
     <footer className="bg-stroy-900 border-t-2 border-white/10 pt-16 pb-8">
       <div className="mx-auto max-w-9xl px-4 md:px-14">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-12">
           {/* Brand column */}
           <div className="col-span-2 md:col-span-1">
-            <Link
-              href="/"
-              className="mb-4 flex items-center gap-3 text-white no-underline"
-            >
+            <Link href="/" className="mb-4 flex items-center gap-3 text-white no-underline">
               <Image
                 src={logo}
                 height={32}
@@ -21,55 +21,42 @@ export function SiteFooter() {
                 aria-hidden="true"
                 className="brightness-0 invert"
               />
-              <span className="text-lg font-semibold tracking-tight">
-                StroyGetter
-              </span>
+              <span className="text-lg font-semibold tracking-tight">StroyGetter</span>
             </Link>
             <p className="mb-4 max-w-[300px] text-sm leading-relaxed text-white/65">
-              Free, open-source YouTube downloader. No signup, no ads, no
-              installs. Download MP4 video or MP3 audio directly from your
-              browser.
+              {t("tagline")}
             </p>
             <div className="flex items-center gap-3 text-xs text-white/55">
-              <span>MIT licensed</span>
+              <span>{t("mitLicensed")}</span>
               <span className="size-1 rounded-full bg-current" />
-              <span>Open source</span>
+              <span>{t("openSource")}</span>
             </div>
           </div>
 
           {/* Tool */}
           <div>
             <h4 className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">
-              Tool
+              {t("sectionTool")}
             </h4>
             <ul className="flex flex-col gap-2.5 text-sm text-white/78">
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
-                  Downloader
+                <Link href="/" className="transition-colors hover:text-white">
+                  {t("toolDownloader")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#formats"
-                  className="hover:text-white transition-colors"
-                >
-                  Supported formats
+                <Link href="/#formats" className="transition-colors hover:text-white">
+                  {t("toolFormats")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#how-it-works"
-                  className="hover:text-white transition-colors"
-                >
-                  How it works
+                <Link href="/#how-it-works" className="transition-colors hover:text-white">
+                  {t("toolHowItWorks")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#faq"
-                  className="hover:text-white transition-colors"
-                >
-                  FAQ
+                <Link href="/#faq" className="transition-colors hover:text-white">
+                  {t("toolFaq")}
                 </Link>
               </li>
             </ul>
@@ -78,47 +65,35 @@ export function SiteFooter() {
           {/* Learn */}
           <div>
             <h4 className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">
-              Learn
+              {t("sectionLearn")}
             </h4>
             <ul className="flex flex-col gap-2.5 text-sm text-white/78">
               <li>
-                <Link
-                  href="/updates"
-                  className="hover:text-white transition-colors"
-                >
-                  Updates &amp; changelog
+                <Link href="/updates" className="transition-colors hover:text-white">
+                  {t("learnUpdates")}
                 </Link>
               </li>
               <li>
                 <Link
                   href="/how-to-download-youtube-videos"
-                  className="hover:text-white transition-colors"
+                  className="transition-colors hover:text-white"
                 >
-                  How to download a YouTube video
+                  {t("learnHowTo")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#faq"
-                  className="hover:text-white transition-colors"
-                >
-                  YouTube glossary
+                <Link href="/#faq" className="transition-colors hover:text-white">
+                  {t("learnGlossary")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#formats"
-                  className="hover:text-white transition-colors"
-                >
-                  MP4 vs MP3
+                <Link href="/#formats" className="transition-colors hover:text-white">
+                  {t("learnMp4vsMp3")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#formats"
-                  className="hover:text-white transition-colors"
-                >
-                  Library Ready explained
+                <Link href="/library-ready" className="transition-colors hover:text-white">
+                  {t("learnLibraryReady")}
                 </Link>
               </li>
             </ul>
@@ -127,7 +102,7 @@ export function SiteFooter() {
           {/* Related */}
           <div>
             <h4 className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">
-              Related
+              {t("sectionRelated")}
             </h4>
             <ul className="flex flex-col gap-2.5 text-sm text-white/78">
               <li>
@@ -135,7 +110,7 @@ export function SiteFooter() {
                   href={siteConfig.stroycoUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="hover:text-white transition-colors"
+                  className="transition-colors hover:text-white"
                 >
                   StroyCo ↗
                 </a>
@@ -145,7 +120,7 @@ export function SiteFooter() {
                   href={siteConfig.discordUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="hover:text-white transition-colors"
+                  className="transition-colors hover:text-white"
                 >
                   StroyCord ↗
                 </a>
@@ -155,7 +130,7 @@ export function SiteFooter() {
                   href={siteConfig.botUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="hover:text-white transition-colors"
+                  className="transition-colors hover:text-white"
                 >
                   Stroybot ↗
                 </a>
@@ -166,43 +141,22 @@ export function SiteFooter() {
 
         {/* Bottom bar */}
         <div className="mt-12 flex flex-col gap-4 border-t border-white/8 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            © {`${new Date().getFullYear()} `} StroyCo · For personal &amp;
-            educational use only.
-          </span>
-          <nav
-            className="flex flex-wrap gap-4 md:gap-6"
-            aria-label="Legal navigation"
-          >
-            <Link
-              href="/legal/terms"
-              className="hover:text-white transition-colors"
-            >
-              Terms
+          <span>{t("copyright", { year: new Date().getFullYear() })}</span>
+          <nav className="flex flex-wrap gap-4 md:gap-6" aria-label="Legal navigation">
+            <Link href="/legal/terms" className="transition-colors hover:text-white">
+              {t("legalTerms")}
             </Link>
-            <Link
-              href="/legal/privacy"
-              className="hover:text-white transition-colors"
-            >
-              Privacy
+            <Link href="/legal/privacy" className="transition-colors hover:text-white">
+              {t("legalPrivacy")}
             </Link>
-            <Link
-              href="/legal/dmca"
-              className="hover:text-white transition-colors"
-            >
-              DMCA
+            <Link href="/legal/dmca" className="transition-colors hover:text-white">
+              {t("legalDmca")}
             </Link>
-            <Link
-              href="/legal/cookies"
-              className="hover:text-white transition-colors"
-            >
-              Cookies
+            <Link href="/legal/cookies" className="transition-colors hover:text-white">
+              {t("legalCookies")}
             </Link>
-            <Link
-              href="/legal/contact"
-              className="hover:text-white transition-colors"
-            >
-              Contact
+            <Link href="/legal/contact" className="transition-colors hover:text-white">
+              {t("legalContact")}
             </Link>
           </nav>
         </div>

@@ -1,0 +1,64 @@
+import { SiGithub } from "@icons-pack/react-simple-icons";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
+import { siteConfig } from "@/lib/site-config";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const path = "/legal/contact";
+  const t = await getTranslations({ locale, namespace: "legal" });
+  return {
+    title: t("contactH1"),
+    description: t("contactMetaDesc"),
+    alternates: buildAlternates(locale, path),
+  };
+}
+
+export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("legal");
+
+  return (
+    <div className="mb-16">
+      <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-[44px]">{t("contactH1")}</h1>
+      <p className="mb-10 text-sm leading-relaxed text-white/75">{t("contactIntro")}</p>
+
+      <div className="space-y-4">
+        <a
+          href={`${siteConfig.githubUrl}/issues`}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5 transition-colors hover:border-white/20 hover:bg-white/[0.04]"
+        >
+          <div className="flex size-10 items-center justify-center rounded-xl bg-stroy-700">
+            <SiGithub size={20} />
+          </div>
+          <div>
+            <p className="font-bold">{t("contactGithubTitle")}</p>
+            <p className="text-sm text-white/65">{t("contactGithubDesc")}</p>
+          </div>
+          <span className="ml-auto text-white/60">→</span>
+        </a>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <p className="mb-1 font-bold">{t("contactEmailTitle")}</p>
+          <p className="text-sm text-white/65">
+            {t("contactEmailDesc")}{" "}
+            <a
+              href={`mailto:${siteConfig.emailDmca}`}
+              className="text-stroy-200 underline underline-offset-3 hover:text-white"
+            >
+              {siteConfig.emailDmca}
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -56,6 +56,26 @@ EMAIL_PRIVACY=privacy@...            # Privacy contact email shown in legal page
 
 **Audio path**: `quality=audio` streams directly (ffmpeg → PassThrough → Response). Thumbnail fetched to a temp file for album art embedding, deleted after ffmpeg closes.
 
+## i18n — Adding a new locale or language variant
+
+Active locales (BCP 47): `en`, `fr-FR`, `es-419`, `pt-BR`.
+
+**To add a new locale** (e.g. `fr-CA`, `pt-PT`, `es-MX`):
+
+1. Add the locale code to `locales` in `i18n/routing.ts`
+2. Create `messages/<locale>.json` — copy the closest existing locale as a base
+3. Add a display label in `components/custom/LocaleSwitcher.tsx` (`LOCALE_LABELS`)
+4. Translate `messages/<locale>.json`
+
+Everything else (sitemap, hreflang alternates, static params) auto-updates via `buildAlternates()` in `i18n/metadata.ts` and `routing.locales`.
+
+**Locale code conventions used here:**
+
+- Generic English: `en` (covers all regions — do NOT use `en-US`)
+- French France: `fr-FR`
+- Latin American Spanish: `es-419` (UN M.49 region code, Google-supported)
+- Brazilian Portuguese: `pt-BR`
+
 ## Prisma 7 Notes
 
 **Singleton required**: Always use `import { prisma } from "@/lib/prisma"` — never `new PrismaClient()`. Prisma 7 requires a `PrismaLibSql` driver adapter; bare `new PrismaClient()` throws at runtime.
