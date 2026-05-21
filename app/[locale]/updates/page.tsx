@@ -1,9 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { buildAlternates } from "@/i18n/metadata";
+import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { updates } from "@/lib/updates";
 
@@ -14,16 +14,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const path = "/updates";
+  const tMeta = await getTranslations({ locale, namespace: "meta" });
   return {
-    title: "Updates — What's new on StroyGetter",
-    description:
-      "Follow every improvement to StroyGetter — new features, better downloads, and a smoother experience. All updates in one place.",
+    title: tMeta("updatesTitle"),
+    description: tMeta("updatesDesc"),
     alternates: buildAlternates(locale, path),
     openGraph: {
-      title: "Updates — What's new on StroyGetter",
-      description:
-        "Follow every improvement to StroyGetter — new features, better downloads, and a smoother experience.",
-      url: `${siteConfig.url}/updates`,
+      title: tMeta("updatesTitle"),
+      description: tMeta("updatesDesc"),
+      url: `${siteConfig.url}/${locale}/updates`,
     },
   };
 }

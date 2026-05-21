@@ -14,6 +14,37 @@ export type UpdateEntry = {
 
 export const updates: UpdateEntry[] = [
   {
+    slug: "v3-8-0-multilingual",
+    title: "StroyGetter says hello to the world — now in 4 languages",
+    date: "2026-05-21",
+    description:
+      "StroyGetter is now fully available in English, French, Spanish, and Portuguese. Same tool, same speed, your language.",
+    keywords: [
+      "stroygetter multilingual",
+      "youtube downloader french",
+      "youtube downloader spanish",
+      "youtube downloader portuguese",
+      "télécharger youtube en français",
+      "descargar youtube en español",
+      "baixar youtube em português",
+      "stroygetter update",
+    ],
+    sections: [
+      {
+        heading: "Bonjour. Hola. Olá.",
+        body: "StroyGetter now speaks your language — literally. The entire interface is available in English, French, Spanish (Latin America), and Brazilian Portuguese. Every label, button, error message, and FAQ entry has been translated. If you've been sharing StroyGetter with friends or family who prefer to browse in their own language, now it just works.",
+      },
+      {
+        heading: "Switch in one click",
+        body: "A compact language switcher sits in the top corner of every page. Tap EN, FR, ES, or PT and the whole site updates instantly — no reload, no account, no setting to dig through. Your choice is preserved as you navigate between pages.",
+      },
+      {
+        heading: "Built to grow",
+        body: "The new internationalisation system was designed from the ground up to make adding future languages and regional variants straightforward. Adding Canadian French or European Portuguese in the future is a four-step operation. The infrastructure is in place — the world is the limit.",
+      },
+    ],
+  },
+  {
     slug: "v3-5-0-redesign-2026",
     title: "StroyGetter gets a fresh look — and your music gets even better",
     date: "2026-05-11",
@@ -74,7 +105,8 @@ export const updates: UpdateEntry[] = [
   },
   {
     slug: "v3-4-0-rebuilt-2026",
-    title: "StroyGetter is rebuilt from the ground up — faster and more reliable",
+    title:
+      "StroyGetter is rebuilt from the ground up — faster and more reliable",
     date: "2026-05-01",
     description:
       "A complete rebuild of StroyGetter for 2026. Faster downloads, better handling of high-resolution videos, and a lighter, more reliable server.",

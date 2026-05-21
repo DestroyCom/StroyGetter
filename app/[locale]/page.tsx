@@ -1,9 +1,8 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { Check, Disc3, Download, Film, Link as LinkIcon, Music, Scale } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
@@ -14,6 +13,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { buildAlternates } from "@/i18n/metadata";
+import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/lib/site-config";
 
@@ -32,19 +32,19 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-const GLOSSARY = [
-  { term: "MP4 container", def: ".mp4" },
-  { term: "H.264 codec", def: "AVC" },
-  { term: "MP3 bitrate", def: "kbps" },
-  { term: "ID3 tags", def: "v2.4" },
-  { term: "Resolution", def: "px" },
-  { term: "Sample rate", def: "kHz" },
-];
-
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("home");
+
+  const GLOSSARY = [
+    { term: t("glossaryMp4Term"), def: t("glossaryMp4") },
+    { term: t("glossaryH264Term"), def: t("glossaryH264") },
+    { term: t("glossaryMp3Term"), def: t("glossaryMp3") },
+    { term: t("glossaryId3Term"), def: t("glossaryId3") },
+    { term: t("glossaryResolutionTerm"), def: t("glossaryRes") },
+    { term: t("glossarySampleRateTerm"), def: t("glossarySampleRate") },
+  ];
 
   const HOW_STEPS = [
     { Icon: LinkIcon, n: "01", title: t("step1Title"), body: t("step1Body") },
@@ -133,9 +133,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="bg-stroy-500 px-4 py-20 md:py-28" id="home">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="mb-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight md:text-6xl">
-            Download YouTube videos
-            <br />
-            as MP4, MP3 or Library Ready.
+            {t("heroTitle")
+              .split("\n")
+              .map((line, i, arr) => (
+                <Fragment key={line}>
+                  {line}
+                  {i < arr.length - 1 && <br />}
+                </Fragment>
+              ))}
             <br />
             <em className="font-light italic text-white/78">{t("heroSubtitle")}</em>
           </h1>

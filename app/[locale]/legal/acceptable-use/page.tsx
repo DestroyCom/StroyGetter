@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/i18n/metadata";
+import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -63,12 +64,12 @@ export default async function AcceptableUsePage({
       <div className="mb-8 rounded-r-xl border-l-2 border-stroy-400 bg-black/18 py-4 pl-5 pr-4 text-sm leading-relaxed text-white/75">
         This policy describes what you may and may not do with StroyGetter ("the Service"). Using
         the Service means you agree to these terms in addition to the{" "}
-        <a
+        <Link
           href="/legal/terms"
           className="text-stroy-200 underline underline-offset-3 hover:text-white"
         >
           Terms of use
-        </a>
+        </Link>
         .
       </div>
 

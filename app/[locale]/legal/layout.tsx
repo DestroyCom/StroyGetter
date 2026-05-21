@@ -15,6 +15,7 @@ export default async function LegalLayout({
 
   const LEGAL_NAV = [
     { href: "/legal/terms", label: t("navTerms") },
+    { href: "/legal/acceptable-use", label: t("navAcceptableUse") },
     { href: "/legal/privacy", label: t("navPrivacy") },
     { href: "/legal/cookies", label: t("navCookies") },
     { href: "/legal/dmca", label: t("navDmca") },

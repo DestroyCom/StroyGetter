@@ -1,6 +1,5 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
@@ -23,7 +22,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   setRequestLocale(locale);
   return (
-    <div className="mb-65">
+    <div className="mb-16">
       <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-[44px]">Contact</h1>
       <p className="mb-10 text-sm leading-relaxed text-white/75">
         StroyGetter is maintained by StroyCo as an open-source project. The best way to reach us is
@@ -31,7 +30,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
       </p>
 
       <div className="space-y-4">
-        <Link
+        <a
           href={`${siteConfig.githubUrl}/issues`}
           target="_blank"
           rel="noreferrer noopener"
@@ -47,7 +46,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             </p>
           </div>
           <span className="ml-auto text-white/60">→</span>
-        </Link>
+        </a>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
           <p className="mb-1 font-bold">Email — DMCA only</p>

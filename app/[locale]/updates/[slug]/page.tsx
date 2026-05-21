@@ -1,10 +1,10 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { buildAlternates } from "@/i18n/metadata";
+import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/lib/site-config";
 import { updates } from "@/lib/updates";
@@ -30,7 +30,7 @@ export async function generateMetadata({
     openGraph: {
       title: update.title,
       description: update.description,
-      url: `${siteConfig.url}/updates/${update.slug}`,
+      url: `${siteConfig.url}/${locale}/updates/${update.slug}`,
     },
   };
 }
@@ -43,6 +43,7 @@ export default async function UpdatePage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("updates");
+  const tCommon = await getTranslations("common");
 
   const update = updates.find((u) => u.slug === slug);
   if (!update) notFound();
@@ -135,7 +136,7 @@ export default async function UpdatePage({
               href="/"
               className="inline-flex items-center gap-2.5 rounded-2xl bg-stroy-500 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-stroy-600"
             >
-              Open the downloader
+              {tCommon("openDownloader")}
               <ArrowRight size={18} />
             </Link>
           </div>

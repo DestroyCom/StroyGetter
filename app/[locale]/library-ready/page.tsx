@@ -9,13 +9,13 @@ import {
   X,
 } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { buildAlternates } from "@/i18n/metadata";
+import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -25,10 +25,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const path = "/library-ready";
+  const tMeta = await getTranslations({ locale, namespace: "meta" });
   return {
-    title: "Library Ready — YouTube to MP3 with Cover Art, ID3 Tags & Synced Lyrics",
-    description:
-      "Download YouTube music as a fully tagged MP3 — cover art, artist, album, year and synced lyrics embedded automatically. Drops cleanly into Apple Music, Plex, Rekordbox, foobar2000 or any music player.",
+    title: tMeta("libraryReadyTitle"),
+    description: tMeta("libraryReadyDesc"),
     keywords: [
       "youtube to mp3 with album art",
       "youtube to mp3 id3 tags",
@@ -45,22 +45,12 @@ export async function generateMetadata({
     ],
     alternates: buildAlternates(locale, path),
     openGraph: {
-      title: "Library Ready — YouTube to MP3 with Cover Art, ID3 Tags & Synced Lyrics",
-      description:
-        "One click and your YouTube track is library-perfect: cover art, ID3 tags and synced lyrics baked in. Works with Apple Music, Plex, Rekordbox and your favourite music player.",
-      url: `${siteConfig.url}/library-ready`,
+      title: tMeta("libraryReadyTitle"),
+      description: tMeta("libraryReadyDesc"),
+      url: `${siteConfig.url}/${locale}/library-ready`,
     },
   };
 }
-
-const COMPARE_ROWS = [
-  { feature: "Cover art (high-res)", us: true, others: false },
-  { feature: "ID3 tags (artist, album, year)", us: true, others: "partial" as const },
-  { feature: "Synced lyrics (SYLT)", us: true, others: false },
-  { feature: "Auto-detected from YouTube Music", us: true, others: false },
-  { feature: "Free, no signup", us: true, others: true },
-  { feature: "No ads", us: true, others: false },
-];
 
 export default async function LibraryReadyPage({
   params,
@@ -70,6 +60,16 @@ export default async function LibraryReadyPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("libraryReady");
+  const tCommon = await getTranslations("common");
+
+  const COMPARE_ROWS = [
+    { feature: t("compareRow1"), us: true, others: false },
+    { feature: t("compareRow2"), us: true, others: "partial" as const },
+    { feature: t("compareRow3"), us: true, others: false },
+    { feature: t("compareRow4"), us: true, others: false },
+    { feature: t("compareRow5"), us: true, others: true },
+    { feature: t("compareRow6"), us: true, others: false },
+  ];
 
   const FEATURES = [
     { Icon: ImageIcon, title: t("feature1Title"), desc: t("feature1Desc") },
@@ -343,7 +343,7 @@ export default async function LibraryReadyPage({
             href="/"
             className="inline-flex items-center gap-2.5 rounded-2xl bg-stroy-500 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-stroy-600"
           >
-            Open the downloader
+            {tCommon("openDownloader")}
             <ArrowRight size={18} />
           </Link>
           <p className="mt-5 text-xs text-white/40">

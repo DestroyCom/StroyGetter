@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/i18n/metadata";
+import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -59,12 +60,12 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
         StroyGetter ("the Service") is a free, open-source YouTube video downloader. By using the
         Service, you agree to the terms below. For a detailed breakdown of permitted and prohibited
         uses, see the{" "}
-        <a
+        <Link
           href="/legal/acceptable-use"
           className="text-stroy-200 underline underline-offset-3 hover:text-white"
         >
           Acceptable use policy
-        </a>
+        </Link>
         .
       </div>
       <div className="space-y-8 text-sm leading-[1.75] text-white/82">

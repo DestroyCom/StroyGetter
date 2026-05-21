@@ -1,14 +1,23 @@
-import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { VideoLoading } from "@/components/custom/VideoLoading";
 import { VideoSelect } from "@/components/custom/VideoSelect";
 
-export const metadata = {
-  title: "Download video",
-  robots: { index: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  return {
+    title: t("fetchTitle"),
+    robots: { index: false },
+  };
+}
 
 export default async function QualityVideoSelection({
   params,

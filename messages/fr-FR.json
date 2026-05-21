@@ -1,7 +1,7 @@
 {
   "meta": {
     "homeTitle": "StroyGetter — Téléchargeur de vidéos YouTube gratuit",
-    "homeDesc": "Téléchargez la musique YouTube en MP3 prêt pour votre bibliothèque — pochette, tags ID3 et paroles synchronisées inclus automatiquement. Supporte aussi le MP4 jusqu'en 4K et le MP3 classique. Gratuit, sans inscription, sans pub.",
+    "homeDesc": "Téléchargez la musique YouTube en MP3 prêt pour votre bibliothèque — pochette, tags ID3 et paroles synchronisées inclus automatiquement. Supporte aussi le MP4 jusqu'en 4K et le MP3 classique. Gratuitement, sans inscription, sans pub.",
     "libraryReadyTitle": "Library Ready — YouTube vers MP3 avec Pochette, Tags ID3 & Paroles",
     "libraryReadyDesc": "Téléchargez la musique YouTube en MP3 parfaitement tagué — pochette, artiste, album, année et paroles synchronisées intégrés automatiquement. S'intègre directement dans Apple Music, Plex, Rekordbox ou foobar2000.",
     "howToDownloadTitle": "Comment télécharger une vidéo YouTube en MP4 ou MP3 en 2026",
@@ -41,7 +41,7 @@
   },
   "home": {
     "heroTitle": "Téléchargez des vidéos YouTube\nen MP4, MP3 ou Library Ready.",
-    "heroSubtitle": "gratuit, en ligne, sans inscription.",
+    "heroSubtitle": "Gratuitement, en ligne, sans inscription.",
     "heroDesc": "Le téléchargeur YouTube open-source. Obtenez un simple fichier vidéo ou audio, ou choisissez <libraryReady>Library Ready</libraryReady> pour un MP3 parfaitement tagué (pochette, tags ID3, paroles synchronisées), prêt pour votre lecteur musical. Sans extension ni application.",
     "heroLibraryReady": "Library Ready",
     "heroBadge1": "Téléchargements illimités",
@@ -99,11 +99,17 @@
     "faq6A": "Non — nous gérons uniquement les vidéos publiques accessibles sans compte YouTube. Les vidéos nécessitant une connexion ne peuvent pas être récupérées.",
     "glossaryTitle": "Glossaire du téléchargement YouTube",
     "glossaryDesc": "Définitions rapides des termes techniques utilisés sur cette page.",
+    "glossaryMp4Term": "Conteneur MP4",
     "glossaryMp4": ".mp4",
+    "glossaryH264Term": "Codec H.264",
     "glossaryH264": "AVC",
+    "glossaryMp3Term": "Débit MP3",
     "glossaryMp3": "kbps",
+    "glossaryId3Term": "Tags ID3",
     "glossaryId3": "v2.4",
+    "glossaryResolutionTerm": "Résolution",
     "glossaryRes": "px",
+    "glossarySampleRateTerm": "Taux d'échantillonnage",
     "glossarySampleRate": "kHz",
     "githubTitle": "Open source sur GitHub",
     "githubDesc": "Auto-hébergez ou contribuez · Licence MIT"
@@ -383,6 +389,7 @@
   "legal": {
     "sidebarLabel": "Mentions légales",
     "navTerms": "Conditions d'utilisation",
+    "navAcceptableUse": "Utilisation acceptable",
     "navPrivacy": "Politique de confidentialité",
     "navCookies": "Cookies & analyses",
     "navDmca": "DMCA / Retraits",

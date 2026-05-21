@@ -20,7 +20,7 @@ export default async function CookiesPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   setRequestLocale(locale);
   return (
-    <div className="mb-45">
+    <div className="mb-16">
       <p className="mb-2 text-xs font-bold uppercase tracking-widest text-stroy-300">
         Last updated · 7 May 2026
       </p>

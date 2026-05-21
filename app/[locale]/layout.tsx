@@ -2,7 +2,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SiteFooter } from "@/components/custom/SiteFooter";
 import { SiteHeader } from "@/components/custom/SiteHeader";
@@ -32,15 +32,20 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const tMeta = await getTranslations({ locale, namespace: "meta" });
   return {
     metadataBase: new URL(siteConfig.url),
     title: {
-      default: "StroyGetter — Free YouTube Video Downloader",
-      template: "%s — StroyGetter",
+      default: tMeta("homeTitle"),
+      template: `%s — StroyGetter`,
     },
-    description:
-      "Download YouTube music as Library Ready MP3 — cover art, ID3 tags and synced lyrics embedded automatically. Also supports MP4 up to 4K and plain MP3. Free, no signup, no ads.",
+    description: tMeta("homeDesc"),
     keywords: [
       "youtube to mp3 with album art",
       "youtube to mp3 id3 tags",
