@@ -55,7 +55,7 @@ export function SiteHeader() {
       ) : (
         <>
           {/* Desktop nav */}
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Main navigation">
+          <nav className="hidden items-center gap-8 md:flex" aria-label={t("mainNavigation")}>
             {NAV_LINKS.map((l) => (
               <Link
                 key={l.href}
@@ -70,7 +70,7 @@ export function SiteHeader() {
               target="_blank"
               rel="noreferrer noopener"
               className="flex items-center gap-2 rounded-full border border-white/18 px-3.5 py-1.5 text-sm text-white transition-colors duration-200 hover:border-white/40"
-              aria-label="StroyGetter on GitHub"
+              aria-label={t("githubAriaLabel")}
             >
               <SiGithub size={14} />
               {t("github")}
@@ -91,7 +91,7 @@ export function SiteHeader() {
           {/* Mobile menu overlay */}
           {mobileOpen && (
             <div className="absolute inset-x-0 top-full z-50 border-b border-white/8 bg-stroy-500 px-4 py-4 md:hidden">
-              <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+              <nav className="flex flex-col gap-1" aria-label={t("mobileNavigation")}>
                 {NAV_LINKS.map((l) => (
                   <Link
                     key={l.href}

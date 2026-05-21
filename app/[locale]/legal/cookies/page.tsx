@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/i18n/metadata";
 
 export async function generateMetadata({
@@ -9,9 +9,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const path = "/legal/cookies";
+  const t = await getTranslations({ locale, namespace: "legal" });
   return {
-    title: "Cookies & analytics",
-    description: "StroyGetter cookies and analytics disclosure.",
+    title: t("cookiesH1"),
+    description: t("cookiesMetaDesc"),
     alternates: buildAlternates(locale, path),
   };
 }
@@ -19,51 +20,54 @@ export async function generateMetadata({
 export default async function CookiesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("legal");
+
   return (
     <div className="mb-16">
       <p className="mb-2 text-xs font-bold uppercase tracking-widest text-stroy-300">
-        Last updated · 7 May 2026
+        {t("cookiesLastUpdated")}
       </p>
-      <h1 className="mb-8 text-4xl font-bold tracking-tight md:text-[44px]">Cookies & analytics</h1>
+      <h1 className="mb-8 text-4xl font-bold tracking-tight md:text-[44px]">{t("cookiesH1")}</h1>
 
       <div className="space-y-8 text-sm leading-[1.75] text-white/82">
         <div>
           <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
             <span className="font-mono text-sm text-stroy-300">01</span>
-            First-party cookies
+            {t("cookies01Title")}
+          </h2>
+          <p>{t("cookies01Body")}</p>
+        </div>
+        <div>
+          <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
+            <span className="font-mono text-sm text-stroy-300">02</span>
+            {t("cookies02Title")}
           </h2>
           <p>
-            StroyGetter sets no first-party cookies. We have no login, no session, no preferences
-            stored in your browser.
+            {t.rich("cookies02Body", {
+              gaCode: (chunks) => (
+                <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono">{chunks}</code>
+              ),
+            })}
           </p>
         </div>
         <div>
           <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
-            <span className="font-mono text-sm text-stroy-300">02</span>Google Analytics 4
+            <span className="font-mono text-sm text-stroy-300">03</span>
+            {t("cookies03Title")}
           </h2>
           <p>
-            We use Google Analytics 4 to count page visits and understand which features are used
-            most. GA4 may set a{" "}
-            <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono">_ga</code> measurement
-            cookie in your browser. This cookie identifies a session anonymously — it contains no
-            personal data.
-          </p>
-        </div>
-        <div>
-          <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
-            <span className="font-mono text-sm text-stroy-300">03</span>Opting out
-          </h2>
-          <p>
-            You can prevent the GA4 cookie by installing the{" "}
-            <a
-              href="https://tools.google.com/dlpage/gaoptout"
-              className="text-stroy-200 underline underline-offset-3 hover:text-white"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Google Analytics opt-out browser add-on
-            </a>
-            , or by using any browser-level content blocker (uBlock Origin, etc.).
+            {t.rich("cookies03Body", {
+              gaOptOutLink: (chunks) => (
+                <a
+                  href="https://tools.google.com/dlpage/gaoptout"
+                  className="text-stroy-200 underline underline-offset-3 hover:text-white"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {chunks}
+                </a>
+              ),
+            })}
           </p>
         </div>
       </div>

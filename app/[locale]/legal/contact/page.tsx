@@ -1,6 +1,6 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
@@ -11,9 +11,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const path = "/legal/contact";
+  const t = await getTranslations({ locale, namespace: "legal" });
   return {
-    title: "Contact",
-    description: "Get in touch with the StroyGetter team.",
+    title: t("contactH1"),
+    description: t("contactMetaDesc"),
     alternates: buildAlternates(locale, path),
   };
 }
@@ -21,13 +22,12 @@ export async function generateMetadata({
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("legal");
+
   return (
     <div className="mb-16">
-      <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-[44px]">Contact</h1>
-      <p className="mb-10 text-sm leading-relaxed text-white/75">
-        StroyGetter is maintained by StroyCo as an open-source project. The best way to reach us is
-        through GitHub.
-      </p>
+      <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-[44px]">{t("contactH1")}</h1>
+      <p className="mb-10 text-sm leading-relaxed text-white/75">{t("contactIntro")}</p>
 
       <div className="space-y-4">
         <a
@@ -40,18 +40,16 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             <SiGithub size={20} />
           </div>
           <div>
-            <p className="font-bold">GitHub Issues</p>
-            <p className="text-sm text-white/65">
-              Bug reports, feature requests, general questions
-            </p>
+            <p className="font-bold">{t("contactGithubTitle")}</p>
+            <p className="text-sm text-white/65">{t("contactGithubDesc")}</p>
           </div>
           <span className="ml-auto text-white/60">→</span>
         </a>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-          <p className="mb-1 font-bold">Email — DMCA only</p>
+          <p className="mb-1 font-bold">{t("contactEmailTitle")}</p>
           <p className="text-sm text-white/65">
-            For copyright takedown notices:{" "}
+            {t("contactEmailDesc")}{" "}
             <a
               href={`mailto:${siteConfig.emailDmca}`}
               className="text-stroy-200 underline underline-offset-3 hover:text-white"

@@ -92,7 +92,7 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/#formats" className="transition-colors hover:text-white">
+                <Link href="/library-ready" className="transition-colors hover:text-white">
                   {t("learnLibraryReady")}
                 </Link>
               </li>

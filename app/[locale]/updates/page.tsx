@@ -49,7 +49,7 @@ export default async function UpdatesPage({ params }: { params: Promise<{ locale
           name: "StroyGetter Updates",
           description:
             "Follow every improvement to StroyGetter — new features, better downloads, and a smoother experience.",
-          url: `${siteConfig.url}/updates`,
+          url: `${siteConfig.url}/${locale}/updates`,
           publisher: {
             "@type": "Organization",
             name: "StroyCo",
@@ -59,7 +59,7 @@ export default async function UpdatesPage({ params }: { params: Promise<{ locale
             "@type": "BlogPosting",
             headline: u.title,
             datePublished: u.date,
-            url: `${siteConfig.url}/updates/${u.slug}`,
+            url: `${siteConfig.url}/${locale}/updates/${u.slug}`,
             description: u.description,
           })),
         }}

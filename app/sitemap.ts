@@ -28,7 +28,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...localeEntries("/library-ready", new Date("2026-05-20"), "monthly", 0.9),
     ...localeEntries("/how-to-use-library-ready", new Date("2026-05-20"), "monthly", 0.7),
     ...localeEntries("/how-to-download-youtube-videos", new Date("2026-05-11"), "monthly", 0.8),
-    ...localeEntries("/updates", new Date(updates[0].date), "monthly", 0.7),
+    ...(updates.length > 0
+      ? localeEntries("/updates", new Date(updates[0].date), "monthly", 0.7)
+      : []),
     ...updates.flatMap((u) =>
       LOCALES.map((locale) => ({
         url: `${BASE}/${locale}/updates/${u.slug}`,

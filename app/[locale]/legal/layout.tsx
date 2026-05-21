@@ -29,7 +29,7 @@ export default async function LegalLayout({
           <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">
             {t("sidebarLabel")}
           </p>
-          <nav className="flex flex-col gap-1" aria-label="Legal pages navigation">
+          <nav className="flex flex-col gap-1" aria-label={t("sidebarNavAriaLabel")}>
             {LEGAL_NAV.map((l) => (
               <Link
                 key={l.href}

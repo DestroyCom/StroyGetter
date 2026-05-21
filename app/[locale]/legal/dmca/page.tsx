@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
@@ -10,9 +10,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const path = "/legal/dmca";
+  const t = await getTranslations({ locale, namespace: "legal" });
   return {
-    title: "DMCA / takedown",
-    description: "StroyGetter DMCA and copyright takedown policy.",
+    title: t("dmcaH1"),
+    description: t("dmcaMetaDesc"),
     alternates: buildAlternates(locale, path),
   };
 }
@@ -20,45 +21,30 @@ export async function generateMetadata({
 export default async function DmcaPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("legal");
+
   return (
     <div className="mb-16">
       <p className="mb-2 text-xs font-bold uppercase tracking-widest text-stroy-300">
-        Last updated · 7 May 2026
+        {t("dmcaLastUpdated")}
       </p>
-      <h1 className="mb-8 text-4xl font-bold tracking-tight md:text-[44px]">DMCA / takedown</h1>
+      <h1 className="mb-8 text-4xl font-bold tracking-tight md:text-[44px]">{t("dmcaH1")}</h1>
 
       <div className="space-y-8 text-sm leading-[1.75] text-white/82">
-        <p>
-          StroyGetter is a client-side conversion tool. We do not host, cache, or redistribute any
-          video content — every download is streamed in real time from YouTube&apos;s servers to
-          your browser and immediately discarded.
-        </p>
+        <p>{t("dmcaIntro")}</p>
         <div>
           <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
-            <span className="font-mono text-sm text-stroy-300">01</span>Filing a takedown notice
+            <span className="font-mono text-sm text-stroy-300">01</span>
+            {t("dmca01Title")}
           </h2>
-          <p>
-            If you believe the Service is being used to infringe on your copyright, send a standard
-            DMCA notice to{" "}
-            <a
-              href={`mailto:${siteConfig.emailDmca}`}
-              className="text-stroy-200 underline underline-offset-3 hover:text-white"
-            >
-              {siteConfig.emailDmca}
-            </a>{" "}
-            including: a description of the copyrighted work, the URL being misused, your contact
-            information, and a statement of good faith. We will respond within 5 business days.
-          </p>
+          <p>{t("dmca01Body", { dmcaEmail: siteConfig.emailDmca })}</p>
         </div>
         <div>
           <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
             <span className="font-mono text-sm text-stroy-300">02</span>
-            Counter-notices
+            {t("dmca02Title")}
           </h2>
-          <p>
-            If you believe content was removed in error, you may file a counter-notice to the same
-            address. We follow the safe-harbor procedures outlined in 17 U.S.C. § 512(g).
-          </p>
+          <p>{t("dmca02Body")}</p>
         </div>
       </div>
     </div>
