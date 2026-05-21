@@ -2,6 +2,7 @@ import { SiGithub } from "@icons-pack/react-simple-icons";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -14,16 +15,7 @@ export async function generateMetadata({
   return {
     title: "Contact",
     description: "Get in touch with the StroyGetter team.",
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: {
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        es: `/es${path}`,
-        "pt-BR": `/pt${path}`,
-        "x-default": `/en${path}`,
-      },
-    },
+    alternates: buildAlternates(locale, path),
   };
 }
 

@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
   const path = "/legal/dmca";
-  return { title: "DMCA / takedown", description: "StroyGetter DMCA and copyright takedown policy.", alternates: { canonical: `/${locale}${path}`, languages: { en: `/en${path}`, fr: `/fr${path}`, es: `/es${path}`, "pt-BR": `/pt${path}`, "x-default": `/en${path}` } } };
+  return {
+    title: "DMCA / takedown",
+    description: "StroyGetter DMCA and copyright takedown policy.",
+    alternates: buildAlternates(locale, path),
+  };
 }
 
 export default async function DmcaPage({ params }: { params: Promise<{ locale: string }> }) {

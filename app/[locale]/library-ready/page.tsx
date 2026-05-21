@@ -9,12 +9,13 @@ import {
   X,
 } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -42,16 +43,7 @@ export async function generateMetadata({
       "youtube music to plex",
       "youtube mp3 fully tagged",
     ],
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: {
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        es: `/es${path}`,
-        "pt-BR": `/pt${path}`,
-        "x-default": `/en${path}`,
-      },
-    },
+    alternates: buildAlternates(locale, path),
     openGraph: {
       title: "Library Ready — YouTube to MP3 with Cover Art, ID3 Tags & Synced Lyrics",
       description:
@@ -201,9 +193,7 @@ export default async function LibraryReadyPage({
               <div className="space-y-4 text-white/80">
                 <p className="text-base leading-relaxed">
                   {t.rich("whyP1", {
-                    unknownArtist: (chunks) => (
-                      <strong className="text-white">{chunks}</strong>
-                    ),
+                    unknownArtist: (chunks) => <strong className="text-white">{chunks}</strong>,
                   })}
                 </p>
                 <p className="text-base leading-relaxed">{t("whyP2")}</p>
@@ -220,11 +210,27 @@ export default async function LibraryReadyPage({
               </div>
               <div className="space-y-2">
                 {[
-                  { label: t("withLabel1"), without: t("withoutRow1Artist"), with: t("withRow1Artist") },
+                  {
+                    label: t("withLabel1"),
+                    without: t("withoutRow1Artist"),
+                    with: t("withRow1Artist"),
+                  },
                   { label: t("withLabel2"), without: t("withoutRow1Art"), with: t("withRow1Art") },
-                  { label: t("withLabel3"), without: t("withoutRow1Lyrics"), with: t("withRow1Lyrics") },
-                  { label: t("withLabel4"), without: t("withoutRow1Album"), with: t("withRow1Album") },
-                  { label: t("withLabel5"), without: t("withoutRow1Time"), with: t("withRow1Time") },
+                  {
+                    label: t("withLabel3"),
+                    without: t("withoutRow1Lyrics"),
+                    with: t("withRow1Lyrics"),
+                  },
+                  {
+                    label: t("withLabel4"),
+                    without: t("withoutRow1Album"),
+                    with: t("withRow1Album"),
+                  },
+                  {
+                    label: t("withLabel5"),
+                    without: t("withoutRow1Time"),
+                    with: t("withRow1Time"),
+                  },
                 ].map(({ label, without, with: withVal }) => (
                   <div
                     key={label}

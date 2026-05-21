@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -13,10 +14,7 @@ export async function generateMetadata({
     title: "Terms of use",
     description: "StroyGetter terms of use — personal and educational use only.",
     robots: { index: true },
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: { en: `/en${path}`, fr: `/fr${path}`, es: `/es${path}`, "pt-BR": `/pt${path}`, "x-default": `/en${path}` },
-    },
+    alternates: buildAlternates(locale, path),
   };
 }
 
@@ -48,11 +46,7 @@ const SECTIONS = [
   },
 ];
 
-export default async function TermsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   return (
@@ -60,13 +54,11 @@ export default async function TermsPage({
       <p className="mb-2 text-xs font-bold uppercase tracking-widest text-stroy-300">
         Last updated · 12 May 2026
       </p>
-      <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-[44px]">
-        Terms of use
-      </h1>
+      <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-[44px]">Terms of use</h1>
       <div className="mb-8 rounded-r-xl border-l-2 border-stroy-400 bg-black/18 py-4 pl-5 pr-4 text-sm leading-relaxed text-white/75">
-        StroyGetter ("the Service") is a free, open-source YouTube video
-        downloader. By using the Service, you agree to the terms below. For a
-        detailed breakdown of permitted and prohibited uses, see the{" "}
+        StroyGetter ("the Service") is a free, open-source YouTube video downloader. By using the
+        Service, you agree to the terms below. For a detailed breakdown of permitted and prohibited
+        uses, see the{" "}
         <a
           href="/legal/acceptable-use"
           className="text-stroy-200 underline underline-offset-3 hover:text-white"

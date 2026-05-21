@@ -1,28 +1,21 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
+import { Check, Disc3, Download, Film, Link as LinkIcon, Music, Scale } from "lucide-react";
 import type { Metadata } from "next";
-import {
-  Check,
-  Disc3,
-  Download,
-  Film,
-  Link as LinkIcon,
-  Music,
-  Scale,
-} from "lucide-react";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
-import { routing } from "@/i18n/routing";
-import { siteConfig } from "@/lib/site-config";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { buildAlternates } from "@/i18n/metadata";
+import { routing } from "@/i18n/routing";
+import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
   params,
@@ -31,16 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   return {
-    alternates: {
-      canonical: `/${locale}`,
-      languages: {
-        en: "/en",
-        fr: "/fr",
-        es: "/es",
-        "pt-BR": "/pt",
-        "x-default": "/en",
-      },
-    },
+    alternates: buildAlternates(locale, ""),
   };
 }
 
@@ -57,11 +41,7 @@ const GLOSSARY = [
   { term: "Sample rate", def: "kHz" },
 ];
 
-export default async function Home({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("home");
@@ -242,9 +222,7 @@ export default async function Home({
               <div
                 key={f.title}
                 className={`flex flex-col gap-4 rounded-2xl border p-7 ${
-                  f.featured
-                    ? "border-stroy-300/30 bg-stroy-700"
-                    : "border-white/6 bg-stroy-800"
+                  f.featured ? "border-stroy-300/30 bg-stroy-700" : "border-white/6 bg-stroy-800"
                 }`}
               >
                 <div className="flex items-center justify-between">

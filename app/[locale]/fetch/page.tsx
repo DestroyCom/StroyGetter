@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
+import { Suspense } from "react";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { VideoLoading } from "@/components/custom/VideoLoading";

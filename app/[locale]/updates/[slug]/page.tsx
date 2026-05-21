@@ -1,16 +1,16 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
+import { buildAlternates } from "@/i18n/metadata";
+import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/lib/site-config";
 import { updates } from "@/lib/updates";
 
 export function generateStaticParams() {
-  return updates.flatMap((u) =>
-    ["en", "fr", "es", "pt"].map((locale) => ({ locale, slug: u.slug }))
-  );
+  return updates.flatMap((u) => routing.locales.map((locale) => ({ locale, slug: u.slug })));
 }
 
 export async function generateMetadata({
@@ -26,16 +26,7 @@ export async function generateMetadata({
     title: `${update.title} — StroyGetter`,
     description: update.description,
     keywords: update.keywords,
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: {
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        es: `/es${path}`,
-        "pt-BR": `/pt${path}`,
-        "x-default": `/en${path}`,
-      },
-    },
+    alternates: buildAlternates(locale, path),
     openGraph: {
       title: update.title,
       description: update.description,

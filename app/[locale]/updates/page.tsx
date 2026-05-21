@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 import { updates } from "@/lib/updates";
 
@@ -17,16 +18,7 @@ export async function generateMetadata({
     title: "Updates — What's new on StroyGetter",
     description:
       "Follow every improvement to StroyGetter — new features, better downloads, and a smoother experience. All updates in one place.",
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: {
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        es: `/es${path}`,
-        "pt-BR": `/pt${path}`,
-        "x-default": `/en${path}`,
-      },
-    },
+    alternates: buildAlternates(locale, path),
     openGraph: {
       title: "Updates — What's new on StroyGetter",
       description:
@@ -36,11 +28,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function UpdatesPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function UpdatesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("updates");

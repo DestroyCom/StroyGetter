@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
   const path = "/legal/acceptable-use";
-  return { title: "Acceptable use", description: "StroyGetter acceptable use policy — what you can and cannot download with our service.", robots: { index: true }, alternates: { canonical: `/${locale}${path}`, languages: { en: `/en${path}`, fr: `/fr${path}`, es: `/es${path}`, "pt-BR": `/pt${path}`, "x-default": `/en${path}` } } };
+  return {
+    title: "Acceptable use",
+    description:
+      "StroyGetter acceptable use policy — what you can and cannot download with our service.",
+    robots: { index: true },
+    alternates: buildAlternates(locale, path),
+  };
 }
 
 const SECTIONS = [
@@ -36,7 +47,11 @@ const SECTIONS = [
   },
 ];
 
-export default async function AcceptableUsePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function AcceptableUsePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   return (

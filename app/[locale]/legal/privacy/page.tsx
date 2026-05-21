@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -12,18 +13,11 @@ export async function generateMetadata({
   return {
     title: "Privacy policy",
     description: "StroyGetter privacy policy — what we collect and why.",
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: { en: `/en${path}`, fr: `/fr${path}`, es: `/es${path}`, "pt-BR": `/pt${path}`, "x-default": `/en${path}` },
-    },
+    alternates: buildAlternates(locale, path),
   };
 }
 
-export default async function PrivacyPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   return (

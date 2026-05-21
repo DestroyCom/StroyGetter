@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildAlternates } from "@/i18n/metadata";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
   const path = "/legal/cookies";
-  return { title: "Cookies & analytics", description: "StroyGetter cookies and analytics disclosure.", alternates: { canonical: `/${locale}${path}`, languages: { en: `/en${path}`, fr: `/fr${path}`, es: `/es${path}`, "pt-BR": `/pt${path}`, "x-default": `/en${path}` } } };
+  return {
+    title: "Cookies & analytics",
+    description: "StroyGetter cookies and analytics disclosure.",
+    alternates: buildAlternates(locale, path),
+  };
 }
 
 export default async function CookiesPage({ params }: { params: Promise<{ locale: string }> }) {

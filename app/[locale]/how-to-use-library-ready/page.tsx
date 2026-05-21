@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
+import { buildAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({
@@ -28,16 +29,7 @@ export async function generateMetadata({
       "download youtube music foobar2000",
       "youtube to mp3 rekordbox ready",
     ],
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: {
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        es: `/es${path}`,
-        "pt-BR": `/pt${path}`,
-        "x-default": `/en${path}`,
-      },
-    },
+    alternates: buildAlternates(locale, path),
     openGraph: {
       title: "How to download YouTube music with cover art, ID3 tags and synced lyrics",
       description:
@@ -78,7 +70,11 @@ const ARTICLE_FAQS = [
   },
 ];
 
-export default async function HowToUseLibraryReadyPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function HowToUseLibraryReadyPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   return (
