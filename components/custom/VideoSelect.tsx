@@ -1,7 +1,8 @@
 "use client";
 
 import { Disc3, Download, Film, Music } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -12,37 +13,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
+import { useRouter } from "@/i18n/navigation";
 import type { VideoData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VideoLoading } from "./VideoLoading";
 
 type Fmt = "mp4" | "mp3" | "library-ready";
 
-const FORMAT_TABS: { id: Fmt; label: string; sub: string; Icon: typeof Film }[] = [
-  { id: "library-ready", label: "Library Ready", sub: "MP3 + tags + lyrics", Icon: Disc3 },
-  { id: "mp4", label: "MP4 video", sub: "H.264 · source resolution", Icon: Film },
-  { id: "mp3", label: "MP3 audio", sub: "190 kbps", Icon: Music },
-];
-
-const EDU_CARDS = [
-  {
-    title: "What's Library Ready?",
-    desc: "MP3 with embedded cover art, ID3 tags (title, artist, album, year) and synced lyrics. Drops cleanly into Apple Music, Plex, Rekordbox.",
-  },
-  {
-    title: "Conversion taking a while?",
-    desc: "We fetch the source from YouTube live and tag it on the fly. Library Ready adds 15–25s because we look up metadata and high-res cover art.",
-  },
-  {
-    title: "MP4 vs MP3 vs Library Ready",
-    desc: "MP4 keeps the picture. MP3 keeps only the sound. Library Ready is MP3 + everything your music app needs to display the track properly.",
-  },
-];
-
 export const VideoSelect = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
+  const t = useTranslations("videoSelect");
+
+  const FORMAT_TABS: { id: Fmt; label: string; sub: string; Icon: typeof Film }[] = [
+    {
+      id: "library-ready",
+      label: t("formatLibraryReady"),
+      sub: t("formatLibraryReadySub"),
+      Icon: Disc3,
+    },
+    { id: "mp4", label: t("formatMp4"), sub: t("formatMp4Sub"), Icon: Film },
+    { id: "mp3", label: t("formatMp3"), sub: t("formatMp3Sub"), Icon: Music },
+  ];
+
+  const EDU_CARDS = [
+    { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
+    { title: t("eduCard2Title"), desc: t("eduCard2Desc") },
+    { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
+  ];
 
   const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
@@ -78,10 +77,10 @@ export const VideoSelect = () => {
         setIsLoading(false);
       })
       .catch(() => {
-        setError("An error occurred while fetching video info.");
+        setError(t("errorFetch"));
         setIsLoading(false);
       });
-  }, [videoUrl]);
+  }, [videoUrl, t]);
 
   useEffect(() => {
     if (!isDownloading) return;
@@ -109,7 +108,6 @@ export const VideoSelect = () => {
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("Download failed");
 
-      // Server done — jump to 100% while the blob transfers to the browser
       setLoadProgress(100);
 
       const ext = fmt === "mp4" ? "mp4" : "mp3";
@@ -119,10 +117,9 @@ export const VideoSelect = () => {
       a.href = url;
       a.download = `${videoData.title}.${ext}`;
       a.click();
-      // Give the browser 1 s to start the download before releasing the object URL
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      setDownloadError("An error occurred while downloading. Please try again.");
+      setDownloadError(t("errorDownload"));
     }
     setIsDownloading(false);
   };
@@ -137,7 +134,7 @@ export const VideoSelect = () => {
     );
   }
 
-  const currentFmt = FORMAT_TABS.find((t) => t.id === fmt)!;
+  const currentFmt = FORMAT_TABS.find((tab) => tab.id === fmt) ?? FORMAT_TABS[0];
 
   return (
     <div className="mx-auto max-w-270">
@@ -150,20 +147,18 @@ export const VideoSelect = () => {
           {videoData.thumbnail ? (
             <img
               src={videoData.thumbnail}
-              alt={`Thumbnail of ${videoData.title}`}
+              alt={t("thumbnailAlt", { title: videoData.title })}
               className="relative z-10 h-full w-full object-cover"
             />
           ) : (
             <Film size={48} className="relative z-10 text-stroy-400" />
           )}
-          {/* Channel pill */}
           {videoData.author && (
             <div className="absolute left-3.5 top-3.5 z-20 flex items-center gap-2 rounded-full bg-black/55 px-2.5 py-1.5 text-[11px]">
               <span className="size-4.5 rounded-full bg-white/20" />
               <span>{videoData.author}</span>
             </div>
           )}
-          {/* Duration badge */}
           {videoData.duration && (
             <div className="absolute bottom-3.5 right-3.5 z-20 rounded bg-black/70 px-2 py-1 font-mono text-xs tracking-wider">
               {videoData.duration}s
@@ -173,7 +168,6 @@ export const VideoSelect = () => {
 
         {/* Body */}
         <div className="flex flex-col gap-6 p-8">
-          {/* Video info */}
           <div>
             <h2 className="mb-2 text-xl font-bold leading-snug tracking-tight line-clamp-2">
               {videoData.title}
@@ -188,26 +182,28 @@ export const VideoSelect = () => {
           {/* Format picker */}
           <div>
             <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">
-              Choose format
+              {t("chooseFormat")}
             </p>
             <div className="flex gap-2 rounded-2xl border border-white/6 bg-stroy-950 p-1.5">
-              {FORMAT_TABS.map((t) => (
+              {FORMAT_TABS.map((tab) => (
                 <button
-                  key={t.id}
+                  key={tab.id}
                   type="button"
-                  onClick={() => setFmt(t.id)}
+                  onClick={() => setFmt(tab.id)}
                   className={cn(
                     "flex flex-1 flex-col items-start justify-center gap-1 rounded-xl px-2 py-2.5 text-left transition-all sm:px-3.5 sm:py-3",
-                    fmt === t.id
+                    fmt === tab.id
                       ? "bg-stroy-500 text-white"
                       : "text-white/65 hover:bg-white/4 hover:text-white"
                   )}
                 >
                   <span className="flex items-center gap-1.5 text-[12px] font-bold sm:gap-2 sm:text-[13px]">
-                    <t.Icon size={13} />
-                    {t.label}
+                    <tab.Icon size={13} />
+                    {tab.label}
                   </span>
-                  <span className="hidden font-mono text-[11px] opacity-75 sm:block">{t.sub}</span>
+                  <span className="hidden font-mono text-[11px] opacity-75 sm:block">
+                    {tab.sub}
+                  </span>
                 </button>
               ))}
             </div>
@@ -217,11 +213,11 @@ export const VideoSelect = () => {
           {fmt === "mp4" && formats && formats.length > 0 && (
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">
-                Video quality
+                {t("videoQuality")}
               </p>
               <Select value={selectedItag} onValueChange={setSelectedItag} disabled={isDownloading}>
                 <SelectTrigger className="w-full border-white/10 bg-stroy-950 text-white">
-                  <SelectValue placeholder="Select quality" />
+                  <SelectValue placeholder={t("selectQuality")} />
                 </SelectTrigger>
                 <SelectContent>
                   {formats
@@ -243,22 +239,18 @@ export const VideoSelect = () => {
                 ♪
               </div>
               <div>
-                <p className="mb-1 text-sm font-bold">
-                  Library Ready · metadata from YouTube Music
-                </p>
-                <p className="text-xs leading-snug text-white/70">
-                  Cover art 1400×1400, ID3 tags, synced lyrics · adds ~20s to processing.
-                </p>
+                <p className="mb-1 text-sm font-bold">{t("libraryReadyCalloutTitle")}</p>
+                <p className="text-xs leading-snug text-white/70">{t("libraryReadyCalloutDesc")}</p>
               </div>
               <div className="flex flex-row gap-3 font-mono text-[10px] text-white/55 sm:flex-col sm:gap-1 sm:whitespace-nowrap">
                 <span className="before:mr-1 before:text-stroy-200 before:content-['✓']">
-                  Cover art
+                  {t("libraryReadyCoverArt")}
                 </span>
                 <span className="before:mr-1 before:text-stroy-200 before:content-['✓']">
-                  ID3 tags
+                  {t("libraryReadyId3")}
                 </span>
                 <span className="before:mr-1 before:text-stroy-200 before:content-['✓']">
-                  Lyrics
+                  {t("libraryReadyLyrics")}
                 </span>
               </div>
             </div>
@@ -269,9 +261,7 @@ export const VideoSelect = () => {
             <div className="flex flex-col gap-3">
               <Progress value={loadProgress} className="h-2" />
               <p className="text-center text-xs text-white/55 italic">
-                {loadProgress < 100
-                  ? "Converting… please wait and do not close the tab."
-                  : "Saving to your device…"}
+                {loadProgress < 100 ? t("converting") : t("saving")}
               </p>
             </div>
           ) : downloadError ? (
@@ -285,7 +275,7 @@ export const VideoSelect = () => {
                 className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/6 px-6 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
               >
                 <Download size={18} />
-                Retry · {currentFmt.label}
+                {t("retryButton", { format: currentFmt.label })}
               </button>
             </div>
           ) : (
@@ -295,14 +285,11 @@ export const VideoSelect = () => {
               className="flex w-full items-center justify-center gap-3 rounded-xl bg-stroy-500 px-6 py-4 text-[15px] font-bold text-white transition-colors hover:bg-stroy-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             >
               <Download size={18} />
-              Download · {currentFmt.label}
+              {t("downloadButton", { format: currentFmt.label })}
             </button>
           )}
 
-          <p className="text-center text-xs italic text-white/50">
-            Streamed directly to your device. Nothing stored on our servers. Only download content
-            you own or have the rights to.
-          </p>
+          <p className="text-center text-xs italic text-white/50">{t("disclaimer")}</p>
         </div>
       </div>
 

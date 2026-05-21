@@ -1,14 +1,17 @@
 "use client";
 
 import { ArrowRight, Clipboard, Loader2, Search } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { searchQuery } from "@/functions/getYoutubeUrl";
+import { useRouter } from "@/i18n/navigation";
 
 export const GetterInput = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
+  const t = useTranslations("getterInput");
 
   const [url, setUrl] = useState(videoUrl || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +26,7 @@ export const GetterInput = () => {
       const resolvedUrl = await searchQuery(value);
       router.push(`/fetch?videoUrl=${resolvedUrl}`);
     } catch {
-      setError("No video found. Try a different search or paste a YouTube URL directly.");
+      setError(t("errorNotFound"));
       setIsLoading(false);
     }
   };
@@ -34,7 +37,7 @@ export const GetterInput = () => {
     try {
       clipText = await navigator.clipboard.readText();
     } catch {
-      setPasteError("Please paste manually or grant clipboard permission");
+      setPasteError(t("errorClipboard"));
       inputRef.current?.focus();
       setTimeout(() => setPasteError(""), 4000);
       return;
@@ -52,7 +55,6 @@ export const GetterInput = () => {
       }}
       className="mx-auto w-full max-w-2xl"
     >
-      {/* Search bar — label forwards clicks to the input natively */}
       <label
         htmlFor="video-url"
         className="mb-4 flex cursor-text items-center gap-3 rounded-2xl border border-white/16 bg-stroy-950 px-4 py-3.5 transition-colors focus-within:border-white/35"
@@ -61,7 +63,7 @@ export const GetterInput = () => {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Paste a YouTube URL or search query…"
+          placeholder={t("placeholder")}
           id="video-url"
           name="video-url"
           autoComplete="off"
@@ -74,24 +76,19 @@ export const GetterInput = () => {
         />
         <button
           type="button"
-          title="Paste from clipboard"
+          title={t("pasteTitle")}
           disabled={isLoading}
           className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/6 px-2.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           onClick={handlePaste}
         >
           <Clipboard size={12} />
-          Paste
+          {t("pasteButton")}
         </button>
       </label>
 
-      {pasteError && (
-        <p className="mb-2 text-center text-xs text-red-400">{pasteError}</p>
-      )}
-      {error && (
-        <p className="mb-2 text-center text-xs text-red-400">{error}</p>
-      )}
+      {pasteError && <p className="mb-2 text-center text-xs text-red-400">{pasteError}</p>}
+      {error && <p className="mb-2 text-center text-xs text-red-400">{error}</p>}
 
-      {/* CTA button */}
       <button
         type="submit"
         id="search-button"
@@ -101,11 +98,11 @@ export const GetterInput = () => {
         {isLoading ? (
           <>
             <Loader2 size={18} className="animate-spin" />
-            Searching…
+            {t("searching")}
           </>
         ) : (
           <>
-            Search video
+            {t("searchButton")}
             <ArrowRight size={18} />
           </>
         )}

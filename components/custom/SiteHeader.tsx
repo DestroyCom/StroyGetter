@@ -3,26 +3,28 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { ArrowLeft, Menu, X } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import logo from "@/assets/logo-white.svg";
+import { LocaleSwitcher } from "@/components/custom/LocaleSwitcher";
+import { Link, usePathname } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
-
-const NAV_LINKS = [
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "Formats", href: "/#formats" },
-  { label: "FAQ", href: "/#faq" },
-  { label: "Guide", href: "/how-to-download-youtube-videos" },
-  { label: "Updates", href: "/updates" },
-];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isFetch = pathname.startsWith("/fetch");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useTranslations("nav");
+
+  const NAV_LINKS = [
+    { label: t("howItWorks"), href: "/#how-it-works" },
+    { label: t("formats"), href: "/#formats" },
+    { label: t("faq"), href: "/#faq" },
+    { label: t("guide"), href: "/how-to-download-youtube-videos" },
+    { label: t("updates"), href: "/updates" },
+  ];
 
   return (
     <header
@@ -35,20 +37,20 @@ export function SiteHeader() {
       <Link
         href="/"
         className="flex items-center gap-3 text-white no-underline"
-        aria-label="StroyGetter home"
+        aria-label={t("home")}
       >
         <Image src={logo} height={36} alt="" aria-hidden="true" />
         <span className="text-xl font-bold tracking-tight">StroyGetter</span>
       </Link>
 
-      {/* Compact fetch nav — logo + "← New search" only */}
+      {/* Compact fetch nav */}
       {isFetch ? (
         <Link
           href="/"
           className="flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
         >
           <ArrowLeft size={14} />
-          New search
+          {t("newSearch")}
         </Link>
       ) : (
         <>
@@ -71,15 +73,16 @@ export function SiteHeader() {
               aria-label="StroyGetter on GitHub"
             >
               <SiGithub size={14} />
-              GitHub
+              {t("github")}
             </a>
+            <LocaleSwitcher />
           </nav>
 
           {/* Mobile hamburger */}
           <button
             type="button"
             className="flex items-center justify-center rounded-lg p-2 text-white/78 transition-colors hover:bg-white/8 hover:text-white md:hidden"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
             onClick={() => setMobileOpen((v) => !v)}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -107,8 +110,11 @@ export function SiteHeader() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <SiGithub size={14} />
-                  GitHub
+                  {t("github")}
                 </a>
+                <div className="mt-2 px-4 py-2">
+                  <LocaleSwitcher />
+                </div>
               </nav>
             </div>
           )}
