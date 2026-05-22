@@ -9,11 +9,10 @@ import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { fetchLyrics } from "@/lib/lyrics";
 import { fetchSongMetadata } from "@/lib/metadata";
 import { deezerProvider } from "@/lib/metadata/providers/deezer";
-import { itunesProvider } from "@/lib/metadata/providers/itunes";
 import { youtubeMusicProvider } from "@/lib/metadata/providers/youtube-music";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
-import { getYtDlpFullInfo, matchSong } from "@/lib/song-matching";
+import { getYtDlpFullInfo, matchSong, resolveCanonicalIdentity } from "@/lib/song-matching";
 
 export async function GET(request: Request) {
   const guard = guardApiRequest(request);
@@ -44,18 +43,25 @@ export async function GET(request: Request) {
     basicDetails.author ?? "Unknown artist"
   );
 
-  console.log(`[library-ready] Matched: "${match.artist}" - "${match.title}"`);
+  // Phase 2: resolve canonical artist+title via iTunes+Deezer full-text search.
+  // Skip when yt-dlp already has native track+artist metadata (YouTube Music official uploads).
+  const hasNativeMetadata = !!(fullInfo.track && fullInfo.artist);
+  const canonical = hasNativeMetadata
+    ? { artist: match.artist, title: match.title }
+    : (await resolveCanonicalIdentity(basicDetails.title ?? match.title)) ??
+      { artist: match.artist, title: match.title };
+
+  console.log(`[library-ready] Canonical: "${canonical.artist}" - "${canonical.title}"`);
 
   try {
-    const [[meta, itunesMeta, deezerMeta, ytMusicMeta, lyrics]] = await Promise.all([
+    const [[meta, ytMusicMeta, deezerMeta, lyrics]] = await Promise.all([
       Promise.all([
-        fetchSongMetadata({ artist: match.artist, title: match.title }),
-        itunesProvider.search({ artist: match.artist, title: match.title }),
-        deezerProvider.search({ artist: match.artist, title: match.title }),
-        youtubeMusicProvider.search({ artist: match.artist, title: match.title }),
+        fetchSongMetadata({ artist: canonical.artist, title: canonical.title }),
+        youtubeMusicProvider.search({ artist: canonical.artist, title: canonical.title }),
+        deezerProvider.search({ artist: canonical.artist, title: canonical.title }),
         fetchLyrics({
-          artist: match.artist,
-          title: match.title,
+          artist: canonical.artist,
+          title: canonical.title,
           duration: match.duration,
           language: match.language,
           subtitles: match.subtitles,
@@ -69,19 +75,19 @@ export async function GET(request: Request) {
       ?.url;
 
     const songMeta = {
-      title: meta?.title ?? match.title,
-      artist: meta?.artist ?? match.artist,
-      album: meta?.album,
-      year: meta?.year,
-      trackNumber: meta?.trackNumber,
-      genre: meta?.genre,
-      coverUrl: meta?.coverUrl, // provider cover only (MusicBrainz CAA or iTunes)
+      title: meta?.title ?? canonical.title,
+      artist: meta?.artist ?? canonical.artist,
+      album: meta?.album ?? canonical.album,
+      year: meta?.year ?? canonical.year,
+      trackNumber: meta?.trackNumber ?? canonical.trackNumber,
+      genre: meta?.genre ?? canonical.genre,
+      coverUrl: meta?.coverUrl ?? canonical.coverUrl,
       label: meta?.label,
     };
 
     await embedId3Tags(mp3Path, {
       metadata: songMeta,
-      coverFallbacks: [itunesMeta?.coverUrl, deezerMeta?.coverUrl, ytMusicMeta?.coverUrl].filter(Boolean) as string[],
+      coverFallbacks: [ytMusicMeta?.coverUrl, deezerMeta?.coverUrl, canonical.coverUrl].filter(Boolean) as string[],
       ytThumbnail,
       sylt: lyrics?.sylt,
       plainLyrics: lyrics?.plain,
@@ -96,7 +102,7 @@ export async function GET(request: Request) {
       {
         video_id: videoId,
         title: songMeta.title,
-        artist: songMeta.artist ?? match.artist,
+        artist: songMeta.artist ?? canonical.artist,
         metadata_fetched: !!meta,
         lyrics_found: !!lyrics,
         cover_found: !!(
