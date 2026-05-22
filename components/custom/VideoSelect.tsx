@@ -14,9 +14,12 @@ import {
 } from "@/components/ui/select";
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
+import { track } from "@/lib/analytics";
 import type { VideoData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VideoLoading } from "./VideoLoading";
+
+const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? "";
 
 type Fmt = "mp4" | "mp3" | "library-ready";
 
@@ -67,6 +70,7 @@ export const VideoSelect = () => {
     getVideoInfos(videoUrl)
       .then((value) => {
         if (value.error) {
+          track("error_displayed", { type: "video_load_error", message: value.error });
           setError(value.error);
           setIsLoading(false);
           return;
@@ -75,8 +79,17 @@ export const VideoSelect = () => {
         setFormats(value.format);
         if (value.format?.[0]?.itag) setSelectedItag(value.format[0].itag.toString());
         setIsLoading(false);
+        track("video_loaded", {
+          video_id: extractYtId(videoUrl as string),
+          title: value.video_details.title,
+          author: value.video_details.author,
+          duration_s: Number(value.video_details.duration),
+          format_count: value.format?.length ?? 0,
+        });
       })
-      .catch(() => {
+      .catch((e: unknown) => {
+        const message = e instanceof Error ? e.message : "fetch_failed";
+        track("error_displayed", { type: "fetch_error", message });
         setError(t("errorFetch"));
         setIsLoading(false);
       });
@@ -92,11 +105,34 @@ export const VideoSelect = () => {
     return () => clearInterval(iv);
   }, [isDownloading]);
 
+  const handleFmtChange = (next: Fmt) => {
+    if (next === fmt) return;
+    track("format_changed", { from: fmt, to: next });
+    setFmt(next);
+  };
+
   const handleDownload = async () => {
     if (!videoUrl || !videoData) return;
     setDownloadError(null);
     setIsDownloading(true);
     setLoadProgress(0);
+
+    const videoId = extractYtId(videoUrl);
+    const quality =
+      fmt === "mp4"
+        ? (formats?.find((f) => f.itag.toString() === selectedItag)?.qualityLabel ?? selectedItag)
+        : fmt;
+
+    track("download_started", {
+      video_id: videoId,
+      title: videoData.title,
+      format: fmt,
+      quality,
+    });
+
+    if (fmt === "library-ready") {
+      track("library_ready_used", { video_id: videoId, title: videoData.title });
+    }
 
     try {
       const encoded = encodeURIComponent(videoUrl);
@@ -118,7 +154,10 @@ export const VideoSelect = () => {
       a.download = `${videoData.title}.${ext}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch {
+    } catch (e) {
+      const reason = e instanceof Error ? e.message : "unknown";
+      track("download_failed", { video_id: videoId, reason });
+      track("error_displayed", { type: "download_error", message: t("errorDownload") });
       setDownloadError(t("errorDownload"));
     }
     setIsDownloading(false);
@@ -189,7 +228,7 @@ export const VideoSelect = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setFmt(tab.id)}
+                  onClick={() => handleFmtChange(tab.id)}
                   className={cn(
                     "flex flex-1 flex-col items-start justify-center gap-1 rounded-xl px-2 py-2.5 text-left transition-all sm:px-3.5 sm:py-3",
                     fmt === tab.id
@@ -215,7 +254,16 @@ export const VideoSelect = () => {
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">
                 {t("videoQuality")}
               </p>
-              <Select value={selectedItag} onValueChange={setSelectedItag} disabled={isDownloading}>
+              <Select
+                value={selectedItag}
+                onValueChange={(value) => {
+                  const label =
+                    formats?.find((f) => f.itag.toString() === value)?.qualityLabel ?? value;
+                  track("quality_changed", { quality_label: label });
+                  setSelectedItag(value);
+                }}
+                disabled={isDownloading}
+              >
                 <SelectTrigger className="w-full border-white/10 bg-stroy-950 text-white">
                   <SelectValue placeholder={t("selectQuality")} />
                 </SelectTrigger>

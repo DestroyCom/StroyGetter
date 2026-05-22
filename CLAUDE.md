@@ -42,8 +42,10 @@ SITE_URL=https://stroygetter.fr       # Canonical base URL — sitemap, robots.t
 GOOGLE_SITE_VERIFICATION=<token>      # Google Search Console verification token
 YANDEX_SITE_VERIFICATION=<token>      # Yandex Webmaster verification token
 BING_SITE_VERIFICATION=<token>        # Bing Webmaster token (msvalidate.01)
+UMAMI_URL=...                         # Self-hosted Umami instance base URL (script, recorder, API)
+UMAMI_WEBSITE_ID=<id>                 # Umami website ID for stroygetter.fr
 EMAIL_DMCA=dmca@...                   # DMCA contact email shown in legal pages
-EMAIL_PRIVACY=privacy@...            # Privacy contact email shown in legal pages
+EMAIL_PRIVACY=privacy@...             # Privacy contact email shown in legal pages
 ```
 
 ## Key Patterns

@@ -1,6 +1,6 @@
-import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
@@ -134,7 +134,19 @@ export default async function RootLayout({
           <SiteFooter />
         </NextIntlClientProvider>
       </body>
-      <GoogleAnalytics gaId="G-X2X4B9LKDW" />
+      <Script
+        src={`${siteConfig.umamiUrl}/script.js`}
+        data-website-id={siteConfig.umamiWebsiteId}
+        strategy="afterInteractive"
+      />
+      <Script
+        src={`${siteConfig.umamiUrl}/recorder.js`}
+        data-website-id={siteConfig.umamiWebsiteId}
+        data-sample-rate="0.15"
+        data-mask-level="moderate"
+        data-max-duration="300000"
+        strategy="afterInteractive"
+      />
     </html>
   );
 }

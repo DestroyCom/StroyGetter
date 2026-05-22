@@ -6,6 +6,10 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { searchQuery } from "@/functions/getYoutubeUrl";
 import { useRouter } from "@/i18n/navigation";
+import { track } from "@/lib/analytics";
+
+const isYoutubeUrl = (v: string): boolean =>
+  v.includes("youtube.com") || v.includes("youtu.be");
 
 export const GetterInput = () => {
   const router = useRouter();
@@ -19,13 +23,15 @@ export const GetterInput = () => {
   const [pasteError, setPasteError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const submitUrl = async (value: string) => {
+  const submitUrl = async (value: string, source: "typed" | "pasted" = "typed") => {
     setError("");
     setIsLoading(true);
+    track("search", { query: value, is_url: isYoutubeUrl(value), source });
     try {
       const resolvedUrl = await searchQuery(value);
       router.push(`/fetch?videoUrl=${resolvedUrl}`);
     } catch {
+      track("search_error", { query: value });
       setError(t("errorNotFound"));
       setIsLoading(false);
     }
@@ -43,7 +49,8 @@ export const GetterInput = () => {
       return;
     }
     setUrl(clipText);
-    await submitUrl(clipText);
+    track("url_pasted");
+    await submitUrl(clipText, "pasted");
   };
 
   return (
@@ -51,7 +58,7 @@ export const GetterInput = () => {
       onSubmit={(e) => {
         e.preventDefault();
         const v = (e.currentTarget.elements.namedItem("video-url") as HTMLInputElement).value;
-        return submitUrl(v);
+        return submitUrl(v, "typed");
       }}
       className="mx-auto w-full max-w-2xl"
     >

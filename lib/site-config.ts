@@ -9,13 +9,14 @@ export const siteConfig = {
   url: (process.env.SITE_URL ?? "https://stroygetter.fr").replace(/\/+$/, ""),
 
   /** GitHub repository URL */
-  githubUrl: process.env.GITHUB_URL ?? "https://github.com/DestroyCom/StroyGetter",
+  githubUrl:
+    process.env.GITHUB_URL ?? "https://github.com/DestroyCom/StroyGetter",
 
   /** DMCA / copyright takedown email */
-  emailDmca: process.env.EMAIL_DMCA ?? "dmca@contact-stroygetter.stroyco.eu",
+  emailDmca: process.env.EMAIL_DMCA,
 
   /** Privacy policy contact email */
-  emailPrivacy: process.env.EMAIL_PRIVACY ?? "privacy@contact-stroygetter.stroyco.eu",
+  emailPrivacy: process.env.EMAIL_PRIVACY,
 
   /** StroyCo organisation website */
   stroycoUrl: process.env.STROYCO_URL ?? "https://portfolio.stroyco.eu",
@@ -34,4 +35,10 @@ export const siteConfig = {
 
   /** Bing Webmaster verification token */
   bingVerification: process.env.BING_SITE_VERIFICATION ?? "",
+
+  /** Umami analytics self-hosted instance base URL */
+  umamiUrl: process.env.UMAMI_URL,
+
+  /** Umami website ID for stroygetter.fr */
+  umamiWebsiteId: process.env.UMAMI_WEBSITE_ID,
 } as const;

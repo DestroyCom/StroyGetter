@@ -42,33 +42,14 @@ export default async function CookiesPage({ params }: { params: Promise<{ locale
             <span className="font-mono text-sm text-stroy-300">02</span>
             {t("cookies02Title")}
           </h2>
-          <p>
-            {t.rich("cookies02Body", {
-              gaCode: (chunks) => (
-                <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono">{chunks}</code>
-              ),
-            })}
-          </p>
+          <p>{t("cookies02Body")}</p>
         </div>
         <div>
           <h2 className="mb-3 flex items-baseline gap-3 text-xl font-bold tracking-tight">
             <span className="font-mono text-sm text-stroy-300">03</span>
             {t("cookies03Title")}
           </h2>
-          <p>
-            {t.rich("cookies03Body", {
-              gaOptOutLink: (chunks) => (
-                <a
-                  href="https://tools.google.com/dlpage/gaoptout"
-                  className="text-stroy-200 underline underline-offset-3 hover:text-white"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  {chunks}
-                </a>
-              ),
-            })}
-          </p>
+          <p>{t("cookies03Body")}</p>
         </div>
       </div>
     </div>

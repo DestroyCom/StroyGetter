@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { trackServer } from "@/lib/analytics-server";
 import { guardApiRequest } from "@/lib/api-guard";
 import { downloadAndConvertToMp3 } from "@/lib/audio-convert";
 import { embedId3Tags } from "@/lib/embed-id3";
@@ -89,6 +90,25 @@ export async function GET(request: Request) {
 
     const stream = fs.createReadStream(mp3Path);
     stream.on("close", () => cleanFiles([mp3Path]));
+
+    void trackServer(
+      "library_ready_completed",
+      {
+        video_id: videoId,
+        title: songMeta.title,
+        artist: songMeta.artist ?? match.artist,
+        metadata_fetched: !!meta,
+        lyrics_found: !!lyrics,
+        cover_found: !!(
+          meta?.coverUrl ??
+          itunesMeta?.coverUrl ??
+          deezerMeta?.coverUrl ??
+          ytMusicMeta?.coverUrl ??
+          ytThumbnail
+        ),
+      },
+      { url: "/api/download/audio-library-ready" },
+    );
 
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
     return new NextResponse(stream as any, {
