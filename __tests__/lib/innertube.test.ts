@@ -17,6 +17,29 @@ describe("extractVideoId", () => {
   it("extracts ID from an embed URL", () => {
     expect(extractVideoId("https://www.youtube.com/embed/dQw4w9WgXcQ")).toBe("dQw4w9WgXcQ");
   });
+  // URLs with playlist/extra params — the video ID must survive
+  it("extracts ID from a watch URL with list= and index= (Liked Videos playlist)", () => {
+    expect(extractVideoId("https://www.youtube.com/watch?v=9ydC2pUQpNQ&list=LL&index=21")).toBe(
+      "9ydC2pUQpNQ"
+    );
+  });
+  it("extracts ID from a YouTube Mix / Radio URL (list=RD...)", () => {
+    expect(
+      extractVideoId(
+        "https://www.youtube.com/watch?v=luotSpkyCVU&list=RDluotSpkyCVU&start_radio=1"
+      )
+    ).toBe("luotSpkyCVU");
+  });
+  it("extracts ID from a youtu.be URL with si= tracking param", () => {
+    expect(extractVideoId("https://youtu.be/V4xJnVfhxC0?si=xgDAcG4wCcZFYHpZ")).toBe("V4xJnVfhxC0");
+  });
+  it("extracts ID from a watch URL with pp= recommendation param", () => {
+    expect(
+      extractVideoId(
+        "https://www.youtube.com/watch?v=JYo_KgYXhMQ&pp=ygUVeWFtYW1vdG8ncyByYWdlIHRoZW1l"
+      )
+    ).toBe("JYo_KgYXhMQ");
+  });
   it("returns null for a non-YouTube URL", () => {
     expect(extractVideoId("https://example.com")).toBeNull();
   });

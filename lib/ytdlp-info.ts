@@ -16,6 +16,7 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
     dumpJson: true,
     noWarnings: true,
     noCheckCertificates: true,
+    noPlaylist: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
   });
 

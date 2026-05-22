@@ -8,6 +8,7 @@ const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 const YT_DLP_BASE = [
   "--no-check-certificates",
   "--no-warnings",
+  "--no-playlist",
   "--max-filesize",
   MAX_FILESIZE,
   "--add-header",

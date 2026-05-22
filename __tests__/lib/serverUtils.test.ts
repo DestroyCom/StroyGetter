@@ -14,7 +14,29 @@ describe("yt_validate", () => {
   it("returns 'video' for an embed URL", () => {
     expect(yt_validate("https://www.youtube.com/embed/dQw4w9WgXcQ")).toBe("video");
   });
-  it("returns false for a playlist URL", () => {
+  it("returns 'video' for a watch URL with playlist + index (Liked Videos)", () => {
+    expect(yt_validate("https://www.youtube.com/watch?v=9ydC2pUQpNQ&list=LL&index=21")).toBe(
+      "video"
+    );
+  });
+  it("returns 'video' for a YouTube Mix / Radio URL", () => {
+    expect(
+      yt_validate(
+        "https://www.youtube.com/watch?v=luotSpkyCVU&list=RDluotSpkyCVU&start_radio=1"
+      )
+    ).toBe("video");
+  });
+  it("returns 'video' for a youtu.be URL with si= tracking param", () => {
+    expect(yt_validate("https://youtu.be/V4xJnVfhxC0?si=xgDAcG4wCcZFYHpZ")).toBe("video");
+  });
+  it("returns 'video' for a watch URL with pp= recommendation param", () => {
+    expect(
+      yt_validate(
+        "https://www.youtube.com/watch?v=JYo_KgYXhMQ&pp=ygUVeWFtYW1vdG8ncyByYWdlIHRoZW1l"
+      )
+    ).toBe("video");
+  });
+  it("returns false for a playlist-only URL (no video ID)", () => {
     expect(yt_validate("https://www.youtube.com/playlist?list=PLxyz123")).toBe(false);
   });
   it("returns false for a non-YouTube URL", () => {
