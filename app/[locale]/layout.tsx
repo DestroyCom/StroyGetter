@@ -28,6 +28,8 @@ const satoshi = localFont({
   variable: "--font-satoshi",
 });
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -134,19 +136,23 @@ export default async function RootLayout({
           <SiteFooter />
         </NextIntlClientProvider>
       </body>
-      <Script
-        src={`${siteConfig.umamiUrl}/script.js`}
-        data-website-id={siteConfig.umamiWebsiteId}
-        strategy="afterInteractive"
-      />
-      <Script
-        src={`${siteConfig.umamiUrl}/recorder.js`}
-        data-website-id={siteConfig.umamiWebsiteId}
-        data-sample-rate="0.15"
-        data-mask-level="moderate"
-        data-max-duration="300000"
-        strategy="afterInteractive"
-      />
+      {siteConfig.umamiUrl && (
+        <>
+          <Script
+            src={`${siteConfig.umamiUrl}/script.js`}
+            data-website-id={siteConfig.umamiWebsiteId}
+            strategy="afterInteractive"
+          />
+          <Script
+            src={`${siteConfig.umamiUrl}/recorder.js`}
+            data-website-id={siteConfig.umamiWebsiteId}
+            data-sample-rate="0.15"
+            data-mask-level="moderate"
+            data-max-duration="300000"
+            strategy="afterInteractive"
+          />
+        </>
+      )}
     </html>
   );
 }
