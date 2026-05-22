@@ -107,7 +107,12 @@ export async function GET(request: Request) {
           ytThumbnail
         ),
       },
-      { url: "/api/download/audio-library-ready" },
+      {
+        url: "/api/download/audio-library-ready",
+        userAgent: request.headers.get("user-agent") ?? undefined,
+        language: request.headers.get("accept-language")?.split(",")[0] ?? undefined,
+        referrer: request.headers.get("referer") ?? undefined,
+      },
     );
 
     // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast

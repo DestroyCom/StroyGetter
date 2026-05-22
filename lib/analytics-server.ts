@@ -1,9 +1,17 @@
 type ServerData = Record<string, string | number | boolean | null | undefined>;
 
+interface TrackContext {
+  url?: string;
+  hostname?: string;
+  userAgent?: string;
+  language?: string;
+  referrer?: string;
+}
+
 export async function trackServer(
   event: string,
   data?: ServerData,
-  context?: { url?: string; hostname?: string },
+  context?: TrackContext,
 ): Promise<void> {
   const umamiUrl = process.env.UMAMI_URL;
   const websiteId = process.env.UMAMI_WEBSITE_ID;
@@ -11,7 +19,10 @@ export async function trackServer(
 
   await fetch(`${umamiUrl}/api/send`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": context?.userAgent ?? "Mozilla/5.0 (compatible; StroyGetter/1.0)",
+    },
     body: JSON.stringify({
       type: "event",
       payload: {
@@ -20,6 +31,8 @@ export async function trackServer(
         hostname:
           context?.hostname ??
           new URL(process.env.SITE_URL ?? "https://stroygetter.fr").hostname,
+        language: context?.language ?? "",
+        referrer: context?.referrer ?? "",
         name: event,
         data,
       },
