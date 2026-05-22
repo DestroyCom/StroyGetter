@@ -625,6 +625,96 @@ describe("resolveCanonicalIdentity", () => {
       expect(result?.title).toBe("the cure");
     });
 
+    it("falls back to parsed identity when structured retry returns wrong artist", async () => {
+      // Simulates the real Olivia Rodrigo / THE CURE bug: iTunes returns wrong result twice
+      mockedItunes.mockResolvedValueOnce({ artist: "Yung Bae", title: "Welcome To the Disco" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      mockedItunes.mockResolvedValueOnce({ artist: "Yung Bae", title: "Welcome To the Disco" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("Olivia Rodrigo - the cure (Official Music Video)");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("the cure");
+    });
+
+    it("retries when artist matches but title is completely different (brand-new song not yet indexed)", async () => {
+      // THE CURE by Olivia Rodrigo: artist OK, but iTunes returns The Rose Song instead
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "The Rose Song" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      // Retry finds the correct track
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "the cure", album: "GUTS (deluxe)" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("Olivia Rodrigo - the cure (Official Music Video)");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("the cure");
+      expect(result?.album).toBe("GUTS (deluxe)");
+    });
+
+    it("falls back to parsed identity when title mismatch and retry also fails", async () => {
+      // Song not indexed anywhere yet — both rounds return The Rose Song
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "The Rose Song" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "The Rose Song" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("Olivia Rodrigo - the cure (Official Music Video)");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("the cure");
+    });
+
+    it("does NOT retry when title differs only by feat. suffix", async () => {
+      // "XO" vs "XO (feat. Artist)" — the base title is included, should be accepted
+      mockedItunes.mockResolvedValue({ artist: "Artist", title: "XO (feat. Someone)" });
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("Artist - XO (Official Video)");
+
+      expect(result?.artist).toBe("Artist");
+      expect(result?.title).toBe("XO (feat. Someone)");
+      expect(mockedItunes).toHaveBeenCalledTimes(1);
+    });
+
+    it("uses knownArtist for cross-validation when title has no artist prefix", async () => {
+      // YouTube title is just "THE CURE" — no dash pattern, parseTitleArtist returns null
+      mockedItunes.mockResolvedValueOnce({ artist: "Yung Bae", title: "Welcome To the Disco" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      // Retry with "Olivia Rodrigo THE CURE" returns correct result
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "the cure", album: "GUTS" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("THE CURE", "Olivia Rodrigo");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("the cure");
+    });
+
+    it("falls back to knownArtist identity when both API rounds return wrong artist", async () => {
+      mockedItunes.mockResolvedValueOnce({ artist: "Yung Bae", title: "Welcome To the Disco" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      mockedItunes.mockResolvedValueOnce({ artist: "Yung Bae", title: "Welcome To the Disco" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("THE CURE", "Olivia Rodrigo");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("THE CURE");
+    });
+
+    it("sends structured 'knownArtist title' query when title has no artist prefix", async () => {
+      mockedItunes.mockResolvedValueOnce({ artist: "Yung Bae", title: "Welcome To the Disco" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "the cure" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      await resolveCanonicalIdentity("THE CURE", "Olivia Rodrigo");
+
+      expect(mockedItunes).toHaveBeenNthCalledWith(2, "Olivia Rodrigo THE CURE");
+    });
+
     it("does NOT retry when API artist matches despite Korean in parens", async () => {
       // LE SSERAFIM (르세라핌) parsed vs "LE SSERAFIM" from API — should match
       mockedItunes.mockResolvedValue({ artist: "LE SSERAFIM", title: "BOOMPALA", album: "'PUREFLOW', Pt. 1" });

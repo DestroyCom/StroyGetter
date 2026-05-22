@@ -103,8 +103,38 @@ function artistsMatch(a: string, b: string): boolean {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+// Checks whether two song titles refer to the same song.
+// Uses exact match after normalisation, substring inclusion (handles "feat." additions),
+// and word-overlap for longer titles. Conservative enough to catch "the cure" ≠ "The Rose Song"
+// while still matching "deja vu" == "Déjà Vu" or "XO" ⊆ "XO (feat. Artist)".
+function titlesSimilar(a: string, b: string): boolean {
+  const norm = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\W+/g, " ").trim();
+  const na = norm(a);
+  const nb = norm(b);
+  if (na === nb) return true;
+  if (na.includes(nb) || nb.includes(na)) return true;
+  // Word overlap: at least one significant word (≥4 chars) in common
+  const words = (s: string) => new Set(s.split(" ").filter((w) => w.length >= 4));
+  const wa = words(na);
+  const wb = words(nb);
+  for (const w of wa) if (wb.has(w)) return true;
+  return false;
+}
+
+function candidateMatchesReference(
+  candidate: { artist?: string; title?: string },
+  referenceArtist: string | undefined,
+  referenceTitle: string | undefined
+): boolean {
+  const artistOk = !referenceArtist || !candidate.artist || artistsMatch(referenceArtist, candidate.artist);
+  const titleOk = !referenceTitle || !candidate.title || titlesSimilar(referenceTitle, candidate.title);
+  return artistOk && titleOk;
+}
+
 export async function resolveCanonicalIdentity(
-  rawTitle: string
+  rawTitle: string,
+  knownArtist?: string
 ): Promise<(SongMetadata & { artist: string; title: string }) | null> {
   const query = stripNoise(rawTitle);
   const [itunes, deezer] = await Promise.all([
@@ -113,27 +143,41 @@ export async function resolveCanonicalIdentity(
   ]);
   const candidate = itunes ?? deezer;
 
-  // If both APIs missed, fall back to regex-parsed identity
+  const parsed = parseTitleArtist(rawTitle);
+  // Reference identity from YouTube: parsed "Artist - Title" or the channel author + stripped title.
+  const referenceArtist = parsed?.artist ?? knownArtist;
+  const referenceTitle = parsed?.title;
+
+  // If both APIs missed, fall back to known identity
   if (!candidate?.artist || !candidate?.title) {
-    const parsed = parseTitleArtist(rawTitle);
-    return parsed ? { artist: parsed.artist, title: parsed.title } : null;
+    if (parsed) return { artist: parsed.artist, title: parsed.title };
+    if (knownArtist) return { artist: knownArtist, title: query };
+    return null;
   }
 
-  // Cross-validate: if the API artist doesn't match the parsed artist, the full-text
-  // search probably hit a false positive (e.g. "the cure" → The Cure instead of Olivia Rodrigo).
-  // Retry with a structured "artist title" query using the parsed identity.
-  const parsed = parseTitleArtist(rawTitle);
-  if (parsed && !artistsMatch(parsed.artist, candidate.artist)) {
-    const structuredQuery = `${parsed.artist} ${parsed.title}`;
+  // Cross-validate artist AND title against what we know from YouTube.
+  // Catches both "the cure" → The Cure (artist mismatch) and "the cure" → "The Rose Song"
+  // (artist matches but wrong song — common when a brand-new track isn't indexed yet).
+  if (!candidateMatchesReference(candidate, referenceArtist, referenceTitle)) {
+    const structuredQuery = parsed
+      ? `${parsed.artist} ${parsed.title}`
+      : `${knownArtist} ${query}`;
     const [retryItunes, retryDeezer] = await Promise.all([
       searchItunesByQuery(structuredQuery),
       searchDeezerByQuery(structuredQuery),
     ]);
     const structured = retryItunes ?? retryDeezer;
-    if (structured?.artist && structured?.title) {
+    if (
+      structured?.artist &&
+      structured?.title &&
+      candidateMatchesReference(structured, referenceArtist, referenceTitle)
+    ) {
       return structured as SongMetadata & { artist: string; title: string };
     }
-    return { artist: parsed.artist, title: parsed.title };
+    // Retry also failed validation — fall back to known identity without rich metadata
+    if (parsed) return { artist: parsed.artist, title: parsed.title };
+    if (knownArtist) return { artist: knownArtist, title: query };
+    return null;
   }
 
   return candidate as SongMetadata & { artist: string; title: string };

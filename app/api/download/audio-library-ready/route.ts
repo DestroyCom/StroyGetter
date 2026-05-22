@@ -48,7 +48,7 @@ export async function GET(request: Request) {
   const hasNativeMetadata = !!(fullInfo.track && fullInfo.artist);
   const canonical = hasNativeMetadata
     ? { artist: match.artist, title: match.title }
-    : (await resolveCanonicalIdentity(basicDetails.title ?? match.title)) ??
+    : (await resolveCanonicalIdentity(basicDetails.title ?? match.title, match.artist)) ??
       { artist: match.artist, title: match.title };
 
   console.log(`[library-ready] Canonical: "${canonical.artist}" - "${canonical.title}"`);
