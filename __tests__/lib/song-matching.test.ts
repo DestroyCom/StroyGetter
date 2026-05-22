@@ -1,5 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { parseTitleArtist, stripNoise } from "@/lib/song-matching";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { parseTitleArtist, resolveCanonicalIdentity, stripNoise } from "@/lib/song-matching";
+
+vi.mock("@/lib/metadata/providers/itunes", () => ({
+  searchItunesByQuery: vi.fn(),
+}));
+vi.mock("@/lib/metadata/providers/deezer", () => ({
+  searchDeezerByQuery: vi.fn(),
+}));
+
+import { searchDeezerByQuery } from "@/lib/metadata/providers/deezer";
+import { searchItunesByQuery } from "@/lib/metadata/providers/itunes";
 
 describe("stripNoise", () => {
   it("strips bare M/V at end", () => {
@@ -393,6 +403,45 @@ describe("real-world title format coverage", () => {
     });
   });
 
+  describe("real artist releases", () => {
+    it("parses Olivia Rodrigo - deja vu (Official Video)", () => {
+      expect(parseTitleArtist("Olivia Rodrigo - deja vu (Official Video)")).toEqual({
+        artist: "Olivia Rodrigo",
+        title: "deja vu",
+      });
+    });
+
+    it("parses Olivia Rodrigo - the cure (Official Music Video)", () => {
+      expect(parseTitleArtist("Olivia Rodrigo - the cure (Official Music Video)")).toEqual({
+        artist: "Olivia Rodrigo",
+        title: "the cure",
+      });
+    });
+
+    it("parses LISA, Anitta, Rema, FIFA Sound - Goals", () => {
+      expect(parseTitleArtist("LISA, Anitta, Rema, FIFA Sound - Goals")).toEqual({
+        artist: "LISA, Anitta, Rema, FIFA Sound",
+        title: "Goals",
+      });
+    });
+
+    it("parses LE SSERAFIM (르세라핌) 'BOOMPALA' OFFICIAL MV", () => {
+      expect(parseTitleArtist("LE SSERAFIM (르세라핌) 'BOOMPALA' OFFICIAL MV")).toEqual({
+        artist: "LE SSERAFIM (르세라핌)",
+        title: "BOOMPALA",
+      });
+    });
+
+    it("parses FIFTY FIFTY (피프티피프티) 'STARSTRUCK' Special MV | 방과후 퇴마클럽", () => {
+      expect(
+        parseTitleArtist("FIFTY FIFTY (피프티피프티) 'STARSTRUCK' Special MV | 방과후 퇴마클럽")
+      ).toEqual({
+        artist: "FIFTY FIFTY (피프티피프티)",
+        title: "STARSTRUCK",
+      });
+    });
+  });
+
   describe("choreography and dance formats", () => {
     it("preserves (Dance Practice) in title", () => {
       expect(parseTitleArtist("Artist - Title (Dance Practice)")).toEqual({ artist: "Artist", title: "Title (Dance Practice)" });
@@ -418,6 +467,184 @@ describe("real-world title format coverage", () => {
 
     it("preserves (New Single 2024) in title", () => {
       expect(parseTitleArtist("Artist - Title (New Single 2024)")).toEqual({ artist: "Artist", title: "Title (New Single 2024)" });
+    });
+  });
+});
+
+describe("resolveCanonicalIdentity", () => {
+  const mockedItunes = vi.mocked(searchItunesByQuery);
+  const mockedDeezer = vi.mocked(searchDeezerByQuery);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("query sent to APIs", () => {
+    it.each([
+      ["Artist - Title (Official Video)", "Artist - Title"],
+      ["Artist - Title [Official MV]", "Artist - Title"],
+      ["Artist - Title | Official Channel", "Artist - Title"],
+      ['TWICE "ONE SPARK" M/V', 'TWICE "ONE SPARK"'],
+      ["aespa 'Supernova' MV", "aespa 'Supernova'"],
+      ["BTS (방탄소년단) 'Butter' Official MV", "BTS (방탄소년단) 'Butter'"],
+      ["Artist - Title (Official Audio)", "Artist - Title"],
+      ["Artist - Title - Official Music Video", "Artist - Title"],
+      ["Artist - Title (Lyric Video)", "Artist - Title"],
+      ["Artist - Title (Visualizer)", "Artist - Title"],
+      ["(G)I-DLE - Nxde (Official Music Video)", "(G)I-DLE - Nxde"],
+      ["NewJeans (뉴진스) 'Super Shy' MV", "NewJeans (뉴진스) 'Super Shy'"],
+      ["Artist - Title (feat. Other) [Official Video]", "Artist - Title (feat. Other)"],
+      ["Artist - Title (Official Video) [4K]", "Artist - Title"],
+      ["Artist x Artist2 - Title (Official Music Video)", "Artist x Artist2 - Title"],
+      ["Olivia Rodrigo - deja vu (Official Video)", "Olivia Rodrigo - deja vu"],
+      ["Olivia Rodrigo - the cure (Official Music Video)", "Olivia Rodrigo - the cure"],
+      ["LISA, Anitta, Rema, FIFA Sound - Goals", "LISA, Anitta, Rema, FIFA Sound - Goals"],
+      ["LE SSERAFIM (르세라핌) 'BOOMPALA' OFFICIAL MV", "LE SSERAFIM (르세라핌) 'BOOMPALA'"],
+      ["FIFTY FIFTY (피프티피프티) 'STARSTRUCK' Special MV | 방과후 퇴마클럽", "FIFTY FIFTY (피프티피프티) 'STARSTRUCK'"],
+    ])("strips noise from '%s' → sends '%s'", async (ytTitle, expectedQuery) => {
+      mockedItunes.mockResolvedValue({ artist: "A", title: "T" });
+      mockedDeezer.mockResolvedValue(null);
+
+      await resolveCanonicalIdentity(ytTitle);
+
+      expect(mockedItunes).toHaveBeenCalledWith(expectedQuery);
+      expect(mockedDeezer).toHaveBeenCalledWith(expectedQuery);
+    });
+  });
+
+  describe("result selection", () => {
+    it("returns iTunes result when available", async () => {
+      const meta = { artist: "The Weeknd", title: "Blinding Lights", album: "After Hours" };
+      mockedItunes.mockResolvedValue(meta);
+      mockedDeezer.mockResolvedValue({ artist: "Other", title: "Other" });
+
+      const result = await resolveCanonicalIdentity("The Weeknd - Blinding Lights (Official Video)");
+
+      expect(result?.artist).toBe("The Weeknd");
+      expect(result?.title).toBe("Blinding Lights");
+      expect(result?.album).toBe("After Hours");
+    });
+
+    it("falls back to Deezer when iTunes returns null", async () => {
+      mockedItunes.mockResolvedValue(null);
+      mockedDeezer.mockResolvedValue({ artist: "Daft Punk", title: "Get Lucky" });
+
+      const result = await resolveCanonicalIdentity("Daft Punk - Get Lucky (Official Audio)");
+
+      expect(result?.artist).toBe("Daft Punk");
+      expect(result?.title).toBe("Get Lucky");
+    });
+
+    it("runs iTunes and Deezer in parallel", async () => {
+      const calls: string[] = [];
+      mockedItunes.mockImplementation(async () => { calls.push("itunes"); return null; });
+      mockedDeezer.mockImplementation(async () => { calls.push("deezer"); return null; });
+
+      await resolveCanonicalIdentity("Artist - Title");
+
+      expect(calls).toContain("itunes");
+      expect(calls).toContain("deezer");
+    });
+
+    it("returns null when both APIs return null and title has no parseable artist", async () => {
+      mockedItunes.mockResolvedValue(null);
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("random vlog compilation 2024");
+
+      expect(result).toBeNull();
+    });
+
+    it("falls back to parseTitleArtist when both APIs return null but title is parseable", async () => {
+      mockedItunes.mockResolvedValue(null);
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("Artist - Title (Official Video)");
+
+      expect(result?.artist).toBe("Artist");
+      expect(result?.title).toBe("Title");
+    });
+
+    it("falls back to parseTitleArtist when API result has no artist", async () => {
+      mockedItunes.mockResolvedValue({ title: "Title" });
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("Artist - Title");
+
+      expect(result?.artist).toBe("Artist");
+      expect(result?.title).toBe("Title");
+    });
+
+    it("falls back to parseTitleArtist when API result has no title", async () => {
+      mockedItunes.mockResolvedValue({ artist: "Artist" });
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("Artist - Title");
+
+      expect(result?.artist).toBe("Artist");
+      expect(result?.title).toBe("Title");
+    });
+  });
+
+  describe("cross-validation fallback", () => {
+    it("retries with structured query when API artist doesn't match parsed artist", async () => {
+      // First round: full-text returns The Cure instead of Olivia Rodrigo
+      mockedItunes.mockResolvedValueOnce({ artist: "The Cure", title: "Just Like Heaven" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      // Second round: structured "Olivia Rodrigo the cure" returns the right track
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "the cure", album: "GUTS" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("Olivia Rodrigo - the cure (Official Music Video)");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("the cure");
+      expect(result?.album).toBe("GUTS");
+    });
+
+    it("sends 'artist title' as structured query on mismatch retry", async () => {
+      mockedItunes.mockResolvedValueOnce({ artist: "The Cure", title: "Just Like Heaven" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      mockedItunes.mockResolvedValueOnce({ artist: "Olivia Rodrigo", title: "the cure" });
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      await resolveCanonicalIdentity("Olivia Rodrigo - the cure (Official Music Video)");
+
+      expect(mockedItunes).toHaveBeenNthCalledWith(2, "Olivia Rodrigo the cure");
+    });
+
+    it("returns parsed identity when structured retry also fails", async () => {
+      mockedItunes.mockResolvedValueOnce({ artist: "The Cure", title: "Just Like Heaven" });
+      mockedDeezer.mockResolvedValueOnce(null);
+      mockedItunes.mockResolvedValueOnce(null);
+      mockedDeezer.mockResolvedValueOnce(null);
+
+      const result = await resolveCanonicalIdentity("Olivia Rodrigo - the cure (Official Music Video)");
+
+      expect(result?.artist).toBe("Olivia Rodrigo");
+      expect(result?.title).toBe("the cure");
+    });
+
+    it("does NOT retry when API artist matches despite Korean in parens", async () => {
+      // LE SSERAFIM (르세라핌) parsed vs "LE SSERAFIM" from API — should match
+      mockedItunes.mockResolvedValue({ artist: "LE SSERAFIM", title: "BOOMPALA", album: "'PUREFLOW', Pt. 1" });
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("LE SSERAFIM (르세라핌) 'BOOMPALA' OFFICIAL MV");
+
+      expect(result?.artist).toBe("LE SSERAFIM");
+      expect(mockedItunes).toHaveBeenCalledTimes(1);
+    });
+
+    it("does NOT retry for multi-artist with different separators (comma vs ampersand)", async () => {
+      // "LISA, Anitta, Rema, FIFA Sound" vs "LISA, Anitta, Rema & FIFA Sound" — should match
+      mockedItunes.mockResolvedValue({ artist: "LISA, Anitta, Rema & FIFA Sound", title: "Goals" });
+      mockedDeezer.mockResolvedValue(null);
+
+      const result = await resolveCanonicalIdentity("LISA, Anitta, Rema, FIFA Sound - Goals");
+
+      expect(result?.artist).toBe("LISA, Anitta, Rema & FIFA Sound");
+      expect(mockedItunes).toHaveBeenCalledTimes(1);
     });
   });
 });
