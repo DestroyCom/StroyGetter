@@ -1,7 +1,21 @@
+import * as fs from "node:fs";
+import path from "node:path";
 import pino from "pino";
 
 const isDev = process.env.NODE_ENV !== "production";
 const level = process.env.LOG_LEVEL ?? (isDev ? "debug" : "info");
+const logFile = process.env.LOG_FILE_PATH ?? "/logs/app.log";
+
+function canUseFileLogs(filePath: string): boolean {
+  try {
+    const dir = path.dirname(filePath);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.accessSync(dir, fs.constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Global Pino logger singleton.
@@ -21,8 +35,9 @@ const level = process.env.LOG_LEVEL ?? (isDev ? "debug" : "info");
  *   const log = logger.child({ module: "my-module" });
  *   log.info({ key: "value" }, "Something happened");
  */
-const transport = isDev
-  ? pino.transport({
+function createTransport() {
+  if (isDev) {
+    return pino.transport({
       target: "pino-pretty",
       options: {
         colorize: true,
@@ -31,26 +46,46 @@ const transport = isDev
         ignore: "pid,hostname,service",
         messageFormat: "[{module}] {msg}",
       },
-    })
-  : pino.transport({
-      targets: [
-        // Persist to file — requires Docker volume: ./logs:/logs
-        {
-          target: "pino-roll",
-          options: {
-            file: "/logs/app.log",
-            frequency: "daily", // ou size: "50m"
-            limit: { count: 14 }, // garde 14 jours
-          },
-        },
-        // Mirror to stdout so `docker logs stroygetter` keeps working
-        {
-          target: "pino/file",
-          level,
-          options: { destination: 1 }, // fd 1 = stdout
-        },
-      ],
     });
+  }
+
+  try {
+    const targets: Array<{
+      target: string;
+      level?: string;
+      options: Record<string, unknown>;
+    }> = [
+      // Mirror to stdout so `docker logs stroygetter` keeps working
+      {
+        target: "pino/file",
+        level,
+        options: { destination: 1 }, // fd 1 = stdout
+      },
+    ];
+
+    if (canUseFileLogs(logFile)) {
+      targets.unshift({
+        target: "pino-roll",
+        options: {
+          file: logFile,
+          mkdir: true,
+          frequency: "daily", // ou size: "50m"
+          limit: { count: 14 }, // garde 14 jours
+        },
+      });
+    }
+
+    return pino.transport({
+      targets,
+    });
+  } catch {
+    // Build environments may not include optional transports (e.g. pino-roll).
+    // Fallback to stdout to keep server module evaluation safe.
+    return pino.destination(1);
+  }
+}
+
+const transport = createTransport();
 
 export const logger = pino(
   {

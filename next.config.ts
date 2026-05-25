@@ -5,7 +5,15 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  serverExternalPackages: ["sharp", "ffmpeg-static", "prisma", "youtube-dl-exec", "pino", "pino-pretty"],
+  serverExternalPackages: [
+    "sharp",
+    "ffmpeg-static",
+    "prisma",
+    "youtube-dl-exec",
+    "pino",
+    "pino-pretty",
+    "pino-roll",
+  ],
   turbopack: {
     root: __dirname,
   },
