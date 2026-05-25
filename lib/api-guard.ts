@@ -1,6 +1,7 @@
 import { isRateLimited } from "@/lib/rate-limiter";
+import { getLog, hashIp } from "./request-context";
 
-function getClientIp(request: Request): string {
+export function getClientIp(request: Request): string {
   return (
     request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
     request.headers.get("x-real-ip") ??
@@ -9,8 +10,13 @@ function getClientIp(request: Request): string {
 }
 
 export function guardApiRequest(request: Request): Response | null {
+  const log = getLog("api-guard");
   const ip = getClientIp(request);
+  const ipHash = hashIp(ip);
+  const path = new URL(request.url).pathname;
+
   if (isRateLimited(ip)) {
+    log.warn({ ipHash, path }, "Rate limit triggered");
     return new Response("Too Many Requests", { status: 429 });
   }
 
@@ -27,5 +33,9 @@ export function guardApiRequest(request: Request): Response | null {
     }
   }
 
+  log.warn(
+    { ipHash, path, referer: referer ?? null, fetchSite: fetchSite ?? null },
+    "Cross-origin request blocked"
+  );
   return new Response("Forbidden", { status: 403 });
 }

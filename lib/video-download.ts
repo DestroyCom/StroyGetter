@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
+import { getLog } from "@/lib/request-context";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
@@ -51,7 +52,11 @@ export async function downloadStreamsToFiles(
   videoPath: string,
   formatItag: string
 ): Promise<void> {
+  const log = getLog("video-download");
   const bin = getYtDlpBinaryPath();
+
+  log.info({ url, formatItag, maxFilesize: MAX_FILESIZE }, "Starting parallel yt-dlp download");
+  const startTime = Date.now();
 
   const audioProc = spawn(bin, [...YT_DLP_BASE, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
   const videoProc = spawn(bin, [...YT_DLP_BASE, "-f", formatItag, url]);
@@ -65,8 +70,30 @@ export async function downloadStreamsToFiles(
   const audioOut = audioProc.stdout;
   const videoOut = videoProc.stdout;
 
-  audioProc.stderr?.resume();
-  videoProc.stderr?.resume();
+  // Capture stderr from both yt-dlp processes — previously discarded via .resume()
+  const collectStderr = (stream: NodeJS.ReadableStream, label: "audio" | "video") => {
+    const chunks: Buffer[] = [];
+    stream.on("data", (d: Buffer) => chunks.push(d));
+    stream.on("end", () => {
+      const raw = Buffer.concat(chunks).toString().trim();
+      if (!raw) return;
+      // yt-dlp writes normal progress info to stderr too — filter out harmless lines
+      const lines = raw
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l && !l.startsWith("[download]") && !l.startsWith("[info]"));
+      for (const line of lines) {
+        if (line.includes("ERROR") || line.includes("error")) {
+          log.error({ stream: label, raw: line }, "yt-dlp error output");
+        } else {
+          log.warn({ stream: label, raw: line }, "yt-dlp stderr");
+        }
+      }
+    });
+  };
+
+  if (audioProc.stderr) collectStderr(audioProc.stderr, "audio");
+  if (videoProc.stderr) collectStderr(videoProc.stderr, "video");
 
   audioOut.pipe(fs.createWriteStream(audioPath));
   videoOut.pipe(fs.createWriteStream(videoPath));
@@ -77,6 +104,10 @@ export async function downloadStreamsToFiles(
       timedOut = true;
       audioProc.kill();
       videoProc.kill();
+      log.error(
+        { url, formatItag, timeoutMs: DOWNLOAD_TIMEOUT_MS },
+        "yt-dlp download timed out — processes killed"
+      );
       reject(new Error(`Download timed out after ${DOWNLOAD_TIMEOUT_MS / 1000}s`));
     }, DOWNLOAD_TIMEOUT_MS);
 
@@ -92,9 +123,26 @@ export async function downloadStreamsToFiles(
   });
 
   if ((audioProc.exitCode ?? 0) !== 0) {
+    log.error(
+      { stream: "audio", exitCode: audioProc.exitCode, url },
+      "yt-dlp exited with non-zero code"
+    );
     throw new Error(`yt-dlp audio exited with code ${audioProc.exitCode}`);
   }
   if ((videoProc.exitCode ?? 0) !== 0) {
+    log.error(
+      { stream: "video", exitCode: videoProc.exitCode, url, formatItag },
+      "yt-dlp exited with non-zero code"
+    );
     throw new Error(`yt-dlp video exited with code ${videoProc.exitCode}`);
   }
+
+  const durationMs = Date.now() - startTime;
+  // Measure sizes after pipes have closed
+  const audioSize = fs.existsSync(audioPath) ? fs.statSync(audioPath).size : 0;
+  const videoSize = fs.existsSync(videoPath) ? fs.statSync(videoPath).size : 0;
+  log.info(
+    { url, formatItag, durationMs, audioSizeBytes: audioSize, videoSizeBytes: videoSize },
+    "yt-dlp parallel download complete"
+  );
 }

@@ -3,7 +3,10 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import path from "node:path";
 import { create as createYoutubeDl } from "youtube-dl-exec";
+import { logger } from "@/lib/logger";
 import { initializeCleanup } from "@/scripts/cleanup";
+
+const log = logger.child({ module: "server-utils" });
 
 type Conf = {
   isInitialized: boolean;
@@ -14,20 +17,18 @@ const PARENT_PATH = process.env.NODE_ENV === "production" ? "/temp/stroygetter" 
 const TEMP_DIR = path.join(PARENT_PATH);
 
 const createTempDir = (tmp_dir: string) => {
-  if (!fs.existsSync(tmp_dir)) {
-    fs.mkdirSync(tmp_dir);
-  }
-  if (!fs.existsSync(path.join(tmp_dir, "cached"))) {
-    fs.mkdirSync(path.join(tmp_dir, "cached"));
-  }
-  if (!fs.existsSync(path.join(tmp_dir, "source"))) {
-    fs.mkdirSync(path.join(tmp_dir, "source"));
+  const dirs = [tmp_dir, path.join(tmp_dir, "cached"), path.join(tmp_dir, "source")];
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+      log.debug({ dir }, "Temp directory created");
+    }
   }
 };
 
 export async function initializeConf(conf: Conf) {
   if (conf.isInitialized) {
-    console.log("Server configuration already initialized.");
+    log.warn("initializeConf called but server is already initialised — skipping");
     return conf;
   }
 
@@ -36,7 +37,6 @@ export async function initializeConf(conf: Conf) {
 
   conf.ffmpegPath = await locateFfmpegPath();
   conf.isInitialized = true;
-  console.log("Server configuration initialized.");
 
   return conf;
 }
@@ -45,14 +45,21 @@ async function locateFfmpegPath(): Promise<string> {
   const detectCommand = os.platform() === "win32" ? "where ffmpeg" : "which ffmpeg";
   try {
     const localPath = execSync(detectCommand).toString().trim();
-    if (localPath) return localPath;
+    if (localPath) {
+      log.debug({ ffmpegPath: localPath, source: "system-PATH" }, "FFmpeg located");
+      return localPath;
+    }
   } catch (err) {
-    console.debug(
-      `System FFmpeg lookup via "${detectCommand}" failed: ${err instanceof Error ? err.message : err}`
+    log.debug(
+      { command: detectCommand, err: err instanceof Error ? err.message : String(err) },
+      "System FFmpeg lookup failed — falling back to ffmpeg-static"
     );
   }
   const { default: staticPath } = await import("ffmpeg-static");
-  if (staticPath) return staticPath;
+  if (staticPath) {
+    log.debug({ ffmpegPath: staticPath, source: "ffmpeg-static" }, "FFmpeg located");
+    return staticPath;
+  }
   throw new Error("FFmpeg not found in PATH and ffmpeg-static unavailable");
 }
 
@@ -60,10 +67,10 @@ export function sanitizeFilename(filename: string) {
   return (
     filename
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[̀-ͯ]/g, "")
       // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional control char sanitization
       .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
-      .replace(/[\u200B-\u200D\uFEFF]/g, "")
+      .replace(/[​-‍﻿]/g, "")
       .replace(/\s+/g, "_")
       .slice(0, 255)
   );
@@ -109,6 +116,7 @@ export function selectYtDlpPath() {
     ];
     const resolved = candidates.find((p) => fs.existsSync(p));
     if (!resolved) throw new Error(`yt-dlp binary not found. Searched: ${candidates.join(", ")}`);
+    log.debug({ ytDlpPath: resolved }, "yt-dlp binary resolved");
     _ytdl = createYoutubeDl(resolved);
   }
   return _ytdl;

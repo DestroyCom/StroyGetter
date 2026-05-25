@@ -15,7 +15,7 @@ pnpm db:deploy       # Run Prisma migrations + generate client
 
 ## Architecture
 
-```
+```text
 app/
   page.tsx            # Home — URL input
   fetch/page.tsx      # Quality selection after URL submitted
@@ -33,11 +33,12 @@ prisma/schema.prisma  # SQLite: Video (url unique) → File (hash unique)
 
 All vars are **server-only runtime** — no `NEXT_PUBLIC_*`. Configure in docker-compose; never rebuild the image to change these.
 
-```
+```env
 DATABASE_URL=file:./database/dev.db   # SQLite path (required)
 CLEANUP_INTERVAL=7                    # Days before file expiry (default: 7 prod, 1 dev)
 CRON=0 0 * * *                        # Cleanup schedule (default: daily prod, every min dev)
 MAX_FILESIZE=8G                       # Max size per yt-dlp stream (default: 8G). Passed as --max-filesize to yt-dlp.
+LOG_LEVEL=info                        # Pino log level: trace|debug|info|warn|error|fatal (default: debug dev, info prod)
 SITE_URL=https://stroygetter.fr       # Canonical base URL — sitemap, robots.txt, OpenGraph, JSON-LD (default: stroygetter.fr)
 GOOGLE_SITE_VERIFICATION=<token>      # Google Search Console verification token
 YANDEX_SITE_VERIFICATION=<token>      # Yandex Webmaster verification token

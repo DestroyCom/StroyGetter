@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { getLog } from "@/lib/request-context";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
@@ -23,13 +24,61 @@ function spawnFfmpeg(ffmpegPath: string, args: string[]) {
   return spawn(ffmpegPath, args);
 }
 
+/**
+ * Collect stderr from a process and emit structured log lines.
+ * `label` identifies which process (yt-dlp / ffmpeg).
+ * Lines starting with common progress prefixes are emitted as debug,
+ * error-like lines as warn/error.
+ */
+function logProcessStderr(
+  stream: NodeJS.ReadableStream,
+  label: string,
+  log: ReturnType<typeof getLog>
+) {
+  const chunks: Buffer[] = [];
+  stream.on("data", (d: Buffer) => chunks.push(d));
+  stream.on("end", () => {
+    const raw = Buffer.concat(chunks).toString().trim();
+    if (!raw) return;
+    const lines = raw
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    for (const line of lines) {
+      // FFmpeg progress noise — skip or trace
+      if (/^(frame=|size=|time=|speed=|bitrate=|video:)/.test(line)) {
+        log.trace({ proc: label, raw: line }, "ffmpeg progress");
+        continue;
+      }
+      // yt-dlp download progress — skip
+      if (/^\[download\]/.test(line)) {
+        continue;
+      }
+      if (/error/i.test(line)) {
+        log.error({ proc: label, raw: line }, `${label} stderr error`);
+      } else if (/warn/i.test(line)) {
+        log.warn({ proc: label, raw: line }, `${label} stderr warning`);
+      } else {
+        log.debug({ proc: label, raw: line }, `${label} stderr`);
+      }
+    }
+  });
+}
+
 /** Plain audio download → MP3 (no tags). Used by the library-ready pipeline. */
 export async function downloadAndConvertToMp3(
   url: string,
   mp3OutPath: string,
   ffmpegPath: string
 ): Promise<void> {
+  const log = getLog("audio-convert");
   const ytDlpBin = getYtDlpBinaryPath();
+  const startTime = Date.now();
+
+  log.info(
+    { url, outPath: mp3OutPath, fn: "downloadAndConvertToMp3" },
+    "Starting yt-dlp → ffmpeg MP3 conversion"
+  );
 
   await new Promise<void>((resolve, reject) => {
     const ytdlProc = spawn(ytDlpBin, [...YT_DLP_FLAGS, url]);
@@ -45,13 +94,24 @@ export async function downloadAndConvertToMp3(
     ]);
 
     ytdlProc.stdout.pipe(ffmpegProc.stdin);
-    ffmpegProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
-    ytdlProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
-    ytdlProc.on("error", reject);
-    ffmpegProc.on("error", reject);
+    logProcessStderr(ytdlProc.stderr, "yt-dlp", log);
+    logProcessStderr(ffmpegProc.stderr, "ffmpeg", log);
+    ytdlProc.on("error", (err) => {
+      log.error({ err }, "yt-dlp process error");
+      reject(err);
+    });
+    ffmpegProc.on("error", (err) => {
+      log.error({ err }, "ffmpeg process error");
+      reject(err);
+    });
     ffmpegProc.on("close", (code) => {
-      if (code !== 0) reject(new Error(`ffmpeg exited with code ${code}`));
-      else resolve();
+      if (code !== 0) {
+        log.error({ exitCode: code, url }, "ffmpeg exited with non-zero code");
+        reject(new Error(`ffmpeg exited with code ${code}`));
+      } else {
+        log.info({ url, durationMs: Date.now() - startTime }, "MP3 conversion complete");
+        resolve();
+      }
     });
   });
 }
@@ -74,8 +134,21 @@ export async function downloadAudioWithFfmpegTags(
   ffmpegPath: string,
   opts: { thumbPath?: string; tags?: AudioFfmpegTags } = {}
 ): Promise<void> {
+  const log = getLog("audio-convert");
   const { thumbPath, tags } = opts;
   const ytDlpBin = getYtDlpBinaryPath();
+  const startTime = Date.now();
+
+  log.info(
+    {
+      url,
+      outPath: mp3OutPath,
+      hasThumb: !!thumbPath,
+      hasTags: !!tags,
+      fn: "downloadAudioWithFfmpegTags",
+    },
+    "Starting yt-dlp → ffmpeg MP3 conversion with tags"
+  );
 
   const ffmpegArgs: string[] = [
     "-i",
@@ -121,13 +194,27 @@ export async function downloadAudioWithFfmpegTags(
     const ffmpegProc = spawnFfmpeg(ffmpegPath, ffmpegArgs);
 
     ytdlProc.stdout.pipe(ffmpegProc.stdin);
-    ffmpegProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
-    ytdlProc.stderr.on("data", (d: Buffer) => process.stdout.write(d));
-    ytdlProc.on("error", reject);
-    ffmpegProc.on("error", reject);
+    logProcessStderr(ytdlProc.stderr, "yt-dlp", log);
+    logProcessStderr(ffmpegProc.stderr, "ffmpeg", log);
+    ytdlProc.on("error", (err) => {
+      log.error({ err }, "yt-dlp process error");
+      reject(err);
+    });
+    ffmpegProc.on("error", (err) => {
+      log.error({ err }, "ffmpeg process error");
+      reject(err);
+    });
     ffmpegProc.on("close", (code) => {
-      if (code !== 0) reject(new Error(`ffmpeg exited with code ${code}`));
-      else resolve();
+      if (code !== 0) {
+        log.error({ exitCode: code, url }, "ffmpeg exited with non-zero code");
+        reject(new Error(`ffmpeg exited with code ${code}`));
+      } else {
+        log.info(
+          { url, durationMs: Date.now() - startTime, hasThumb: !!thumbPath, title: tags?.title },
+          "MP3 conversion with tags complete"
+        );
+        resolve();
+      }
     });
   });
 }
