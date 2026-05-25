@@ -37,11 +37,15 @@ export const getVideoInfos = async (url: string) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed to fetch video info";
     const ytErr = msg.match(/ERROR: \[youtube\] [^:]+: (.+)/)?.[1];
+    const finalError = ytErr ?? msg;
     log.error(
       { videoId, url, err, durationMs: Date.now() - startTime },
-      `Video info fetch failed: ${ytErr ?? msg}`
+      `Video info fetch failed: ${finalError}`
     );
-    return { error: ytErr ?? msg };
+    if (/sign in to confirm your age/i.test(finalError)) {
+      return { error: "AGE_RESTRICTED" };
+    }
+    return { error: finalError };
   }
 
   const details = basicInfo.basic_info;

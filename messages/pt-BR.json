@@ -151,6 +151,7 @@
     "disclaimer": "Transmitido diretamente para o seu dispositivo. Nada é armazenado nos nossos servidores. Baixe apenas conteúdo sobre os quais possui os direitos.",
     "errorDownload": "Ocorreu um erro durante o download. Por favor, tente novamente.",
     "errorFetch": "Ocorreu um erro ao obter informações do vídeo.",
+    "errorAgeRestricted": "O StroyGetter ainda não suporta vídeos privados ou com restrição de idade.",
     "thumbnailAlt": "Miniatura de {title}",
     "eduCard1Title": "O que é Library Ready?",
     "eduCard1Desc": "MP3 com capa do álbum, tags ID3 (título, artista, álbum, ano) e letras sincronizadas embutidas. Perfeito para o Apple Music ou Plex.",

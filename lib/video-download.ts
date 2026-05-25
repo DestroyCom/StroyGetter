@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import { getLog } from "@/lib/request-context";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
+import { getCookiesArgs } from "@/lib/ytdlp-cookies";
 
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
@@ -58,8 +59,9 @@ export async function downloadStreamsToFiles(
   log.info({ url, formatItag, maxFilesize: MAX_FILESIZE }, "Starting parallel yt-dlp download");
   const startTime = Date.now();
 
-  const audioProc = spawn(bin, [...YT_DLP_BASE, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
-  const videoProc = spawn(bin, [...YT_DLP_BASE, "-f", formatItag, url]);
+  const cookiesArgs = getCookiesArgs();
+  const audioProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
+  const videoProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, "-f", formatItag, url]);
 
   if (!audioProc.stdout || !videoProc.stdout) {
     audioProc.kill();

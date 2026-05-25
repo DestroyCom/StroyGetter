@@ -151,6 +151,7 @@
     "disclaimer": "Streamed directly to your device. Nothing stored on our servers. Only download content you own or have the rights to.",
     "errorDownload": "An error occurred while downloading. Please try again.",
     "errorFetch": "An error occurred while fetching video info.",
+    "errorAgeRestricted": "StroyGetter doesn't support private or age-restricted videos yet.",
     "thumbnailAlt": "Thumbnail of {title}",
     "eduCard1Title": "What's Library Ready?",
     "eduCard1Desc": "MP3 with embedded cover art, ID3 tags (title, artist, album, year) and synced lyrics. Drops cleanly into Apple Music, Plex, Rekordbox.",

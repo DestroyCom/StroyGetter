@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { getLog } from "@/lib/request-context";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
+import { getCookiesArgs } from "@/lib/ytdlp-cookies";
 
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 
@@ -81,7 +82,7 @@ export async function downloadAndConvertToMp3(
   );
 
   await new Promise<void>((resolve, reject) => {
-    const ytdlProc = spawn(ytDlpBin, [...YT_DLP_FLAGS, url]);
+    const ytdlProc = spawn(ytDlpBin, [...YT_DLP_FLAGS, ...getCookiesArgs(), url]);
     const ffmpegProc = spawnFfmpeg(ffmpegPath, [
       "-i",
       "pipe:0",
@@ -190,7 +191,7 @@ export async function downloadAudioWithFfmpegTags(
   ];
 
   await new Promise<void>((resolve, reject) => {
-    const ytdlProc = spawn(ytDlpBin, [...YT_DLP_FLAGS, url]);
+    const ytdlProc = spawn(ytDlpBin, [...YT_DLP_FLAGS, ...getCookiesArgs(), url]);
     const ffmpegProc = spawnFfmpeg(ffmpegPath, ffmpegArgs);
 
     ytdlProc.stdout.pipe(ffmpegProc.stdin);

@@ -151,6 +151,7 @@
     "disclaimer": "Transmitido directamente a tu dispositivo. Nada se almacena en nuestros servidores. Descarga solo el contenido sobre el cual tengas derechos.",
     "errorDownload": "Ocurrió un error al descargar. Por favor, inténtalo de nuevo.",
     "errorFetch": "Ocurrió un error al obtener la información del video.",
+    "errorAgeRestricted": "StroyGetter aún no es compatible con videos privados o con restricción de edad.",
     "thumbnailAlt": "Miniatura de {title}",
     "eduCard1Title": "¿Qué es Library Ready?",
     "eduCard1Desc": "Un MP3 con carátula, etiquetas ID3 (título, artista, álbum, año) y letras sincronizadas integradas. Ideal para Apple Music, Plex o Rekordbox.",

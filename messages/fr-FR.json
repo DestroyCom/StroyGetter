@@ -151,6 +151,7 @@
     "disclaimer": "Streamé directement sur votre appareil. Rien n'est stocké chez nous. Ne téléchargez que vos propres contenus.",
     "errorDownload": "Une erreur est survenue lors du téléchargement. Veuillez réessayer.",
     "errorFetch": "Impossible de récupérer les informations de la vidéo.",
+    "errorAgeRestricted": "StroyGetter ne supporte pas encore les vidéos privées ou soumises à une restriction d'âge.",
     "thumbnailAlt": "Miniature de {title}",
     "eduCard1Title": "C'est quoi Library Ready ?",
     "eduCard1Desc": "Un MP3 avec pochette, tags ID3 (titre, artiste, album, année) et paroles synchronisées. Parfait pour Apple Music ou Plex.",

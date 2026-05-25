@@ -70,8 +70,10 @@ export const VideoSelect = () => {
     getVideoInfos(videoUrl)
       .then((value) => {
         if (value.error) {
+          const errorMessage =
+            value.error === "AGE_RESTRICTED" ? t("errorAgeRestricted") : value.error;
           track("error_displayed", { type: "video_load_error", message: value.error });
-          setError(value.error);
+          setError(errorMessage);
           setIsLoading(false);
           return;
         }
