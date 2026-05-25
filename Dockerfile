@@ -40,6 +40,22 @@ COPY --from=deps --chown=nextjs:nodejs \
     /app/node_modules/youtube-dl-exec/bin/yt-dlp \
     ./node_modules/youtube-dl-exec/bin/yt-dlp
 
+# ── pino worker-thread dependencies ──────────────────────────────────────────
+# Turbopack (Next.js ≥16.1, PR #86375) writes symlinks for transitive
+# serverExternalPackages into .next/node_modules/<pkg>-<hash>@ that point
+# back four levels to the original node_modules/.pnpm/… tree.  Those symlink
+# targets do NOT exist in the standalone image, so the worker threads crash
+# with "Cannot find module 'pino-abstract-transport'" at runtime.
+#
+# Fix: copy the real package files directly into the flat node_modules so
+# Node's resolver can always find them, regardless of the pnpm layout.
+#
+# Version pinned to what pnpm-lock.yaml resolves.  If a bump breaks this
+# COPY (path not found), update the version from `pnpm list pino-abstract-transport`.
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/pino-abstract-transport@3.0.0/node_modules/pino-abstract-transport \
+    ./node_modules/pino-abstract-transport
+
 # Migration tooling in an isolated directory (avoids conflicts with standalone)
 COPY --from=builder /app/node_modules   /migrate/node_modules
 COPY --from=builder /app/prisma         /migrate/prisma
