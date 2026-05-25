@@ -13,6 +13,8 @@ services:
       # Previously mapped to ./docker_videos — if upgrading, move that folder:
       #   mv ./docker_videos ./data
       - ./data:/temp/stroygetter:rw
+      # Pino log files (prod). Rotate externally with logrotate or pino-roll.
+      - ./logs:/logs:rw
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
