@@ -36,12 +36,11 @@ const transport = isDev
       targets: [
         // Persist to file — requires Docker volume: ./logs:/logs
         {
-          target: "pino/file",
-          level,
+          target: "pino-roll",
           options: {
-            destination: "/logs/app.log",
-            append: true,
-            mkdir: true, // creates /logs if missing (graceful first-boot)
+            file: "/logs/app.log",
+            frequency: "daily", // ou size: "50m"
+            limit: { count: 14 }, // garde 14 jours
           },
         },
         // Mirror to stdout so `docker logs stroygetter` keeps working
