@@ -1,3 +1,15 @@
+/**
+ * copy-binaries.js — postbuild hook for LOCAL standalone usage only.
+ *
+ * Copies the yt-dlp binary into .next/server/bin/ so that `pnpm start`
+ * (Next.js standalone server run locally, not via Docker) can find it via
+ * selectYtDlpPath()'s first candidate: path.join(cwd, '.next/server/bin', …).
+ *
+ * NOT needed by Docker: the Dockerfile downloads the correct Linux binary
+ * directly in the deps stage and copies it into the runner image explicitly.
+ * The .next/server/bin/ path is outside .next/standalone/ so it is never
+ * included in the Docker image.
+ */
 import fs from "node:fs";
 import path from "node:path";
 

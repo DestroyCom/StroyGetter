@@ -12,6 +12,22 @@ COPY package.json pnpm-lock.yaml .ytdlp-version ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
+# Explicitly download the correct yt-dlp binary for this platform/arch.
+# The youtube-dl-exec postinstall runs inside the pnpm cache layer and can
+# write a "Not Found" placeholder if the GitHub download fails or is rate-
+# limited. This RUN always overwrites that file with the real binary.
+RUN YTDLP_VERSION=$(cat .ytdlp-version) && \
+    case "$(uname -m)" in \
+      aarch64) YTDLP_FILE="yt-dlp_linux_aarch64" ;; \
+      armv7l)  YTDLP_FILE="yt-dlp_linux_armv7l"  ;; \
+      *)       YTDLP_FILE="yt-dlp_linux"          ;; \
+    esac && \
+    echo "Downloading yt-dlp ${YTDLP_VERSION} (${YTDLP_FILE})..." && \
+    wget -q -O node_modules/youtube-dl-exec/bin/yt-dlp \
+      "https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/${YTDLP_FILE}" && \
+    chmod +x node_modules/youtube-dl-exec/bin/yt-dlp && \
+    echo "yt-dlp downloaded: $(node_modules/youtube-dl-exec/bin/yt-dlp --version)"
+
 # ── builder ──────────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
