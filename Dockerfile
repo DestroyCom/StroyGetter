@@ -45,7 +45,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 # awk handles the conversion.
 COPY .ytdlp-version .ytdlp-version
 RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
-    pip3 install --break-system-packages "yt-dlp==${YTDLP_VERSION}" && \
+    pip3 install --no-cache-dir --break-system-packages "yt-dlp==${YTDLP_VERSION}" && \
     mkdir -p node_modules/youtube-dl-exec/bin && \
     cp "$(which yt-dlp)" node_modules/youtube-dl-exec/bin/yt-dlp && \
     chown nextjs:nodejs node_modules/youtube-dl-exec/bin/yt-dlp && \

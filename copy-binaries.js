@@ -5,10 +5,9 @@
  * (Next.js standalone server run locally, not via Docker) can find it via
  * selectYtDlpPath()'s first candidate: path.join(cwd, '.next/server/bin', …).
  *
- * NOT needed by Docker: the Dockerfile downloads the correct Linux binary
- * directly in the deps stage and copies it into the runner image explicitly.
- * The .next/server/bin/ path is outside .next/standalone/ so it is never
- * included in the Docker image.
+ * NOT needed by Docker: yt-dlp (and similar Python-installed binaries) are
+ * installed in the Dockerfile's runner stage via pip3, so they land outside
+ * .next/standalone/ and are never copied into the Docker image by this script.
  */
 import fs from "node:fs";
 import path from "node:path";
