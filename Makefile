@@ -55,10 +55,16 @@ ps:
 docker-build:
 	docker build --no-cache -t $(IMAGE) .
 
-## Build and (re)start via compose — rebuilds the image first
+## Build image then start via compose (fresh build)
 .PHONY: docker-up
 docker-up:
 	$(COMPOSE) up -d --build
+
+## Local smoke-test: build image + start + follow logs (Ctrl-C to detach)
+.PHONY: local-test
+local-test:
+	@mkdir -p data/database data/source data/cached logs
+	$(COMPOSE) up --build
 
 ## Stop containers and remove images built by compose
 .PHONY: docker-clean
@@ -93,6 +99,7 @@ help:
 	@echo "  Docker (image)"
 	@echo "    make docker-build  Build image (no cache)"
 	@echo "    make docker-up     Build image then compose up"
+	@echo "    make local-test    Build + start + stream logs (local smoke test)"
 	@echo "    make docker-clean  Compose down + remove local images"
 	@echo "    make shell         Open sh inside running container"
 	@echo ""

@@ -8,16 +8,20 @@ services:
     ports:
       - "3002:3000"
     env_file: .env
+    environment:
+      # Override / supplement .env for local Docker testing
+      - SITE_URL=http://localhost:3002
+      - LOG_LEVEL=debug
+      # Temp + DB live inside the mounted ./data volume
+      - DATABASE_URL=file:/temp/stroygetter/database/local.db
     volumes:
-      # Data directory for cached downloads and SQLite DB.
-      # Previously mapped to ./docker_videos — if upgrading, move that folder:
-      #   mv ./docker_videos ./data
+      # Cached downloads, source files, and SQLite DB — all under ./data
       - ./data:/temp/stroygetter:rw
-      # Pino log files (prod). Rotate externally with logrotate or pino-roll.
+      # Pino rotating log files
       - ./logs:/logs:rw
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
