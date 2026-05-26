@@ -128,11 +128,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} data-scroll-behavior="smooth">
-      <body className={`${satoshi.variable} font-satoshi antialiased`}>
+      <body className={`${satoshi.variable} font-satoshi antialiased flex min-h-dvh flex-col`}>
         <NextIntlClientProvider messages={messages}>
           <JsonLd data={webAppJsonLd} />
           <SiteHeader />
-          <main>{children}</main>
+          <main className="flex-1">{children}</main>
           <SiteFooter />
         </NextIntlClientProvider>
       </body>
