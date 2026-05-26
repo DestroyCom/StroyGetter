@@ -141,6 +141,7 @@ export default async function RootLayout({
           <Script
             src={`${siteConfig.umamiUrl}/script.js`}
             data-website-id={siteConfig.umamiWebsiteId}
+            data-performance="true"
             strategy="afterInteractive"
           />
           <Script
