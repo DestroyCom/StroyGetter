@@ -48,3 +48,4 @@ database
 .vscode
 docker_videos
 data
+logs

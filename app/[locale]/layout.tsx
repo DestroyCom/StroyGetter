@@ -128,11 +128,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} data-scroll-behavior="smooth">
-      <body className={`${satoshi.variable} font-satoshi antialiased`}>
+      <body className={`${satoshi.variable} font-satoshi antialiased flex min-h-dvh flex-col`}>
         <NextIntlClientProvider messages={messages}>
           <JsonLd data={webAppJsonLd} />
           <SiteHeader />
-          <main>{children}</main>
+          <main className="flex flex-1 flex-col">{children}</main>
           <SiteFooter />
         </NextIntlClientProvider>
       </body>
@@ -141,6 +141,7 @@ export default async function RootLayout({
           <Script
             src={`${siteConfig.umamiUrl}/script.js`}
             data-website-id={siteConfig.umamiWebsiteId}
+            data-performance="true"
             strategy="afterInteractive"
           />
           <Script

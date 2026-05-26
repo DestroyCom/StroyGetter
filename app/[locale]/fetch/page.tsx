@@ -28,7 +28,7 @@ export default async function QualityVideoSelection({
   setRequestLocale(locale);
 
   return (
-    <section className="bg-stroy-500 px-4 py-8 md:px-14">
+    <section className="flex-1 bg-stroy-500 px-4 py-8 md:px-14">
       <div className="mx-auto mb-10 max-w-5xl">
         <Suspense fallback={<SkeletonInput />}>
           <GetterInput />

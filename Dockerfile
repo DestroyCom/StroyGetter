@@ -28,17 +28,46 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-RUN apk add --no-cache ffmpeg python3 su-exec
+RUN apk add --no-cache ffmpeg python3 py3-pip su-exec
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 # Next.js standalone + static assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 
-# yt-dlp binary (resolved at runtime by selectYtDlpPath())
-COPY --from=deps --chown=nextjs:nodejs \
-    /app/node_modules/youtube-dl-exec/bin/yt-dlp \
-    ./node_modules/youtube-dl-exec/bin/yt-dlp
+# ── yt-dlp ───────────────────────────────────────────────────────────────────
+# Install via pip3 (pure Python — architecture-independent, works on Alpine
+# musl without glibc issues). Then expose it at the path selectYtDlpPath()
+# probes: node_modules/youtube-dl-exec/bin/yt-dlp.
+#
+# PyPI strips leading zeros from version components:
+#   .ytdlp-version: 2026.03.17  →  pip version: 2026.3.17
+# awk handles the conversion.
+COPY .ytdlp-version .ytdlp-version
+RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
+    pip3 install --no-cache-dir --break-system-packages "yt-dlp==${YTDLP_VERSION}" && \
+    mkdir -p node_modules/youtube-dl-exec/bin && \
+    cp "$(which yt-dlp)" node_modules/youtube-dl-exec/bin/yt-dlp && \
+    chown nextjs:nodejs node_modules/youtube-dl-exec/bin/yt-dlp && \
+    chmod +x node_modules/youtube-dl-exec/bin/yt-dlp && \
+    echo "yt-dlp ready: $(yt-dlp --version)" && \
+    rm .ytdlp-version
+
+# ── pino worker-thread dependencies ──────────────────────────────────────────
+# Turbopack (Next.js ≥16.1, PR #86375) writes symlinks for transitive
+# serverExternalPackages into .next/node_modules/<pkg>-<hash>@ that point
+# back four levels to the original node_modules/.pnpm/… tree.  Those symlink
+# targets do NOT exist in the standalone image, so the worker threads crash
+# with "Cannot find module 'pino-abstract-transport'" at runtime.
+#
+# Fix: copy the real package files directly into the flat node_modules so
+# Node's resolver can always find them, regardless of the pnpm layout.
+#
+# Version pinned to what pnpm-lock.yaml resolves.  If a bump breaks this
+# COPY (path not found), update the version from `pnpm list pino-abstract-transport`.
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/pino-abstract-transport@3.0.0/node_modules/pino-abstract-transport \
+    ./node_modules/pino-abstract-transport
 
 # Migration tooling in an isolated directory (avoids conflicts with standalone)
 COPY --from=builder /app/node_modules   /migrate/node_modules
