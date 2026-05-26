@@ -132,7 +132,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <JsonLd data={webAppJsonLd} />
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex flex-1 flex-col">{children}</main>
           <SiteFooter />
         </NextIntlClientProvider>
       </body>
