@@ -3,13 +3,12 @@
 import { ArrowRight, Clipboard, Loader2, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { searchQuery } from "@/functions/getYoutubeUrl";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
 
-const isYoutubeUrl = (v: string): boolean =>
-  v.includes("youtube.com") || v.includes("youtu.be");
+const isYoutubeUrl = (v: string): boolean => v.includes("youtube.com") || v.includes("youtu.be");
 
 export const GetterInput = () => {
   const router = useRouter();
@@ -22,6 +21,15 @@ export const GetterInput = () => {
   const [error, setError] = useState("");
   const [pasteError, setPasteError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Reset loading state when navigation completes (videoUrl changes in searchParams).
+  // Without this, isLoading stays true after router.push() succeeds because the
+  // component stays mounted across same-route navigations and the success path
+  // never calls setIsLoading(false).
+  useEffect(() => {
+    setIsLoading(false);
+    if (videoUrl) setUrl(videoUrl);
+  }, [videoUrl]);
 
   const submitUrl = async (value: string, source: "typed" | "pasted" = "typed") => {
     setError("");
