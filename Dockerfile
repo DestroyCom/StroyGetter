@@ -12,22 +12,6 @@ COPY package.json pnpm-lock.yaml .ytdlp-version ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-# Explicitly download the correct yt-dlp binary for this platform/arch.
-# The youtube-dl-exec postinstall runs inside the pnpm cache layer and can
-# write a "Not Found" placeholder if the GitHub download fails or is rate-
-# limited. This RUN always overwrites that file with the real binary.
-RUN YTDLP_VERSION=$(cat .ytdlp-version) && \
-    case "$(uname -m)" in \
-      aarch64) YTDLP_FILE="yt-dlp_linux_aarch64" ;; \
-      armv7l)  YTDLP_FILE="yt-dlp_linux_armv7l"  ;; \
-      *)       YTDLP_FILE="yt-dlp_linux"          ;; \
-    esac && \
-    echo "Downloading yt-dlp ${YTDLP_VERSION} (${YTDLP_FILE})..." && \
-    wget -q -O node_modules/youtube-dl-exec/bin/yt-dlp \
-      "https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/${YTDLP_FILE}" && \
-    chmod +x node_modules/youtube-dl-exec/bin/yt-dlp && \
-    echo "yt-dlp downloaded: $(node_modules/youtube-dl-exec/bin/yt-dlp --version)"
-
 # ── builder ──────────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
@@ -44,17 +28,30 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-RUN apk add --no-cache ffmpeg python3 su-exec
+RUN apk add --no-cache ffmpeg python3 py3-pip su-exec
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 # Next.js standalone + static assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 
-# yt-dlp binary (resolved at runtime by selectYtDlpPath())
-COPY --from=deps --chown=nextjs:nodejs \
-    /app/node_modules/youtube-dl-exec/bin/yt-dlp \
-    ./node_modules/youtube-dl-exec/bin/yt-dlp
+# ── yt-dlp ───────────────────────────────────────────────────────────────────
+# Install via pip3 (pure Python — architecture-independent, works on Alpine
+# musl without glibc issues). Then expose it at the path selectYtDlpPath()
+# probes: node_modules/youtube-dl-exec/bin/yt-dlp.
+#
+# PyPI strips leading zeros from version components:
+#   .ytdlp-version: 2026.03.17  →  pip version: 2026.3.17
+# awk handles the conversion.
+COPY .ytdlp-version .ytdlp-version
+RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
+    pip3 install --break-system-packages "yt-dlp==${YTDLP_VERSION}" && \
+    mkdir -p node_modules/youtube-dl-exec/bin && \
+    cp "$(which yt-dlp)" node_modules/youtube-dl-exec/bin/yt-dlp && \
+    chown nextjs:nodejs node_modules/youtube-dl-exec/bin/yt-dlp && \
+    chmod +x node_modules/youtube-dl-exec/bin/yt-dlp && \
+    echo "yt-dlp ready: $(yt-dlp --version)" && \
+    rm .ytdlp-version
 
 # ── pino worker-thread dependencies ──────────────────────────────────────────
 # Turbopack (Next.js ≥16.1, PR #86375) writes symlinks for transitive
