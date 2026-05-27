@@ -90,6 +90,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       featured: false,
       badge: undefined,
     },
+    {
+      Icon: Film,
+      title: t("formatTiktokTitle"),
+      meta: t("formatTiktokMeta"),
+      desc: t("formatTiktokDesc"),
+      features: [
+        t("formatTiktokFeature1"),
+        t("formatTiktokFeature2"),
+        t("formatTiktokFeature3"),
+      ],
+      featured: false,
+      badge: undefined,
+    },
   ];
 
   const FAQS = [
@@ -99,6 +112,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { q: t("faq4Q"), a: t("faq4A") },
     { q: t("faq5Q"), a: t("faq5A") },
     { q: t("faq6Q"), a: t("faq6A") },
+    { q: t("faqTiktok1Q"), a: t("faqTiktok1A") },
+    { q: t("faqTiktok2Q"), a: t("faqTiktok2A") },
   ];
 
   return (
@@ -222,7 +237,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FORMATS.map((f) => (
               <div
                 key={f.title}
