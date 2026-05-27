@@ -121,7 +121,7 @@
     "title": "Baixar vídeo"
   },
   "getterInput": {
-    "placeholder": "Cole um URL do YouTube ou faça uma pesquisa…",
+    "placeholder": "Cole uma URL do YouTube ou TikTok, ou pesquise…",
     "pasteButton": "Colar",
     "pasteTitle": "Colar da área de transferência",
     "searchButton": "Buscar vídeo",
@@ -139,6 +139,12 @@
     "formatMp4Sub": "H.264 · resolução original",
     "formatMp3": "Áudio MP3",
     "formatMp3Sub": "190 kbps",
+    "formatTiktokNoWatermark": "Sem marca d'água",
+    "formatTiktokNoWatermarkSub": "MP4 · limpo",
+    "formatTiktokWatermark": "Com marca d'água",
+    "formatTiktokWatermarkSub": "MP4 · com logo",
+    "formatTiktokAudio": "Só áudio",
+    "formatTiktokAudioSub": "MP3 · 192 kbps",
     "libraryReadyCalloutTitle": "Library Ready · metadados do YouTube Music",
     "libraryReadyCalloutDesc": "Capa 1400×1400, tags ID3, letras sincronizadas · acrescenta ~20s ao processo.",
     "libraryReadyCoverArt": "Capa",

@@ -121,7 +121,7 @@
     "title": "Download video"
   },
   "getterInput": {
-    "placeholder": "Paste a YouTube URL or search query…",
+    "placeholder": "Paste a YouTube or TikTok URL, or search…",
     "pasteButton": "Paste",
     "pasteTitle": "Paste from clipboard",
     "searchButton": "Search video",
@@ -139,6 +139,12 @@
     "formatMp4Sub": "H.264 · source resolution",
     "formatMp3": "MP3 audio",
     "formatMp3Sub": "190 kbps",
+    "formatTiktokNoWatermark": "No watermark",
+    "formatTiktokNoWatermarkSub": "MP4 · clean",
+    "formatTiktokWatermark": "With watermark",
+    "formatTiktokWatermarkSub": "MP4 · with logo",
+    "formatTiktokAudio": "Audio only",
+    "formatTiktokAudioSub": "MP3 · 192 kbps",
     "libraryReadyCalloutTitle": "Library Ready · metadata from YouTube Music",
     "libraryReadyCalloutDesc": "Cover art 1400×1400, ID3 tags, synced lyrics · adds ~20s to processing.",
     "libraryReadyCoverArt": "Cover art",

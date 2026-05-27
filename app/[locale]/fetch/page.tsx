@@ -5,6 +5,7 @@ import { GetterInput } from "@/components/custom/GetterInput";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { VideoLoading } from "@/components/custom/VideoLoading";
 import { VideoSelect } from "@/components/custom/VideoSelect";
+import { detectSource } from "@/lib/serverUtils";
 
 export async function generateMetadata({
   params,
@@ -21,11 +22,16 @@ export async function generateMetadata({
 
 export default async function QualityVideoSelection({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ videoUrl?: string }>;
 }) {
   const { locale } = await params;
+  const { videoUrl } = await searchParams;
   setRequestLocale(locale);
+
+  const source = videoUrl ? (detectSource(videoUrl) ?? "youtube") : "youtube";
 
   return (
     <section className="flex-1 bg-stroy-500 px-4 py-8 md:px-14">
@@ -36,7 +42,7 @@ export default async function QualityVideoSelection({
       </div>
 
       <Suspense fallback={<VideoLoading />}>
-        <VideoSelect />
+        <VideoSelect source={source} />
       </Suspense>
     </section>
   );

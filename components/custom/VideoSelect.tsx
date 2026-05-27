@@ -1,8 +1,8 @@
 "use client";
 
 import { Disc3, Download, Film, Music } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -15,30 +15,40 @@ import {
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
+import { TIKTOK_ITAG } from "@/lib/types";
 import type { VideoData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VideoLoading } from "./VideoLoading";
 
 const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? "";
 
-type Fmt = "mp4" | "mp3" | "library-ready";
+type YoutubeFmt = "mp4" | "mp3" | "library-ready";
+type TikTokFmt = "tiktok-watermark" | "tiktok-no-watermark" | "tiktok-audio";
+type Fmt = YoutubeFmt | TikTokFmt;
 
-export const VideoSelect = () => {
+interface Props {
+  source: "youtube" | "tiktok";
+}
+
+export const VideoSelect = ({ source }: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
   const t = useTranslations("videoSelect");
 
-  const FORMAT_TABS: { id: Fmt; label: string; sub: string; Icon: typeof Film }[] = [
-    {
-      id: "library-ready",
-      label: t("formatLibraryReady"),
-      sub: t("formatLibraryReadySub"),
-      Icon: Disc3,
-    },
-    { id: "mp4", label: t("formatMp4"), sub: t("formatMp4Sub"), Icon: Film },
-    { id: "mp3", label: t("formatMp3"), sub: t("formatMp3Sub"), Icon: Music },
+  const YOUTUBE_TABS: { id: YoutubeFmt; label: string; sub: string; Icon: typeof Film }[] = [
+    { id: "library-ready", label: t("formatLibraryReady"),    sub: t("formatLibraryReadySub"), Icon: Disc3 },
+    { id: "mp4",           label: t("formatMp4"),             sub: t("formatMp4Sub"),          Icon: Film },
+    { id: "mp3",           label: t("formatMp3"),             sub: t("formatMp3Sub"),          Icon: Music },
   ];
+
+  const TIKTOK_TABS: { id: TikTokFmt; label: string; sub: string; Icon: typeof Film }[] = [
+    { id: "tiktok-no-watermark", label: t("formatTiktokNoWatermark"), sub: t("formatTiktokNoWatermarkSub"), Icon: Film },
+    { id: "tiktok-watermark",    label: t("formatTiktokWatermark"),   sub: t("formatTiktokWatermarkSub"),   Icon: Film },
+    { id: "tiktok-audio",        label: t("formatTiktokAudio"),       sub: t("formatTiktokAudioSub"),       Icon: Music },
+  ];
+
+  const FORMAT_TABS = source === "tiktok" ? TIKTOK_TABS : YOUTUBE_TABS;
 
   const EDU_CARDS = [
     { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
@@ -46,9 +56,11 @@ export const VideoSelect = () => {
     { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
   ];
 
+  const defaultFmt: Fmt = source === "tiktok" ? "tiktok-no-watermark" : "library-ready";
+
   const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
-  const [fmt, setFmt] = useState<Fmt>("library-ready");
+  const [fmt, setFmt] = useState<Fmt>(defaultFmt);
   const [selectedItag, setSelectedItag] = useState<string>("");
 
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +78,7 @@ export const VideoSelect = () => {
     setError(null);
     setDownloadError(null);
     setIsLoading(true);
+    setFmt(defaultFmt);
 
     getVideoInfos(videoUrl)
       .then((value) => {
@@ -79,14 +92,17 @@ export const VideoSelect = () => {
         }
         setVideoData(value.video_details);
         setFormats(value.format);
-        if (value.format?.[0]?.itag) setSelectedItag(value.format[0].itag.toString());
+        if (source === "youtube" && value.format?.[0]?.itag) {
+          setSelectedItag(value.format[0].itag.toString());
+        }
         setIsLoading(false);
         track("video_loaded", {
-          video_id: extractYtId(videoUrl as string),
-          title: value.video_details.title,
-          author: value.video_details.author,
-          duration_s: Number(value.video_details.duration),
-          format_count: value.format?.length ?? 0,
+          source,
+          title:         value.video_details.title,
+          author:        value.video_details.author,
+          duration_s:    Number(value.video_details.duration),
+          format_count:  value.format?.length ?? 0,
+          ...(source === "youtube" && { video_id: extractYtId(videoUrl as string) }),
         });
       })
       .catch((e: unknown) => {
@@ -95,7 +111,7 @@ export const VideoSelect = () => {
         setError(t("errorFetch"));
         setIsLoading(false);
       });
-  }, [videoUrl, t]);
+  }, [videoUrl, t, source, defaultFmt]);
 
   useEffect(() => {
     if (!isDownloading) return;
@@ -109,7 +125,7 @@ export const VideoSelect = () => {
 
   const handleFmtChange = (next: Fmt) => {
     if (next === fmt) return;
-    track("format_changed", { from: fmt, to: next });
+    track("format_changed", { from: fmt, to: next, source });
     setFmt(next);
   };
 
@@ -119,18 +135,13 @@ export const VideoSelect = () => {
     setIsDownloading(true);
     setLoadProgress(0);
 
-    const videoId = extractYtId(videoUrl);
+    const videoId = source === "youtube" ? extractYtId(videoUrl) : videoUrl;
     const quality =
       fmt === "mp4"
         ? (formats?.find((f) => f.itag.toString() === selectedItag)?.qualityLabel ?? selectedItag)
         : fmt;
 
-    track("download_started", {
-      video_id: videoId,
-      title: videoData.title,
-      format: fmt,
-      quality,
-    });
+    track("download_started", { video_id: videoId, title: videoData.title, format: fmt, quality, source });
 
     if (fmt === "library-ready") {
       track("library_ready_used", { video_id: videoId, title: videoData.title });
@@ -139,16 +150,20 @@ export const VideoSelect = () => {
     try {
       const encoded = encodeURIComponent(videoUrl);
       let apiUrl: string;
-      if (fmt === "mp3") apiUrl = `/api/download/audio?url=${encoded}`;
+
+      if (fmt === "mp3")                apiUrl = `/api/download/audio?url=${encoded}`;
       else if (fmt === "library-ready") apiUrl = `/api/download/audio-library-ready?url=${encoded}`;
-      else apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
+      else if (fmt === "mp4")           apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
+      else if (fmt === "tiktok-watermark")    apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}`;
+      else if (fmt === "tiktok-no-watermark") apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}`;
+      else /* tiktok-audio */                 apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
 
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("Download failed");
 
       setLoadProgress(100);
 
-      const ext = fmt === "mp4" ? "mp4" : "mp3";
+      const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark"].includes(fmt) ? "mp4" : "mp3";
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -158,7 +173,7 @@ export const VideoSelect = () => {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
-      track("download_failed", { video_id: videoId, reason });
+      track("download_failed", { video_id: videoId, reason, source });
       track("error_displayed", { type: "download_error", message: t("errorDownload") });
       setDownloadError(t("errorDownload"));
     }
@@ -250,7 +265,7 @@ export const VideoSelect = () => {
             </div>
           </div>
 
-          {/* MP4 quality selector */}
+          {/* MP4 quality selector — YouTube only */}
           {fmt === "mp4" && formats && formats.length > 0 && (
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">
@@ -282,7 +297,7 @@ export const VideoSelect = () => {
             </div>
           )}
 
-          {/* Library Ready callout */}
+          {/* Library Ready callout — YouTube only */}
           {fmt === "library-ready" && (
             <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-stroy-700 p-4 sm:grid sm:grid-cols-[56px_1fr_auto] sm:items-center sm:gap-4">
               <div className="hidden size-14 items-center justify-center rounded-lg border border-white/10 bg-stroy-900 text-2xl text-white/40 sm:flex">

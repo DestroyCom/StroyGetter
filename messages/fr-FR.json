@@ -121,7 +121,7 @@
     "title": "Télécharger la vidéo"
   },
   "getterInput": {
-    "placeholder": "Collez une URL YouTube ou une recherche…",
+    "placeholder": "Collez une URL YouTube ou TikTok, ou lancez une recherche…",
     "pasteButton": "Coller",
     "pasteTitle": "Coller depuis le presse-papiers",
     "searchButton": "Rechercher",
@@ -139,6 +139,12 @@
     "formatMp4Sub": "H.264 · résolution source",
     "formatMp3": "Audio MP3",
     "formatMp3Sub": "190 kbps",
+    "formatTiktokNoWatermark": "Sans filigrane",
+    "formatTiktokNoWatermarkSub": "MP4 · propre",
+    "formatTiktokWatermark": "Avec filigrane",
+    "formatTiktokWatermarkSub": "MP4 · avec logo",
+    "formatTiktokAudio": "Audio seul",
+    "formatTiktokAudioSub": "MP3 · 192 kbps",
     "libraryReadyCalloutTitle": "Library Ready · données de YouTube Music",
     "libraryReadyCalloutDesc": "Pochette 1400×1400, tags ID3, paroles synchronisées · ajoute ~20s.",
     "libraryReadyCoverArt": "Pochette",
