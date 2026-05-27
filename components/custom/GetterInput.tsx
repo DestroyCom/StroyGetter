@@ -8,7 +8,8 @@ import { resolveVideoUrl } from "@/functions/resolveVideoUrl";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
 
-const isKnownVideoUrl = (v: string): boolean => v.includes("youtube.com") || v.includes("youtu.be") || v.includes("tiktok.com");
+const isKnownVideoUrl = (v: string): boolean =>
+  v.includes("youtube.com") || v.includes("youtu.be") || v.includes("tiktok.com");
 
 export const GetterInput = () => {
   const router = useRouter();

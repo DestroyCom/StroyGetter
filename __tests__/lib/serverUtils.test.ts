@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sanitizeFilename, yt_validate, tiktok_validate, detectSource } from "@/lib/serverUtils";
+import { detectSource, sanitizeFilename, tiktok_validate, yt_validate } from "@/lib/serverUtils";
 
 describe("yt_validate", () => {
   it("returns 'video' for a standard watch URL", () => {
@@ -21,9 +21,7 @@ describe("yt_validate", () => {
   });
   it("returns 'video' for a YouTube Mix / Radio URL", () => {
     expect(
-      yt_validate(
-        "https://www.youtube.com/watch?v=luotSpkyCVU&list=RDluotSpkyCVU&start_radio=1"
-      )
+      yt_validate("https://www.youtube.com/watch?v=luotSpkyCVU&list=RDluotSpkyCVU&start_radio=1")
     ).toBe("video");
   });
   it("returns 'video' for a youtu.be URL with si= tracking param", () => {
@@ -31,9 +29,7 @@ describe("yt_validate", () => {
   });
   it("returns 'video' for a watch URL with pp= recommendation param", () => {
     expect(
-      yt_validate(
-        "https://www.youtube.com/watch?v=JYo_KgYXhMQ&pp=ygUVeWFtYW1vdG8ncyByYWdlIHRoZW1l"
-      )
+      yt_validate("https://www.youtube.com/watch?v=JYo_KgYXhMQ&pp=ygUVeWFtYW1vdG8ncyByYWdlIHRoZW1l")
     ).toBe("video");
   });
   it("returns false for a playlist-only URL (no video ID)", () => {
@@ -66,7 +62,9 @@ describe("sanitizeFilename", () => {
 
 describe("tiktok_validate", () => {
   it("returns 'video' for a standard tiktok.com URL", () => {
-    expect(tiktok_validate("https://www.tiktok.com/@honor_france/video/7568900679792708896")).toBe("video");
+    expect(tiktok_validate("https://www.tiktok.com/@honor_france/video/7568900679792708896")).toBe(
+      "video"
+    );
   });
   it("returns 'video' without www", () => {
     expect(tiktok_validate("https://tiktok.com/@user/video/1234567890123456789")).toBe("video");

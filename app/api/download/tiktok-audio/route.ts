@@ -118,7 +118,10 @@ function extractAudioWithFfmpeg(
       }
 
       const fileSize = fs.existsSync(outputPath) ? fs.statSync(outputPath).size : 0;
-      log.info({ durationMs, fileSizeBytes: fileSize, inputPath, outputPath }, "FFmpeg audio extraction complete");
+      log.info(
+        { durationMs, fileSizeBytes: fileSize, inputPath, outputPath },
+        "FFmpeg audio extraction complete"
+      );
       resolve();
     });
   });

@@ -10,9 +10,9 @@ import { getCookiesOpt } from "@/lib/ytdlp-cookies";
 const log = logger.child({ module: "fetch-tiktok-infos" });
 
 const TIKTOK_FORMATS: FormatData[] = [
-  { itag: TIKTOK_ITAG.WATERMARK,    qualityLabel: "Video (with watermark)" },
-  { itag: TIKTOK_ITAG.NO_WATERMARK, qualityLabel: "Video (no watermark)"   },
-  { itag: TIKTOK_ITAG.AUDIO,        qualityLabel: "Audio only (MP3)"       },
+  { itag: TIKTOK_ITAG.WATERMARK, qualityLabel: "Video (with watermark)" },
+  { itag: TIKTOK_ITAG.NO_WATERMARK, qualityLabel: "Video (no watermark)" },
+  { itag: TIKTOK_ITAG.AUDIO, qualityLabel: "Audio only (MP3)" },
 ];
 
 type YtDlpDump = {
@@ -50,11 +50,11 @@ export const getTikTokInfos = async (url: string) => {
 
   const videoData: VideoData = {
     video_details: {
-      title:       dump.title       ?? "Unknown title",
+      title: dump.title ?? "Unknown title",
       description: "",
-      duration:    String(dump.duration ?? 0),
-      thumbnail:   dump.thumbnail   ?? "",
-      author:      dump.uploader    ?? "",
+      duration: String(dump.duration ?? 0),
+      thumbnail: dump.thumbnail ?? "",
+      author: dump.uploader ?? "",
     },
     format: TIKTOK_FORMATS,
   };

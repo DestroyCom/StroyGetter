@@ -1,8 +1,8 @@
 "use client";
 
 import { Disc3, Download, Film, Music } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -15,8 +15,8 @@ import {
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
-import { TIKTOK_ITAG } from "@/lib/types";
 import type { VideoData } from "@/lib/types";
+import { TIKTOK_ITAG } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VideoLoading } from "./VideoLoading";
 
@@ -37,15 +37,35 @@ export const VideoSelect = ({ source }: Props) => {
   const t = useTranslations("videoSelect");
 
   const YOUTUBE_TABS: { id: YoutubeFmt; label: string; sub: string; Icon: typeof Film }[] = [
-    { id: "library-ready", label: t("formatLibraryReady"),    sub: t("formatLibraryReadySub"), Icon: Disc3 },
-    { id: "mp4",           label: t("formatMp4"),             sub: t("formatMp4Sub"),          Icon: Film },
-    { id: "mp3",           label: t("formatMp3"),             sub: t("formatMp3Sub"),          Icon: Music },
+    {
+      id: "library-ready",
+      label: t("formatLibraryReady"),
+      sub: t("formatLibraryReadySub"),
+      Icon: Disc3,
+    },
+    { id: "mp4", label: t("formatMp4"), sub: t("formatMp4Sub"), Icon: Film },
+    { id: "mp3", label: t("formatMp3"), sub: t("formatMp3Sub"), Icon: Music },
   ];
 
   const TIKTOK_TABS: { id: TikTokFmt; label: string; sub: string; Icon: typeof Film }[] = [
-    { id: "tiktok-no-watermark", label: t("formatTiktokNoWatermark"), sub: t("formatTiktokNoWatermarkSub"), Icon: Film },
-    { id: "tiktok-watermark",    label: t("formatTiktokWatermark"),   sub: t("formatTiktokWatermarkSub"),   Icon: Film },
-    { id: "tiktok-audio",        label: t("formatTiktokAudio"),       sub: t("formatTiktokAudioSub"),       Icon: Music },
+    {
+      id: "tiktok-no-watermark",
+      label: t("formatTiktokNoWatermark"),
+      sub: t("formatTiktokNoWatermarkSub"),
+      Icon: Film,
+    },
+    {
+      id: "tiktok-watermark",
+      label: t("formatTiktokWatermark"),
+      sub: t("formatTiktokWatermarkSub"),
+      Icon: Film,
+    },
+    {
+      id: "tiktok-audio",
+      label: t("formatTiktokAudio"),
+      sub: t("formatTiktokAudioSub"),
+      Icon: Music,
+    },
   ];
 
   const FORMAT_TABS = source === "tiktok" ? TIKTOK_TABS : YOUTUBE_TABS;
@@ -98,10 +118,10 @@ export const VideoSelect = ({ source }: Props) => {
         setIsLoading(false);
         track("video_loaded", {
           source,
-          title:         value.video_details.title,
-          author:        value.video_details.author,
-          duration_s:    Number(value.video_details.duration),
-          format_count:  value.format?.length ?? 0,
+          title: value.video_details.title,
+          author: value.video_details.author,
+          duration_s: Number(value.video_details.duration),
+          format_count: value.format?.length ?? 0,
           ...(source === "youtube" && { video_id: extractYtId(videoUrl as string) }),
         });
       })
@@ -141,7 +161,13 @@ export const VideoSelect = ({ source }: Props) => {
         ? (formats?.find((f) => f.itag.toString() === selectedItag)?.qualityLabel ?? selectedItag)
         : fmt;
 
-    track("download_started", { video_id: videoId, title: videoData.title, format: fmt, quality, source });
+    track("download_started", {
+      video_id: videoId,
+      title: videoData.title,
+      format: fmt,
+      quality,
+      source,
+    });
 
     if (fmt === "library-ready") {
       track("library_ready_used", { video_id: videoId, title: videoData.title });
@@ -151,12 +177,14 @@ export const VideoSelect = ({ source }: Props) => {
       const encoded = encodeURIComponent(videoUrl);
       let apiUrl: string;
 
-      if (fmt === "mp3")                apiUrl = `/api/download/audio?url=${encoded}`;
+      if (fmt === "mp3") apiUrl = `/api/download/audio?url=${encoded}`;
       else if (fmt === "library-ready") apiUrl = `/api/download/audio-library-ready?url=${encoded}`;
-      else if (fmt === "mp4")           apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
-      else if (fmt === "tiktok-watermark")    apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}`;
-      else if (fmt === "tiktok-no-watermark") apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}`;
-      else /* tiktok-audio */                 apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
+      else if (fmt === "mp4") apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
+      else if (fmt === "tiktok-watermark")
+        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}`;
+      else if (fmt === "tiktok-no-watermark")
+        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}`;
+      /* tiktok-audio */ else apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
 
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("Download failed");

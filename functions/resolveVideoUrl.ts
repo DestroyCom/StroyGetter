@@ -19,9 +19,7 @@ export const resolveVideoUrl = async (query: string): Promise<string> => {
   const innertube = await getInnertube();
   const results = await innertube.search(trimmed, { type: "video" });
 
-  const firstVideo = results.results?.find((r) => r.type === "Video") as
-    | { id: string }
-    | undefined;
+  const firstVideo = results.results?.find((r) => r.type === "Video") as { id: string } | undefined;
 
   if (!firstVideo?.id) {
     throw new Error("No video found");

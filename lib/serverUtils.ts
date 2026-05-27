@@ -105,10 +105,8 @@ export function yt_validate(url: string): "video" | false {
   return false;
 }
 
-const tiktok_video_pattern =
-  /^https:\/\/(www\.)?tiktok\.com\/@[\w.]+\/video\/\d+/;
-const tiktok_short_pattern =
-  /^https:\/\/vm\.tiktok\.com\/[\w]+\/?$/;
+const tiktok_video_pattern = /^https:\/\/(www\.)?tiktok\.com\/@[\w.]+\/video\/\d+/;
+const tiktok_short_pattern = /^https:\/\/vm\.tiktok\.com\/[\w]+\/?$/;
 
 export function tiktok_validate(url: string): "video" | false {
   const u = url.trim();

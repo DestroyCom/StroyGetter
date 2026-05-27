@@ -16,9 +16,9 @@ export interface VideoData {
 }
 
 export const TIKTOK_ITAG = {
-  WATERMARK:    301,
+  WATERMARK: 301,
   NO_WATERMARK: 302,
-  AUDIO:        303,
+  AUDIO: 303,
 } as const;
 
-export type TikTokItag = typeof TIKTOK_ITAG[keyof typeof TIKTOK_ITAG];
+export type TikTokItag = (typeof TIKTOK_ITAG)[keyof typeof TIKTOK_ITAG];

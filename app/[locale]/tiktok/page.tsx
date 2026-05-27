@@ -34,18 +34,14 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function TikTokPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function TikTokPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("tiktok");
 
   const HOW_STEPS = [
     { Icon: LinkIcon, n: "01", title: t("step1Title"), body: t("step1Body") },
-    { Icon: Scale,    n: "02", title: t("step2Title"), body: t("step2Body") },
+    { Icon: Scale, n: "02", title: t("step2Title"), body: t("step2Body") },
     { Icon: Download, n: "03", title: t("step3Title"), body: t("step3Body") },
   ];
 
@@ -90,7 +86,8 @@ export default async function TikTokPage({
           "@context": "https://schema.org",
           "@type": "HowTo",
           name: "How to download a TikTok video without watermark",
-          description: "Download any public TikTok video as MP4 (with or without watermark) or MP3 in three steps — no install, no signup.",
+          description:
+            "Download any public TikTok video as MP4 (with or without watermark) or MP3 in three steps — no install, no signup.",
           step: HOW_STEPS.map((s) => ({
             "@type": "HowToStep",
             name: s.title,
@@ -239,7 +236,9 @@ export default async function TikTokPage({
         <div className="mx-auto max-w-9xl">
           <div className="grid gap-14 md:grid-cols-[1.4fr_1fr]">
             <div>
-              <h2 className="mb-8 text-balance text-4xl font-bold leading-tight tracking-tight">FAQ</h2>
+              <h2 className="mb-8 text-balance text-4xl font-bold leading-tight tracking-tight">
+                FAQ
+              </h2>
               <Accordion type="single" collapsible className="flex flex-col gap-2">
                 {FAQS.map((item, i) => (
                   <AccordionItem
