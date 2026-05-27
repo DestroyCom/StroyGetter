@@ -197,6 +197,7 @@ export async function GET(request: Request) {
     } catch (err) {
       const totalMs = Date.now() - requestStart;
       log.error({ err, url, totalMs }, "TikTok audio extraction failed");
+      cleanFiles([mp3Path]);
       return new Response("An error occurred while processing", { status: 500 });
     }
   });
