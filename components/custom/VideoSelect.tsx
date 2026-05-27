@@ -70,11 +70,18 @@ export const VideoSelect = ({ source }: Props) => {
 
   const FORMAT_TABS = source === "tiktok" ? TIKTOK_TABS : YOUTUBE_TABS;
 
-  const EDU_CARDS = [
-    { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
-    { title: t("eduCard2Title"), desc: t("eduCard2Desc") },
-    { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
-  ];
+  const EDU_CARDS =
+    source === "tiktok"
+      ? [
+          { title: t("eduCardTiktok1Title"), desc: t("eduCardTiktok1Desc") },
+          { title: t("eduCardTiktok2Title"), desc: t("eduCardTiktok2Desc") },
+          { title: t("eduCardTiktok3Title"), desc: t("eduCardTiktok3Desc") },
+        ]
+      : [
+          { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
+          { title: t("eduCard2Title"), desc: t("eduCard2Desc") },
+          { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
+        ];
 
   const defaultFmt: Fmt = source === "tiktok" ? "tiktok-no-watermark" : "library-ready";
 

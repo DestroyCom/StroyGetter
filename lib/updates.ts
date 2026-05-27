@@ -14,6 +14,41 @@ export type UpdateEntry = {
 
 export const updates: UpdateEntry[] = [
   {
+    slug: "v3-11-0-tiktok-downloader",
+    title: "Download TikTok videos — no watermark, no app required",
+    date: "2026-05-27",
+    description:
+      "StroyGetter now supports TikTok. Download videos without the watermark, keep the original with branding, or extract the audio as MP3 — same interface you already know.",
+    keywords: [
+      "tiktok downloader no watermark",
+      "download tiktok video",
+      "tiktok to mp3",
+      "tiktok video download online",
+      "remove tiktok watermark",
+      "stroygetter tiktok",
+      "télécharger tiktok sans filigrane",
+      "descargar tiktok sin marca de agua",
+    ],
+    sections: [
+      {
+        heading: "Paste a TikTok link. Get a clean MP4.",
+        body: "StroyGetter now accepts TikTok URLs alongside YouTube links. Paste any public TikTok video URL and you'll see three download options: No watermark, Watermark, and Audio. No app to install, no account to create, no browser extension — it works the same way the YouTube downloader has always worked.",
+      },
+      {
+        heading: "No-watermark download explained",
+        body: "TikTok overlays its logo on the video at the display layer, but the original stream uploaded by the creator doesn't carry it. StroyGetter uses yt-dlp to fetch that original H264 stream directly. The result is a clean MP4 with full resolution and no TikTok branding anywhere in the frame.",
+      },
+      {
+        heading: "Three formats, one click",
+        body: "No watermark gives you the creator's original video. Watermark delivers the standard TikTok version with the overlaid logo — useful if you want to keep the original presentation. Audio strips the video entirely and exports a plain MP3 at 192 kbps, handy for saving sound clips, voiceovers, or music you want to carry around without the video.",
+      },
+      {
+        heading: "A dedicated TikTok page",
+        body: "We added /tiktok as a standalone landing page for anyone searching specifically for a TikTok downloader. It covers how the tool works, which formats are available, and answers the questions we see most often — including why no-watermark download is possible and why there's no quality picker (TikTok publishes a single resolution per clip).",
+      },
+    ],
+  },
+  {
     slug: "v3-8-0-multilingual",
     title: "StroyGetter says hello to the world — now in 4 languages",
     date: "2026-05-21",

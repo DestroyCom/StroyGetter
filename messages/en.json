@@ -178,7 +178,13 @@
     "eduCard2Title": "Conversion taking a while?",
     "eduCard2Desc": "We fetch the source from YouTube live and tag it on the fly. Library Ready adds 15–25s because we look up metadata and high-res cover art.",
     "eduCard3Title": "MP4 vs MP3 vs Library Ready",
-    "eduCard3Desc": "MP4 keeps the picture. MP3 keeps only the sound. Library Ready is MP3 + everything your music app needs to display the track properly."
+    "eduCard3Desc": "MP4 keeps the picture. MP3 keeps only the sound. Library Ready is MP3 + everything your music app needs to display the track properly.",
+    "eduCardTiktok1Title": "No watermark — how it works",
+    "eduCardTiktok1Desc": "yt-dlp fetches TikTok's original H264 stream before the logo is overlaid. You get a clean MP4 with no TikTok branding.",
+    "eduCardTiktok2Title": "No quality picker?",
+    "eduCardTiktok2Desc": "TikTok only publishes one video resolution per clip. yt-dlp picks the best available automatically — there's nothing to choose.",
+    "eduCardTiktok3Title": "Video vs Audio on TikTok",
+    "eduCardTiktok3Desc": "No watermark and Watermark give you the full MP4 video. Audio strips the sound track and exports it as a plain MP3."
   },
   "footer": {
     "tagline": "Free, open-source YouTube downloader. No signup, no ads, no installs. Download MP4 video or MP3 audio directly from your browser.",

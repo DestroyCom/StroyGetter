@@ -178,7 +178,13 @@
     "eduCard2Title": "La conversion prend du temps ?",
     "eduCard2Desc": "Nous récupérons la source sur YouTube en direct et ajoutons les tags à la volée. Library Ready ajoute 15 à 25s pour trouver les bonnes métadonnées.",
     "eduCard3Title": "MP4 vs MP3 vs Library Ready",
-    "eduCard3Desc": "Le MP4 garde l'image. Le MP3 ne garde que le son. Library Ready est un MP3 contenant en plus toutes les infos dont votre lecteur a besoin."
+    "eduCard3Desc": "Le MP4 garde l'image. Le MP3 ne garde que le son. Library Ready est un MP3 contenant en plus toutes les infos dont votre lecteur a besoin.",
+    "eduCardTiktok1Title": "Sans filigrane — comment ça marche ?",
+    "eduCardTiktok1Desc": "yt-dlp récupère le flux H264 original de TikTok avant que le logo soit incrusté. Vous obtenez un MP4 propre, sans branding TikTok.",
+    "eduCardTiktok2Title": "Pas de choix de qualité ?",
+    "eduCardTiktok2Desc": "TikTok ne publie qu'une seule résolution vidéo par clip. yt-dlp sélectionne automatiquement la meilleure disponible — il n'y a rien à choisir.",
+    "eduCardTiktok3Title": "Vidéo vs Audio sur TikTok",
+    "eduCardTiktok3Desc": "Sans filigrane et Avec filigrane donnent la vidéo MP4 complète. Audio extrait uniquement la piste sonore et l'exporte en MP3."
   },
   "footer": {
     "tagline": "Téléchargeur YouTube open-source et gratuit. Sans inscription, sans pub, sans installation. Téléchargez du MP4 ou MP3 directement dans votre navigateur.",

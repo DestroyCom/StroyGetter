@@ -178,7 +178,13 @@
     "eduCard2Title": "¿La conversión tarda mucho?",
     "eduCard2Desc": "Obtenemos el origen de YouTube en vivo y lo etiquetamos sobre la marcha. Library Ready añade 15–25s para buscar los metadatos.",
     "eduCard3Title": "MP4 vs MP3 vs Library Ready",
-    "eduCard3Desc": "El MP4 conserva la imagen. El MP3 solo el sonido. Library Ready es un MP3 + todo lo que tu app de música necesita para mostrar la canción correctamente."
+    "eduCard3Desc": "El MP4 conserva la imagen. El MP3 solo el sonido. Library Ready es un MP3 + todo lo que tu app de música necesita para mostrar la canción correctamente.",
+    "eduCardTiktok1Title": "Sin marca de agua — ¿cómo funciona?",
+    "eduCardTiktok1Desc": "yt-dlp obtiene el stream H264 original de TikTok antes de superponer el logo. Obtienes un MP4 limpio, sin marca de TikTok.",
+    "eduCardTiktok2Title": "¿Sin selector de calidad?",
+    "eduCardTiktok2Desc": "TikTok solo publica una resolución de vídeo por clip. yt-dlp selecciona automáticamente la mejor disponible — no hay nada que elegir.",
+    "eduCardTiktok3Title": "Vídeo vs Audio en TikTok",
+    "eduCardTiktok3Desc": "Sin marca de agua y Con marca de agua entregan el vídeo MP4 completo. Audio extrae solo la pista de sonido y la exporta como MP3."
   },
   "footer": {
     "tagline": "Descargador de YouTube gratuito y de código abierto. Sin registro, sin anuncios, sin instalaciones. Descarga videos MP4 o audio MP3 directamente.",
