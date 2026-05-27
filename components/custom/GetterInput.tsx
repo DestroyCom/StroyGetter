@@ -4,11 +4,11 @@ import { ArrowRight, Clipboard, Loader2, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import { searchQuery } from "@/functions/getYoutubeUrl";
+import { resolveVideoUrl } from "@/functions/resolveVideoUrl";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
 
-const isYoutubeUrl = (v: string): boolean => v.includes("youtube.com") || v.includes("youtu.be");
+const isKnownVideoUrl = (v: string): boolean => v.includes("youtube.com") || v.includes("youtu.be") || v.includes("tiktok.com");
 
 export const GetterInput = () => {
   const router = useRouter();
@@ -34,9 +34,9 @@ export const GetterInput = () => {
   const submitUrl = async (value: string, source: "typed" | "pasted" = "typed") => {
     setError("");
     setIsLoading(true);
-    track("search", { query: value, is_url: isYoutubeUrl(value), source });
+    track("search", { query: value, is_url: isKnownVideoUrl(value), source });
     try {
-      const resolvedUrl = await searchQuery(value);
+      const resolvedUrl = await resolveVideoUrl(value);
       router.push(`/fetch?videoUrl=${resolvedUrl}`);
     } catch {
       track("search_error", { query: value });
