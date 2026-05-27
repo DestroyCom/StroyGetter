@@ -8,13 +8,9 @@ import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/requ
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
 import { sanitizeFilename, tiktok_validate } from "@/lib/serverUtils";
+import { TIKTOK_ITAG } from "@/lib/types";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
-
-const TIKTOK_ITAG = {
-  WATERMARK: 301,
-  NO_WATERMARK: 302,
-} as const;
 
 // Maps quality param to yt-dlp format selector
 const FORMAT_SELECTOR: Record<string, string> = {
