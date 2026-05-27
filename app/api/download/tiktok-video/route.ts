@@ -6,6 +6,7 @@ import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
+import { getServerConf } from "@/lib/server-conf";
 import { sanitizeFilename, tiktok_validate } from "@/lib/serverUtils";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
@@ -118,6 +119,8 @@ export async function GET(request: Request) {
     const guard = guardApiRequest(request);
     if (guard) return guard;
 
+    await getServerConf();
+
     if (!url) {
       log.warn("Missing url parameter");
       return new Response("Missing url parameter", { status: 400 });
@@ -142,7 +145,6 @@ export async function GET(request: Request) {
 
     const qualityLabel = QUALITY_LABEL[quality];
     const sanitizedUrl = sanitizeFilename(url);
-    const outputFilename = `tiktok_${sanitizedUrl}_${quality}_${Date.now()}.mp4`;
     const cachedName = `tiktok_${sanitizedUrl}_${quality}.mp4`;
     const outputPath = path.join(TEMP_DIR, "cached", cachedName);
     const cacheKey = `${url}:${qualityLabel}`;
@@ -164,11 +166,13 @@ export async function GET(request: Request) {
           { cacheKey, filePath: cached.path },
           "Stale DB cache entry — file missing on disk, re-downloading"
         );
+        await prisma.file.delete({ where: { id: cached.id } }).catch(() => {});
       } else {
         log.debug({ cacheKey }, "Cache miss — starting TikTok download");
       }
 
       // Use a unique temp path during download, then keep as cached path
+      const outputFilename = `tiktok_${sanitizedUrl}_${quality}_${Date.now()}.mp4`;
       const tempDownloadPath = path.join(TEMP_DIR, "source", outputFilename);
 
       try {
