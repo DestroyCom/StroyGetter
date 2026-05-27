@@ -136,7 +136,7 @@ export default async function YouTubePage({ params }: { params: Promise<{ locale
       <section className="bg-stroy-500 px-4 py-20 md:py-28" id="home">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="mb-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight md:text-6xl">
-            {t("heroTitle")
+            {t("ytHeroTitle")
               .split("\n")
               .map((line, i, arr) => (
                 <Fragment key={line}>
@@ -145,11 +145,11 @@ export default async function YouTubePage({ params }: { params: Promise<{ locale
                 </Fragment>
               ))}
             <br />
-            <em className="font-light italic text-white/78">{t("heroSubtitle")}</em>
+            <em className="font-light italic text-white/78">{t("ytHeroSubtitle")}</em>
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/78">
-            {t.rich("heroDesc", {
+            {t.rich("ytHeroDesc", {
               libraryReady: (chunks) => (
                 <strong className="font-semibold text-white">{chunks}</strong>
               ),
@@ -161,13 +161,15 @@ export default async function YouTubePage({ params }: { params: Promise<{ locale
           </Suspense>
 
           <div className="mt-6 flex flex-wrap justify-center gap-x-7 gap-y-2 text-sm text-white/70">
-            {[t("heroBadge1"), t("heroBadge2"), t("heroBadge3"), t("heroBadge4")].map((badge) => (
-              <span key={badge} className="flex items-center gap-1.5">
-                <Check size={14} className="text-stroy-300" /> {badge}
-              </span>
-            ))}
+            {[t("ytHeroBadge1"), t("ytHeroBadge2"), t("ytHeroBadge3"), t("ytHeroBadge4")].map(
+              (badge) => (
+                <span key={badge} className="flex items-center gap-1.5">
+                  <Check size={14} className="text-stroy-300" /> {badge}
+                </span>
+              ),
+            )}
           </div>
-          <p className="mt-3 text-xs italic text-white/50">{t("heroDisclaimer")}</p>
+          <p className="mt-3 text-xs italic text-white/50">{t("ytHeroDisclaimer")}</p>
         </div>
       </section>
 
