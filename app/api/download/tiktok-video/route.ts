@@ -166,7 +166,9 @@ export async function GET(request: Request) {
           { cacheKey, filePath: cached.path },
           "Stale DB cache entry — file missing on disk, re-downloading"
         );
-        await prisma.file.delete({ where: { id: cached.id } }).catch(() => {});
+        await prisma.file.delete({ where: { id: cached.id } }).catch((err) => {
+          log.warn({ err, fileId: cached.id }, "Failed to delete stale file entry — continuing");
+        });
       } else {
         log.debug({ cacheKey }, "Cache miss — starting TikTok download");
       }
