@@ -1,7 +1,7 @@
 "use server";
 
 import { getInnertube } from "@/lib/innertube";
-import { tiktok_validate, yt_validate } from "@/lib/serverUtils";
+import { detectSource } from "@/lib/serverUtils";
 
 /**
  * Resolves a raw user input to a canonical video URL.
@@ -12,8 +12,8 @@ import { tiktok_validate, yt_validate } from "@/lib/serverUtils";
 export const resolveVideoUrl = async (query: string): Promise<string> => {
   const trimmed = query.trim();
 
-  if (yt_validate(trimmed)) return trimmed;
-  if (tiktok_validate(trimmed)) return trimmed;
+  const source = detectSource(trimmed);
+  if (source === "youtube" || source === "tiktok") return trimmed;
 
   // Fall back to YouTube search
   const innertube = await getInnertube();
