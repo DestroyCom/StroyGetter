@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
+import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { track } from "@/lib/analytics";
 import type { VideoData } from "@/lib/types";
 import { TIKTOK_ITAG } from "@/lib/types";
@@ -92,7 +93,7 @@ export const VideoSelect = ({ source }: Props) => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const { isDownloading, setIsDownloading } = useDownloadState();
   const [loadProgress, setLoadProgress] = useState(0);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
@@ -162,14 +163,14 @@ export const VideoSelect = ({ source }: Props) => {
     setIsDownloading(true);
     setLoadProgress(0);
 
-    const videoId = source === "youtube" ? extractYtId(videoUrl) : videoUrl;
+    const videoId = source === "youtube" ? extractYtId(videoUrl) : undefined;
     const quality =
       fmt === "mp4"
         ? (formats?.find((f) => f.itag.toString() === selectedItag)?.qualityLabel ?? selectedItag)
         : fmt;
 
     track("download_started", {
-      video_id: videoId,
+      ...(videoId !== undefined && { video_id: videoId }),
       title: videoData.title,
       format: fmt,
       quality,
@@ -208,7 +209,7 @@ export const VideoSelect = ({ source }: Props) => {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
-      track("download_failed", { video_id: videoId, reason, source });
+      track("download_failed", { ...(videoId !== undefined && { video_id: videoId }), reason, source });
       track("error_displayed", { type: "download_error", message: t("errorDownload") });
       setDownloadError(t("errorDownload"));
     }

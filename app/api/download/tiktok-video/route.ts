@@ -118,7 +118,7 @@ export async function GET(request: Request) {
     const guard = guardApiRequest(request);
     if (guard) return guard;
 
-    await getServerConf();
+    await getServerConf(); // side-effect only: initialises temp dirs and cleanup cron (ffmpegPath not needed here)
 
     if (!url) {
       log.warn("Missing url parameter");
@@ -143,7 +143,8 @@ export async function GET(request: Request) {
     }
 
     const qualityLabel = QUALITY_LABEL[quality];
-    const sanitizedUrl = sanitizeFilename(url);
+    // Cap at 200 so the full filename ("tiktok_" + url + "_302.mp4") stays under 255 bytes
+    const sanitizedUrl = sanitizeFilename(url).slice(0, 200);
     const cachedName = `tiktok_${sanitizedUrl}_${quality}.mp4`;
     const outputPath = path.join(TEMP_DIR, "cached", cachedName);
     const cacheKey = `${url}:${qualityLabel}`;

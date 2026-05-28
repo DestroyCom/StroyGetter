@@ -4,6 +4,7 @@ import { ArrowRight, Clipboard, Loader2, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { resolveVideoUrl } from "@/functions/resolveVideoUrl";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
@@ -16,6 +17,8 @@ export const GetterInput = () => {
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
   const t = useTranslations("getterInput");
+
+  const { isDownloading } = useDownloadState();
 
   const [url, setUrl] = useState(videoUrl || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +111,7 @@ export const GetterInput = () => {
       <button
         type="submit"
         id="search-button"
-        disabled={url.length === 0 || isLoading}
+        disabled={url.length === 0 || isLoading || isDownloading}
         className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-stroy-900 px-8 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-stroy-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isLoading ? (

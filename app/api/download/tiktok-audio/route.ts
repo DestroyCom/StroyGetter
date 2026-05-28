@@ -10,7 +10,10 @@ import { tiktok_validate } from "@/lib/serverUtils";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
 
-const TIKTOK_AUDIO_FORMAT = "best[vcodec^=h264][format_id!=download]";
+// Prefer a pure audio stream if available; fall back to best muxed stream with audio.
+// The [acodec!=none] guard prevents downloading a video-only stream that would produce
+// a silent MP3 after ffmpeg extraction.
+const TIKTOK_AUDIO_FORMAT = "bestaudio[acodec!=none]/best[acodec!=none][format_id!=download]";
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 
@@ -176,9 +179,6 @@ export async function GET(request: Request) {
 
       try {
         await extractAudioWithFfmpeg(ffmpegPath, sourcePath, mp3Path);
-      } catch (err) {
-        cleanFiles([mp3Path]);
-        throw err;
       } finally {
         cleanFiles([sourcePath]);
       }
