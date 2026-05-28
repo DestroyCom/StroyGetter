@@ -1,7 +1,7 @@
 {
   "meta": {
     "homeTitle": "StroyGetter — Free YouTube Video Downloader",
-    "homeDesc": "Download YouTube music as Library Ready MP3 — cover art, ID3 tags and synced lyrics embedded automatically. Also supports MP4 up to 4K and plain MP3. Free, no signup, no ads.",
+    "homeDesc": "Download YouTube music as Library Ready MP3 — cover art, ID3 tags and synced lyrics auto-embedded. Also supports MP4 up to 4K and plain MP3. Free, no signup.",
     "libraryReadyTitle": "Library Ready — YouTube to MP3 with Cover Art, ID3 Tags & Synced Lyrics",
     "libraryReadyDesc": "Download YouTube music as a fully tagged MP3 — cover art, artist, album, year and synced lyrics embedded automatically. Drops cleanly into Apple Music, Plex, Rekordbox, foobar2000 or any music player.",
     "howToDownloadTitle": "How to download a YouTube video as MP4 or MP3 in 2026",
@@ -14,7 +14,7 @@
     "tiktokTitle": "StroyGetter — Free TikTok Video Downloader (No Watermark)",
     "tiktokDesc": "Download TikTok videos without watermark as MP4 or extract audio as MP3. Free, no signup, no app required.",
     "youtubeTitle": "StroyGetter — Free YouTube Video Downloader: MP4, MP3 & Library Ready",
-    "youtubeDesc": "Download YouTube videos as MP4 (up to 4K), plain MP3 audio or Library Ready — a fully tagged MP3 with cover art, ID3 tags and synced lyrics. Free, no signup, no ads."
+    "youtubeDesc": "Download YouTube videos as MP4 (up to 4K), plain MP3 or Library Ready — tagged MP3 with cover art, ID3 tags and synced lyrics. Free, no signup, no ads."
   },
   "nav": {
     "howItWorks": "How it works",
