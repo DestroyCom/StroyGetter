@@ -16,7 +16,7 @@ jobs:
       updated: ${{ steps.check.outputs.updated }}
       version: ${{ steps.check.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: master
           fetch-depth: 0
