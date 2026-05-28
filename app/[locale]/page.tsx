@@ -102,6 +102,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       ],
       featured: false,
       badge: undefined,
+      learnMore: { href: "/tiktok" as const, label: t("formatTiktokLearnMore") },
     },
   ];
 
@@ -278,6 +279,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
                   >
                     {t("formatLibraryReadyLearnMore")}
+                  </Link>
+                )}
+                {"learnMore" in f && f.learnMore && (
+                  <Link
+                    href={f.learnMore.href}
+                    className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
+                  >
+                    {f.learnMore.label}
                   </Link>
                 )}
               </div>

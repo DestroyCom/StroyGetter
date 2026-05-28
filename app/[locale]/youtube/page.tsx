@@ -28,6 +28,14 @@ export async function generateMetadata({
     title: t("youtubeTitle"),
     description: t("youtubeDesc"),
     alternates: buildAlternates(locale, "/youtube"),
+    openGraph: {
+      title: t("youtubeTitle"),
+      description: t("youtubeDesc"),
+    },
+    twitter: {
+      title: t("youtubeTitle"),
+      description: t("youtubeDesc"),
+    },
   };
 }
 
@@ -50,7 +58,7 @@ export default async function YouTubePage({ params }: { params: Promise<{ locale
   ];
 
   const HOW_STEPS = [
-    { Icon: LinkIcon, n: "01", title: t("step1Title"), body: t("step1Body") },
+    { Icon: LinkIcon, n: "01", title: t("ytStep1Title"), body: t("ytStep1Body") },
     { Icon: Scale, n: "02", title: t("step2Title"), body: t("step2Body") },
     { Icon: Download, n: "03", title: t("step3Title"), body: t("step3Body") },
   ];

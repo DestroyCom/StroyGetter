@@ -27,6 +27,14 @@ export async function generateMetadata({
     title: t("tiktokTitle"),
     description: t("tiktokDesc"),
     alternates: buildAlternates(locale, "/tiktok"),
+    openGraph: {
+      title: t("tiktokTitle"),
+      description: t("tiktokDesc"),
+    },
+    twitter: {
+      title: t("tiktokTitle"),
+      description: t("tiktokDesc"),
+    },
   };
 }
 
@@ -236,8 +244,11 @@ export default async function TikTokPage({ params }: { params: Promise<{ locale:
         <div className="mx-auto max-w-9xl">
           <div className="grid gap-14 md:grid-cols-[1.4fr_1fr]">
             <div>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-stroy-300">
+                {t("faqLabel")}
+              </p>
               <h2 className="mb-8 text-balance text-4xl font-bold leading-tight tracking-tight">
-                FAQ
+                {t("faqTitle")}
               </h2>
               <Accordion type="single" collapsible className="flex flex-col gap-2">
                 {FAQS.map((item, i) => (

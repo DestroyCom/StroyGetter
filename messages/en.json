@@ -13,8 +13,8 @@
     "fetchTitle": "Download video",
     "tiktokTitle": "StroyGetter — Free TikTok Video Downloader (No Watermark)",
     "tiktokDesc": "Download TikTok videos without watermark as MP4 or extract audio as MP3. Free, no signup, no app required.",
-    "youtubeTitle": "StroyGetter — Free YouTube Video Downloader",
-    "youtubeDesc": "Download YouTube music as Library Ready MP3 — cover art, ID3 tags and synced lyrics embedded automatically. Also supports MP4 up to 4K and plain MP3. Free, no signup, no ads."
+    "youtubeTitle": "StroyGetter — Free YouTube Video Downloader: MP4, MP3 & Library Ready",
+    "youtubeDesc": "Download YouTube videos as MP4 (up to 4K), plain MP3 audio or Library Ready — a fully tagged MP3 with cover art, ID3 tags and synced lyrics. Free, no signup, no ads."
   },
   "nav": {
     "howItWorks": "How it works",
@@ -64,6 +64,8 @@
     "ytHeroBadge3": "Open source",
     "ytHeroBadge4": "Library Ready — only here",
     "ytHeroDisclaimer": "Please only download content you own or have the rights to.",
+    "ytStep1Title": "Paste the YouTube URL",
+    "ytStep1Body": "Copy the link from any YouTube video — desktop, mobile app, or Shorts. Drop it in the search field above.",
     "howItWorksLabel": "How it works",
     "howItWorksTitle": "From URL to file in three steps, no install.",
     "howItWorksDesc": "No browser extension, no desktop app, no signup. Everything runs in your tab.",
@@ -104,6 +106,7 @@
     "formatTiktokFeature1": "No watermark",
     "formatTiktokFeature2": "With watermark option",
     "formatTiktokFeature3": "Audio MP3",
+    "formatTiktokLearnMore": "Try the TikTok downloader →",
     "faqLabel": "FAQ",
     "faqTitle": "Common questions, plain answers.",
     "faq1Q": "Is StroyGetter really free?",
@@ -113,7 +116,7 @@
     "faq3Q": "Why does Library Ready conversion take longer?",
     "faq3A": "We make a second call to fetch metadata (artist, album, lyrics) from open music databases, fetch the high-resolution cover art from YouTube Music, and embed everything into the ID3 tags. The whole roundtrip usually adds 15–25 seconds.",
     "faq4Q": "Do you store the videos on your servers?",
-    "faq4A": "No. The converter streams the file directly to your browser as soon as it's ready. Nothing is cached, logged, or kept. Our analytics only counts anonymous page views.",
+    "faq4A": "No. Files are not permanently stored — converted files expire and are cleaned up automatically within 7 days. Our analytics only counts anonymous page views.",
     "faq5Q": "Which browsers are supported?",
     "faq5A": "Any modern browser released after 2023. We test on Chrome, Firefox, Safari and Edge. Mobile Safari and Chrome on Android also work.",
     "faq6Q": "Can I download age-restricted or private videos?",
@@ -195,7 +198,7 @@
     "eduCardTiktok3Desc": "No watermark and Watermark give you the full MP4 video. Audio strips the sound track and exports it as a plain MP3."
   },
   "footer": {
-    "tagline": "Free, open-source YouTube downloader. No signup, no ads, no installs. Download MP4 video or MP3 audio directly from your browser.",
+    "tagline": "Free, open-source YouTube & TikTok downloader. No signup, no ads, no installs. Download MP4 video or MP3 audio directly from your browser.",
     "mitLicensed": "MIT licensed",
     "openSource": "Open source",
     "sectionTool": "Tool",
@@ -539,6 +542,8 @@
     "formatAudioDesc": "Just the audio track extracted from the video and converted to MP3. Great for music, voiceovers and sound effects.",
     "formatAudioFeature1": "192 kbps",
     "formatAudioFeature2": "No video stream",
+    "faqLabel": "FAQ",
+    "faqTitle": "Common TikTok questions, plain answers.",
     "faq1Q": "Does StroyGetter remove TikTok watermarks?",
     "faq1A": "Yes — the 'No watermark' option downloads the original video stream directly from TikTok's servers, without the overlaid logo. The watermark is never burned into this stream.",
     "faq2Q": "Which TikTok URLs are supported?",

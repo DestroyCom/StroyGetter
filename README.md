@@ -80,6 +80,8 @@ pnpm dev                      # starts on http://localhost:3000
 | `BING_SITE_VERIFICATION` | — | Bing Webmaster verification token (msvalidate.01) |
 | `EMAIL_DMCA` | `dmca@contact-stroygetter.stroyco.eu` | DMCA takedown contact email shown in legal pages |
 | `EMAIL_PRIVACY` | `privacy@contact-stroygetter.stroyco.eu` | Privacy policy contact email shown in legal pages |
+| `BANNER_TEXT` | — | Optional. Non-empty string shows a news banner above the header. Unset or empty = hidden. No rebuild needed. |
+| `BANNER_HREF` | — | Optional. Link for the banner — relative path (e.g. `/tiktok`) or absolute URL. Omit for text-only. |
 
 ### With Docker (local)
 
