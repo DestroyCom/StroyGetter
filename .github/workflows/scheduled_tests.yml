@@ -24,4 +24,11 @@ jobs:
 
       - run: pnpm prisma generate
 
-      - run: pnpm vitest run
+      - run: pnpm vitest run --reporter=verbose --reporter=junit --outputFile=test-results/junit.xml
+
+      - uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: All Tests
+          path: test-results/junit.xml
+          reporter: jest-junit
