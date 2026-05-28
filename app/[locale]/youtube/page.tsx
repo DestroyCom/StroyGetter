@@ -23,8 +23,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
   return {
-    alternates: buildAlternates(locale, ""),
+    title: t("youtubeTitle"),
+    description: t("youtubeDesc"),
+    alternates: buildAlternates(locale, "/youtube"),
+    openGraph: {
+      title: t("youtubeTitle"),
+      description: t("youtubeDesc"),
+    },
+    twitter: {
+      title: t("youtubeTitle"),
+      description: t("youtubeDesc"),
+    },
   };
 }
 
@@ -32,7 +43,7 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function YouTubePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("home");
@@ -47,7 +58,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ];
 
   const HOW_STEPS = [
-    { Icon: LinkIcon, n: "01", title: t("step1Title"), body: t("step1Body") },
+    { Icon: LinkIcon, n: "01", title: t("ytStep1Title"), body: t("ytStep1Body") },
     { Icon: Scale, n: "02", title: t("step2Title"), body: t("step2Body") },
     { Icon: Download, n: "03", title: t("step3Title"), body: t("step3Body") },
   ];
@@ -90,20 +101,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       featured: false,
       badge: undefined,
     },
-    {
-      Icon: Film,
-      title: t("formatTiktokTitle"),
-      meta: t("formatTiktokMeta"),
-      desc: t("formatTiktokDesc"),
-      features: [
-        t("formatTiktokFeature1"),
-        t("formatTiktokFeature2"),
-        t("formatTiktokFeature3"),
-      ],
-      featured: false,
-      badge: undefined,
-      learnMore: { href: "/tiktok" as const, label: t("formatTiktokLearnMore") },
-    },
   ];
 
   const FAQS = [
@@ -113,8 +110,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { q: t("faq4Q"), a: t("faq4A") },
     { q: t("faq5Q"), a: t("faq5A") },
     { q: t("faq6Q"), a: t("faq6A") },
-    { q: t("faqTiktok1Q"), a: t("faqTiktok1A") },
-    { q: t("faqTiktok2Q"), a: t("faqTiktok2A") },
   ];
 
   return (
@@ -149,7 +144,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="bg-stroy-500 px-4 py-20 md:py-28" id="home">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="mb-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight md:text-6xl">
-            {t("heroTitle")
+            {t("ytHeroTitle")
               .split("\n")
               .map((line, i, arr) => (
                 <Fragment key={line}>
@@ -158,11 +153,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 </Fragment>
               ))}
             <br />
-            <em className="font-light italic text-white/78">{t("heroSubtitle")}</em>
+            <em className="font-light italic text-white/78">{t("ytHeroSubtitle")}</em>
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/78">
-            {t.rich("heroDesc", {
+            {t.rich("ytHeroDesc", {
               libraryReady: (chunks) => (
                 <strong className="font-semibold text-white">{chunks}</strong>
               ),
@@ -174,13 +169,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </Suspense>
 
           <div className="mt-6 flex flex-wrap justify-center gap-x-7 gap-y-2 text-sm text-white/70">
-            {[t("heroBadge1"), t("heroBadge2"), t("heroBadge3"), t("heroBadge4")].map((badge) => (
-              <span key={badge} className="flex items-center gap-1.5">
-                <Check size={14} className="text-stroy-300" /> {badge}
-              </span>
-            ))}
+            {[t("ytHeroBadge1"), t("ytHeroBadge2"), t("ytHeroBadge3"), t("ytHeroBadge4")].map(
+              (badge) => (
+                <span key={badge} className="flex items-center gap-1.5">
+                  <Check size={14} className="text-stroy-300" /> {badge}
+                </span>
+              ),
+            )}
           </div>
-          <p className="mt-3 text-xs italic text-white/50">{t("heroDisclaimer")}</p>
+          <p className="mt-3 text-xs italic text-white/50">{t("ytHeroDisclaimer")}</p>
         </div>
       </section>
 
@@ -238,7 +235,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             {FORMATS.map((f) => (
               <div
                 key={f.title}
@@ -279,14 +276,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
                   >
                     {t("formatLibraryReadyLearnMore")}
-                  </Link>
-                )}
-                {"learnMore" in f && f.learnMore && (
-                  <Link
-                    href={f.learnMore.href}
-                    className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
-                  >
-                    {f.learnMore.label}
                   </Link>
                 )}
               </div>

@@ -3,14 +3,21 @@
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { yt_validate } from "@/lib/serverUtils";
+import { detectSource } from "@/lib/serverUtils";
 import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
+import { getTikTokInfos } from "./fetchTiktokInfos";
 
 const log = logger.child({ module: "fetch-video-infos" });
 
 export const getVideoInfos = async (url: string) => {
-  if (!yt_validate(url)) {
+  const source = detectSource(url);
+
+  if (source === "tiktok") {
+    return getTikTokInfos(url);
+  }
+
+  if (source !== "youtube") {
     log.warn({ url }, "URL validation failed — not a valid YouTube video URL");
     return { error: "Invalid URL" };
   }

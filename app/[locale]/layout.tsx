@@ -4,6 +4,7 @@ import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
+import { NewsBanner } from "@/components/custom/NewsBanner";
 import { SiteFooter } from "@/components/custom/SiteFooter";
 import { SiteHeader } from "@/components/custom/SiteHeader";
 import { routing } from "@/i18n/routing";
@@ -67,18 +68,16 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: "StroyGetter — Free YouTube Video Downloader",
+      title: tMeta("homeTitle"),
       siteName: "StroyGetter",
-      description:
-        "Download YouTube music as Library Ready MP3 with cover art, ID3 tags and synced lyrics or grab MP4 up to 4K. Free, no signup, no ads.",
+      description: tMeta("homeDesc"),
       url: `${siteConfig.url}/`,
       images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "StroyGetter — Free YouTube Video Downloader",
-      description:
-        "No ads. Unlimited downloads. Download videos at max quality for free — no software required.",
+      title: tMeta("homeTitle"),
+      description: tMeta("homeDesc"),
       images: [`${siteConfig.url}/twitter-image.png`],
     },
     verification: {
@@ -131,6 +130,7 @@ export default async function RootLayout({
       <body className={`${satoshi.variable} font-satoshi antialiased flex min-h-dvh flex-col`}>
         <NextIntlClientProvider messages={messages}>
           <JsonLd data={webAppJsonLd} />
+          <NewsBanner />
           <SiteHeader />
           <main className="flex flex-1 flex-col">{children}</main>
           <SiteFooter />

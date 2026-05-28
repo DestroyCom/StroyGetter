@@ -105,6 +105,24 @@ export function yt_validate(url: string): "video" | false {
   return false;
 }
 
+const tiktok_video_pattern = /^https:\/\/(www\.)?tiktok\.com\/@[\w.]+\/video\/\d+/;
+const tiktok_short_pattern = /^https:\/\/vm\.tiktok\.com\/[\w]+\/?$/;
+// Mobile share-sheet links (e.g. https://www.tiktok.com/t/ZTxxxxxxx/)
+const tiktok_t_pattern = /^https:\/\/(www\.)?tiktok\.com\/t\/[\w]+\/?$/;
+
+export function tiktok_validate(url: string): "video" | false {
+  const u = url.trim();
+  if (tiktok_video_pattern.test(u) || tiktok_short_pattern.test(u) || tiktok_t_pattern.test(u))
+    return "video";
+  return false;
+}
+
+export function detectSource(url: string): "youtube" | "tiktok" | null {
+  if (yt_validate(url)) return "youtube";
+  if (tiktok_validate(url)) return "tiktok";
+  return null;
+}
+
 let _ytdl: ReturnType<typeof createYoutubeDl> | null = null;
 
 export function selectYtDlpPath() {

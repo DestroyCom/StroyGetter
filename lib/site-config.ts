@@ -41,4 +41,10 @@ export const siteConfig = {
 
   /** Umami website ID for stroygetter.fr */
   umamiWebsiteId: process.env.UMAMI_WEBSITE_ID ?? "",
+
+  /** News banner text — non-empty string enables the banner, empty/unset hides it */
+  bannerText: process.env.BANNER_TEXT ?? "",
+
+  /** News banner link — optional relative path (e.g. /tiktok) or absolute URL */
+  bannerHref: process.env.BANNER_HREF ?? "",
 } as const;

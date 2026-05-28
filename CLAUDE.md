@@ -48,7 +48,24 @@ UMAMI_URL=...                         # Self-hosted Umami instance base URL (scr
 UMAMI_WEBSITE_ID=<id>                 # Umami website ID for stroygetter.fr
 EMAIL_DMCA=dmca@...                   # DMCA contact email shown in legal pages
 EMAIL_PRIVACY=privacy@...             # Privacy contact email shown in legal pages
+BANNER_TEXT=...                       # Optional. Non-empty string enables the news banner. Empty or unset = hidden.
+BANNER_HREF=/tiktok                   # Optional. Link for the banner (relative path or absolute URL). Omit for text-only.
 ```
+
+## News Banner
+
+A thin announcement strip rendered above the site header. Fully runtime-controlled — no rebuild required.
+
+**To enable:** set `BANNER_TEXT` in your env/docker-compose and restart the container.
+**To disable:** unset `BANNER_TEXT` (or set it to empty) and restart.
+
+```env
+BANNER_TEXT=NEW: StroyGetter now supports TikTok — free & no watermark →
+BANNER_HREF=/tiktok
+```
+
+`BANNER_HREF` is optional. Accepts a relative path (`/tiktok`) or an absolute URL (e.g. a blog post). Omit for text-only.
+The text is a single string, not per-locale — write it in English or whatever language fits your audience.
 
 ## Key Patterns
 

@@ -2,6 +2,7 @@
   "name": "stroygetter",
   "version": "3.11.0",
   "private": true,
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,6 +13,7 @@
     "knip": "knip",
     "db:deploy": "prisma migrate deploy && prisma generate",
     "test": "vitest run",
+    "test:unit": "vitest run __tests__/lib/",
     "test:watch": "vitest"
   },
   "dependencies": {
