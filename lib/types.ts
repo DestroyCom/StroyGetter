@@ -22,3 +22,19 @@ export const TIKTOK_ITAG = {
 } as const;
 
 export type TikTokItag = (typeof TIKTOK_ITAG)[keyof typeof TIKTOK_ITAG];
+
+export interface TikTokPhotoImage {
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface TikTokPhotoData {
+  type: "photo";
+  images: TikTokPhotoImage[];
+  video_details: {
+    title: string;
+    author: string;
+    thumbnail: string;
+  };
+}
