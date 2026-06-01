@@ -1,21 +1,35 @@
 /**
  * copy-binaries.js — postbuild hook for LOCAL standalone usage only.
  *
- * Copies the yt-dlp binary into .next/server/bin/ so that `pnpm start`
- * (Next.js standalone server run locally, not via Docker) can find it via
- * selectYtDlpPath()'s first candidate: path.join(cwd, '.next/server/bin', …).
+ * Copies yt-dlp and gallery-dl into .next/server/bin/ so that `pnpm start`
+ * can find them via their respective binary resolver modules.
  *
- * NOT needed by Docker: yt-dlp (and similar Python-installed binaries) are
- * installed in the Dockerfile's runner stage via pip3, so they land outside
- * .next/standalone/ and are never copied into the Docker image by this script.
+ * NOT needed by Docker: both binaries are installed via pip3 in the runner stage.
  */
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-const sourcePath = path.resolve("./node_modules/youtube-dl-exec/bin/yt-dlp");
-const destPath = path.resolve("./.next/server/bin/yt-dlp");
+const binDir = path.resolve("./.next/server/bin");
+fs.mkdirSync(binDir, { recursive: true });
 
-fs.mkdirSync(path.dirname(destPath), { recursive: true });
+// ── yt-dlp ──────────────────────────────────────────────────────────────────
+const ytdlpSrc = path.resolve("./node_modules/youtube-dl-exec/bin/yt-dlp");
+const ytdlpDest = path.join(binDir, "yt-dlp");
+fs.copyFileSync(ytdlpSrc, ytdlpDest);
+console.log(`Copied yt-dlp → ${ytdlpDest}`);
 
-fs.copyFileSync(sourcePath, destPath);
-console.log(`Copied ${sourcePath} to ${destPath}`);
+// ── gallery-dl ───────────────────────────────────────────────────────────────
+let galleryDlSrc = null;
+try {
+  galleryDlSrc = execSync("which gallery-dl", { stdio: ["pipe", "pipe", "pipe"] })
+    .toString()
+    .trim();
+} catch {
+  console.warn("gallery-dl not found in PATH — skipping copy. Run: pip3 install gallery-dl");
+}
+if (galleryDlSrc) {
+  const galleryDlDest = path.join(binDir, "gallery-dl");
+  fs.copyFileSync(galleryDlSrc, galleryDlDest);
+  console.log(`Copied gallery-dl → ${galleryDlDest}`);
+}
