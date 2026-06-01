@@ -10,8 +10,10 @@ import { TIKTOK_ITAG } from "@/lib/types";
 
 const TIKTOK_URL = "https://www.tiktok.com/@honor_france/video/7568900679792708896";
 
+const itLocal = it.skipIf(!!process.env.CI);
+
 describe("TikTok fetch integration — real network required", () => {
-  it("getTikTokInfos returns video_details and 3 fixed formats", async () => {
+  itLocal("getTikTokInfos returns video_details and 3 fixed formats", async () => {
     const result = await getTikTokInfos(TIKTOK_URL);
 
     expect(result).not.toHaveProperty("error");
@@ -32,7 +34,7 @@ describe("TikTok fetch integration — real network required", () => {
     expect(itags).toContain(TIKTOK_ITAG.AUDIO);
   }, 30_000);
 
-  it("getVideoInfos routes TikTok URL to getTikTokInfos", async () => {
+  itLocal("getVideoInfos routes TikTok URL to getTikTokInfos", async () => {
     const result = await getVideoInfos(TIKTOK_URL);
 
     expect(result).not.toHaveProperty("error");

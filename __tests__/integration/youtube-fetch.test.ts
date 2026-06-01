@@ -6,6 +6,8 @@
 import { describe, expect, it } from "vitest";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 
+const itLocal = it.skipIf(!!process.env.CI);
+
 const CASES = [
   {
     url: "https://www.youtube.com/watch?v=9ydC2pUQpNQ&list=LL&index=21",
@@ -30,7 +32,7 @@ const CASES = [
 ] as const;
 
 describe("YouTube fetch integration — real network required", () => {
-  it.each(CASES)(
+  itLocal.each(CASES)(
     "resolves '$expectedTitle' from $url",
     async ({ url, expectedTitle, expectedId }) => {
       // 1. Correct video ID extracted
