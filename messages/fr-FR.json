@@ -554,5 +554,12 @@
     "faq4A": "Nous appliquons une limite généreuse (8 Go par défaut) qui couvre toute vidéo TikTok réaliste.",
     "githubTitle": "Open source sur GitHub",
     "githubDesc": "Hébergez vous-même ou contribuez · Licence MIT"
+  },
+  "tiktokPhoto": {
+    "photoCounter": "{current} / {total}",
+    "downloadPhoto": "Télécharger la photo {n}",
+    "downloading": "Téléchargement…",
+    "photoCount": "{count, plural, one {# photo} other {# photos}}",
+    "errorDownload": "Échec du téléchargement. Réessayez."
   }
 }
