@@ -70,7 +70,7 @@ export function sanitizeDownloadTitle(title: string): string {
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "") // strip diacritics before ASCII filter
     .replace(/[^\x20-\x7E]/g, "") // keep printable ASCII only
-    .replace(/[<>:"/\\|?*]/g, "_") // illegal filename chars
+    .replace(/[<>:"/\\|?*#]/g, "_") // illegal filename chars + # (problematic in URLs/tools)
     .replace(/\s+/g, "_") // spaces to underscores
     .replace(/_+/g, "_") // collapse consecutive underscores
     .replace(/^_+|_+$/g, "") // trim leading/trailing underscores
