@@ -16,10 +16,11 @@ import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
 import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { track } from "@/lib/analytics";
-import type { VideoData } from "@/lib/types";
+import type { TikTokPhotoData, VideoData } from "@/lib/types";
 import { TIKTOK_ITAG } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VideoLoading } from "./VideoLoading";
+import { TikTokPhotoSlider } from "./TikTokPhotoSlider";
 
 const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? "";
 
@@ -96,6 +97,7 @@ export const VideoSelect = ({ source }: Props) => {
   const { isDownloading, setIsDownloading } = useDownloadState();
   const [loadProgress, setLoadProgress] = useState(0);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [photoData, setPhotoData] = useState<TikTokPhotoData | null>(null);
 
   useEffect(() => {
     if (!videoUrl) router.push("/");
@@ -105,11 +107,25 @@ export const VideoSelect = ({ source }: Props) => {
     if (!videoUrl) return;
     setError(null);
     setDownloadError(null);
+    setPhotoData(null);
     setIsLoading(true);
     setFmt(defaultFmt);
 
     getVideoInfos(videoUrl)
       .then((value) => {
+        // Photo post — render slider instead of format picker
+        if ("type" in value && value.type === "photo") {
+          setPhotoData(value);
+          setIsLoading(false);
+          track("video_loaded", {
+            source,
+            title: value.video_details.title,
+            author: value.video_details.author,
+            duration_s: 0,
+            format_count: value.images.length,
+          });
+          return;
+        }
         if (value.error) {
           const errorMessage =
             value.error === "AGE_RESTRICTED" ? t("errorAgeRestricted") : value.error;
@@ -189,9 +205,9 @@ export const VideoSelect = ({ source }: Props) => {
       else if (fmt === "library-ready") apiUrl = `/api/download/audio-library-ready?url=${encoded}`;
       else if (fmt === "mp4") apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
       else if (fmt === "tiktok-watermark")
-        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}`;
+        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}&title=${encodeURIComponent(videoData.title)}`;
       else if (fmt === "tiktok-no-watermark")
-        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}`;
+        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}&title=${encodeURIComponent(videoData.title)}`;
       /* tiktok-audio */ else apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
 
       const res = await fetch(apiUrl);
@@ -200,11 +216,13 @@ export const VideoSelect = ({ source }: Props) => {
       setLoadProgress(100);
 
       const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark"].includes(fmt) ? "mp4" : "mp3";
+      const disposition = res.headers.get("content-disposition");
+      const cdFilename = disposition?.match(/filename="([^"]+)"/)?.[1];
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${videoData.title}.${ext}`;
+      a.download = cdFilename ?? `${videoData.title}.${ext}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
@@ -217,6 +235,7 @@ export const VideoSelect = ({ source }: Props) => {
   };
 
   if (isLoading) return <VideoLoading />;
+  if (photoData) return <TikTokPhotoSlider data={photoData} />;
 
   if (error || !videoData) {
     return (

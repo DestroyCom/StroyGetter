@@ -69,7 +69,11 @@ The text is a single string, not per-locale — write it in English or whatever 
 
 ## Key Patterns
 
-**Two ytdl libraries**: `youtubei.js` (via `lib/innertube.ts`) is used for metadata + format list via `getBasicInfo()`. Actual stream downloading uses `youtube-dl-exec` (yt-dlp binary) via `selectYtDlpPath()`. Format parsing is in `lib/ytdlp-info.ts`.
+**Three binaries**: `youtubei.js` (via `lib/innertube.ts`) is used for YouTube metadata + format list. `youtube-dl-exec` (yt-dlp binary, `selectYtDlpPath()`) handles YouTube/TikTok video downloads. `gallery-dl` (`lib/gallery-dl-binary.ts`) handles TikTok photo slideshows. Versions pinned in `.ytdlp-version` and `.gallery-dl-version`.
+
+**TikTok post type detection**: `lib/tiktok-detect.ts` → `detectTiktokType(url)`. Uses URL pattern matching for `/video/` or `/photo/` paths; HTTP HEAD redirect follow for short URLs (`vm.tiktok.com`, `tiktok.com/t/`). Photo posts → `functions/fetchTiktokPhotoInfos.ts` (gallery-dl). Video posts → `functions/fetchTiktokInfos.ts` (yt-dlp).
+
+**TikTok photo download**: Images not cached on disk. `/api/download/tiktok-image` is a stream-through proxy fetching from TikTok CDN at click time. CDN URLs expire ~48h — no caching needed for typical sessions.
 
 **Temp directory structure**: Dev uses `./temp/{source,cached}`, production uses `/temp/stroygetter/{source,cached}`. Created automatically on first request via `initializeConf()`.
 

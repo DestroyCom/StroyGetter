@@ -8,7 +8,7 @@ RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 # ── deps ─────────────────────────────────────────────────────────────────────
 FROM base AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml .ytdlp-version ./
+COPY package.json pnpm-lock.yaml .ytdlp-version .gallery-dl-version ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
@@ -52,6 +52,17 @@ RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
     chmod +x node_modules/youtube-dl-exec/bin/yt-dlp && \
     echo "yt-dlp ready: $(yt-dlp --version)" && \
     rm .ytdlp-version
+
+# ── gallery-dl ───────────────────────────────────────────────────────────────
+COPY .gallery-dl-version .gallery-dl-version
+RUN GALLERY_DL_VERSION=$(cat .gallery-dl-version) && \
+    pip3 install --no-cache-dir --break-system-packages "gallery-dl==${GALLERY_DL_VERSION}" && \
+    mkdir -p .next/server/bin && \
+    cp "$(which gallery-dl)" .next/server/bin/gallery-dl && \
+    chown nextjs:nodejs .next/server/bin/gallery-dl && \
+    chmod +x .next/server/bin/gallery-dl && \
+    echo "gallery-dl ready: $(gallery-dl --version)" && \
+    rm .gallery-dl-version
 
 # ── pino worker-thread dependencies ──────────────────────────────────────────
 # Turbopack (Next.js ≥16.1, PR #86375) writes symlinks for transitive

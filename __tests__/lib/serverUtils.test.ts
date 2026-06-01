@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectSource, sanitizeFilename, tiktok_validate, yt_validate } from "@/lib/serverUtils";
+import { detectSource, sanitizeDownloadTitle, sanitizeFilename, tiktok_validate, yt_validate } from "@/lib/serverUtils";
 
 describe("yt_validate", () => {
   it("returns 'video' for a standard watch URL", () => {
@@ -72,6 +72,14 @@ describe("tiktok_validate", () => {
   it("returns 'video' for a vm.tiktok.com short URL", () => {
     expect(tiktok_validate("https://vm.tiktok.com/ZMkABCDEF/")).toBe("video");
   });
+  it("returns 'video' for a vm.tiktok.com short URL with hyphens", () => {
+    expect(tiktok_validate("https://vm.tiktok.com/ZN92BN73vPy4j-1KTiG/")).toBe("video");
+  });
+  it("returns 'video' for a /photo/ story URL", () => {
+    expect(tiktok_validate("https://www.tiktok.com/@moiramans/photo/7646118320072330518")).toBe(
+      "video"
+    );
+  });
   it("returns false for a YouTube URL", () => {
     expect(tiktok_validate("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe(false);
   });
@@ -101,5 +109,38 @@ describe("detectSource", () => {
   });
   it("returns null for plain text", () => {
     expect(detectSource("rick roll")).toBeNull();
+  });
+});
+
+describe("sanitizeDownloadTitle", () => {
+  it("replaces spaces with underscores", () => {
+    expect(sanitizeDownloadTitle("hello world")).toBe("hello_world");
+  });
+  it("strips emojis", () => {
+    expect(sanitizeDownloadTitle("fire 🔥 test")).toBe("fire_test");
+  });
+  it("strips hashtags", () => {
+    expect(sanitizeDownloadTitle("#photo #dump")).toBe("photo_dump");
+  });
+  it("strips CJK characters", () => {
+    expect(sanitizeDownloadTitle("美食 hello")).toBe("hello");
+  });
+  it("strips Arabic characters", () => {
+    expect(sanitizeDownloadTitle("مرحبا hello")).toBe("hello");
+  });
+  it("converts diacritics to ASCII before stripping", () => {
+    expect(sanitizeDownloadTitle("café résumé")).toBe("cafe_resume");
+  });
+  it("collapses consecutive underscores", () => {
+    expect(sanitizeDownloadTitle("a  ##  b")).toBe("a_b");
+  });
+  it("trims leading and trailing underscores", () => {
+    expect(sanitizeDownloadTitle("  hello  ")).toBe("hello");
+  });
+  it("returns empty string for fully non-ASCII input", () => {
+    expect(sanitizeDownloadTitle("美食分享🔥")).toBe("");
+  });
+  it("caps output at 80 characters", () => {
+    expect(sanitizeDownloadTitle("a".repeat(100))).toHaveLength(80);
   });
 });

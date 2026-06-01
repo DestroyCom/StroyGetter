@@ -554,5 +554,12 @@
     "faq4A": "Aplicamos un límite generoso (8 GB por defecto) que cubre cualquier video de TikTok.",
     "githubTitle": "Código abierto en GitHub",
     "githubDesc": "Aloja tú mismo o contribuye · Licencia MIT"
+  },
+  "tiktokPhoto": {
+    "photoCounter": "{current} / {total}",
+    "downloadPhoto": "Descargar foto {n}",
+    "downloading": "Descargando…",
+    "photoCount": "{count, plural, one {# foto} other {# fotos}}",
+    "errorDownload": "Error al descargar. Inténtalo de nuevo."
   }
 }

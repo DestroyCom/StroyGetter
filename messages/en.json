@@ -554,5 +554,12 @@
     "faq4A": "We apply a generous limit (8 GB by default) which covers any realistic TikTok video. If you hit it, the download will fail with an error.",
     "githubTitle": "Open source on GitHub",
     "githubDesc": "Self-host or contribute · MIT licensed"
+  },
+  "tiktokPhoto": {
+    "photoCounter": "{current} / {total}",
+    "downloadPhoto": "Download photo {n}",
+    "downloading": "Downloading…",
+    "photoCount": "{count, plural, one {# photo} other {# photos}}",
+    "errorDownload": "Download failed. Try again."
   }
 }
