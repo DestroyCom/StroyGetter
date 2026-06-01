@@ -3,9 +3,11 @@
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { selectYtDlpPath, tiktok_validate } from "@/lib/serverUtils";
-import type { FormatData, VideoData } from "@/lib/types";
+import { detectTiktokType } from "@/lib/tiktok-detect";
+import type { FormatData, TikTokPhotoData, VideoData } from "@/lib/types";
 import { TIKTOK_ITAG } from "@/lib/types";
 import { getCookiesOpt } from "@/lib/ytdlp-cookies";
+import { getTikTokPhotoInfos } from "./fetchTiktokPhotoInfos";
 
 const log = logger.child({ module: "fetch-tiktok-infos" });
 
@@ -22,10 +24,18 @@ type YtDlpDump = {
   thumbnail?: string;
 };
 
-export const getTikTokInfos = async (url: string) => {
+export const getTikTokInfos = async (
+  url: string
+): Promise<VideoData | TikTokPhotoData | { error: string }> => {
   if (!tiktok_validate(url)) {
     log.warn({ url }, "URL validation failed — not a valid TikTok URL");
     return { error: "Invalid URL" };
+  }
+
+  // Detect post type before choosing the fetch path
+  const postType = await detectTiktokType(url);
+  if (postType === "photo") {
+    return getTikTokPhotoInfos(url);
   }
 
   log.info({ url }, "Fetching TikTok video info");
@@ -64,7 +74,6 @@ export const getTikTokInfos = async (url: string) => {
     "TikTok info fetched successfully"
   );
 
-  // Upsert video in DB for tracking (non-fatal)
   try {
     const existing = await prisma.video.findUnique({ where: { url } });
     if (!existing) {

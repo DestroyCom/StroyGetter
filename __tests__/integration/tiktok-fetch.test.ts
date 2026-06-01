@@ -16,6 +16,7 @@ describe("TikTok fetch integration — real network required", () => {
 
     expect(result).not.toHaveProperty("error");
     if ("error" in result) throw new Error(result.error);
+    if (!("format" in result)) throw new Error("Expected VideoData but got TikTokPhotoData");
 
     // Video details
     expect(result.video_details.title).toBeTruthy();
