@@ -49,6 +49,7 @@ export async function GET(request: Request) {
     try {
       upstream = await fetch(imageUrl, {
         headers: { Referer: "https://www.tiktok.com/" },
+        redirect: "error",
         signal: AbortSignal.timeout(15_000),
       });
     } catch (err) {
