@@ -45,11 +45,13 @@ export function TikTokPhotoSlider({ data }: Props) {
       );
       if (!res.ok) throw new Error("Download failed");
 
+      const disposition = res.headers.get("content-disposition");
+      const cdFilename = disposition?.match(/filename="([^"]+)"/)?.[1];
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${data.video_details.title || "tiktok-photo"}-${index}.jpg`;
+      a.download = cdFilename ?? `tiktok-photo-${index}.jpg`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 

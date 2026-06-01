@@ -13,10 +13,12 @@ export function getGalleryDlBinaryPath(): string {
   if (!_bin) {
     // Dev fallback: resolve from PATH
     try {
-      const which = execSync("which gallery-dl", { stdio: ["pipe", "pipe", "pipe"] })
+      const detectCommand = process.platform === "win32" ? "where gallery-dl" : "which gallery-dl";
+      const resolved = execSync(detectCommand, { stdio: ["pipe", "pipe", "pipe"] })
         .toString()
+        .split(/\r?\n/)[0]
         .trim();
-      if (which && fs.existsSync(which)) _bin = which;
+      if (resolved && fs.existsSync(resolved)) _bin = resolved;
     } catch {}
   }
 

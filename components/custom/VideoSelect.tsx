@@ -107,6 +107,7 @@ export const VideoSelect = ({ source }: Props) => {
     if (!videoUrl) return;
     setError(null);
     setDownloadError(null);
+    setPhotoData(null);
     setIsLoading(true);
     setFmt(defaultFmt);
 
@@ -215,11 +216,13 @@ export const VideoSelect = ({ source }: Props) => {
       setLoadProgress(100);
 
       const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark"].includes(fmt) ? "mp4" : "mp3";
+      const disposition = res.headers.get("content-disposition");
+      const cdFilename = disposition?.match(/filename="([^"]+)"/)?.[1];
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${videoData.title}.${ext}`;
+      a.download = cdFilename ?? `${videoData.title}.${ext}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {

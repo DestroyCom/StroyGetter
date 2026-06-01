@@ -31,7 +31,8 @@ export async function GET(request: Request) {
 
     const params = new URL(request.url).searchParams;
     const imageUrl = params.get("url");
-    const index = params.get("index") ?? "1";
+    const indexRaw = params.get("index");
+    const index = indexRaw && /^\d+$/.test(indexRaw) ? indexRaw : "1";
 
     if (!imageUrl) {
       log.warn("Missing url parameter");
@@ -63,10 +64,11 @@ export async function GET(request: Request) {
     }
 
     const contentLength = upstream.headers.get("content-length");
+    const contentType = upstream.headers.get("content-type") ?? "image/jpeg";
 
     return new Response(upstream.body, {
       headers: {
-        "Content-Type": "image/jpeg",
+        "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="tiktok-photo-${index}.jpg"`,
         ...(contentLength ? { "Content-Length": contentLength } : {}),
       },

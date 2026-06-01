@@ -33,8 +33,12 @@ function runGalleryDlDumpJson(url: string): Promise<GalleryDlItem[]> {
     proc.on("close", (code) => {
       clearTimeout(timeout);
       const stdout = Buffer.concat(stdoutChunks).toString().trim();
+      const stderr = Buffer.concat(stderrChunks).toString().trim();
+      if (code !== 0) {
+        reject(new Error(stderr || `gallery-dl exited with code ${code}`));
+        return;
+      }
       if (!stdout) {
-        const stderr = Buffer.concat(stderrChunks).toString().trim();
         reject(new Error(stderr || "No output from gallery-dl"));
         return;
       }
