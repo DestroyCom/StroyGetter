@@ -149,8 +149,16 @@ export async function GET(request: Request) {
     const outputPath = path.join(TEMP_DIR, "cached", cachedName);
     const cacheKey = `${url}:${qualityLabel}`;
 
-    // Extract a display title from the URL (best effort)
-    const title = `TikTok Video`;
+    // Build download filename: @handle-title-videoId.mp4
+    const handleMatch = url.match(/tiktok\.com\/@([\w.]+)\/(?:video|photo)\//);
+    const handle = handleMatch ? `@${handleMatch[1]}` : null;
+    const videoId = url.match(/\/(?:video|photo)\/(\d+)/)?.[1] ?? null;
+    const titleParam = params.get("title");
+    const titlePart = titleParam ? sanitizeFilename(titleParam).slice(0, 80) : null;
+    const downloadFilename = [handle, titlePart, videoId].filter(Boolean).join("-") || "TikTok_Video";
+
+    // Keep the internal cache title simple
+    const title = titleParam ?? "TikTok Video";
 
     const resolveFilePath = async (): Promise<string> => {
       // Check DB cache first
@@ -231,7 +239,7 @@ export async function GET(request: Request) {
       return new NextResponse(stream as any, {
         headers: {
           "Content-Type": "video/mp4",
-          "Content-Disposition": buildContentDisposition(title, "mp4"),
+          "Content-Disposition": buildContentDisposition(downloadFilename, "mp4"),
         },
       });
     } catch (err) {

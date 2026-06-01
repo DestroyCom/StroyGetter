@@ -204,9 +204,9 @@ export const VideoSelect = ({ source }: Props) => {
       else if (fmt === "library-ready") apiUrl = `/api/download/audio-library-ready?url=${encoded}`;
       else if (fmt === "mp4") apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
       else if (fmt === "tiktok-watermark")
-        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}`;
+        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}&title=${encodeURIComponent(videoData.title)}`;
       else if (fmt === "tiktok-no-watermark")
-        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}`;
+        apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}&title=${encodeURIComponent(videoData.title)}`;
       /* tiktok-audio */ else apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
 
       const res = await fetch(apiUrl);
