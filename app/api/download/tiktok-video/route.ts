@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
-import { sanitizeFilename, tiktok_validate } from "@/lib/serverUtils";
+import { sanitizeDownloadTitle, sanitizeFilename, tiktok_validate } from "@/lib/serverUtils";
 import { TIKTOK_ITAG } from "@/lib/types";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
@@ -154,7 +154,7 @@ export async function GET(request: Request) {
     const handle = handleMatch ? `@${handleMatch[1]}` : null;
     const videoId = url.match(/\/(?:video|photo)\/(\d+)/)?.[1] ?? null;
     const titleParam = params.get("title");
-    const titlePart = titleParam ? sanitizeFilename(titleParam).slice(0, 80) : null;
+    const titlePart = titleParam ? sanitizeDownloadTitle(titleParam) : null;
     const downloadFilename = [handle, titlePart, videoId].filter(Boolean).join("-") || "TikTok_Video";
 
     // Keep the internal cache title simple

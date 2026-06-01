@@ -63,6 +63,20 @@ async function locateFfmpegPath(): Promise<string> {
   throw new Error("FFmpeg not found in PATH and ffmpeg-static unavailable");
 }
 
+// Strips non-ASCII (emojis, CJK, Arabic, etc.) for maximum cross-platform
+// download filename compatibility. Use for user-visible titles, not cache keys.
+export function sanitizeDownloadTitle(title: string): string {
+  return title
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // strip diacritics before ASCII filter
+    .replace(/[^\x20-\x7E]/g, "") // keep printable ASCII only
+    .replace(/[<>:"/\\|?*]/g, "_") // illegal filename chars
+    .replace(/\s+/g, "_") // spaces to underscores
+    .replace(/_+/g, "_") // collapse consecutive underscores
+    .replace(/^_+|_+$/g, "") // trim leading/trailing underscores
+    .slice(0, 80);
+}
+
 export function sanitizeFilename(filename: string) {
   return (
     filename
@@ -105,8 +119,8 @@ export function yt_validate(url: string): "video" | false {
   return false;
 }
 
-const tiktok_video_pattern = /^https:\/\/(www\.)?tiktok\.com\/@[\w.]+\/video\/\d+/;
-const tiktok_short_pattern = /^https:\/\/vm\.tiktok\.com\/[\w]+\/?$/;
+const tiktok_video_pattern = /^https:\/\/(www\.)?tiktok\.com\/@[\w.]+\/(video|photo)\/\d+/;
+const tiktok_short_pattern = /^https:\/\/vm\.tiktok\.com\/[\w-]+\/?$/;
 // Mobile share-sheet links (e.g. https://www.tiktok.com/t/ZTxxxxxxx/)
 const tiktok_t_pattern = /^https:\/\/(www\.)?tiktok\.com\/t\/[\w]+\/?$/;
 
