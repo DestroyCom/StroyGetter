@@ -10,8 +10,9 @@ const TIKTOK_CDN_HOSTNAMES = [
 
 function isTiktokCdnUrl(url: string): boolean {
   try {
-    const hostname = new URL(url).hostname;
-    return TIKTOK_CDN_HOSTNAMES.some((suffix) => hostname.endsWith(suffix));
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") return false;
+    return TIKTOK_CDN_HOSTNAMES.some((suffix) => parsed.hostname.endsWith(suffix));
   } catch {
     return false;
   }

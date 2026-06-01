@@ -7,7 +7,7 @@ import type { TikTokPhotoData } from "@/lib/types";
 
 const log = logger.child({ module: "fetch-tiktok-photo-infos" });
 
-type GalleryDlItem = [number, unknown];
+type GalleryDlItem = [number, unknown, ...unknown[]];
 
 function runGalleryDlDumpJson(url: string): Promise<GalleryDlItem[]> {
   return new Promise((resolve, reject) => {
@@ -47,13 +47,26 @@ function runGalleryDlDumpJson(url: string): Promise<GalleryDlItem[]> {
   });
 }
 
+async function resolveItems(url: string): Promise<GalleryDlItem[]> {
+  const items = await runGalleryDlDumpJson(url);
+  // Type-6 item = URL redirect (short URLs like vm.tiktok.com resolve to canonical)
+  const redirect = items.find(
+    (item): item is [6, string, unknown] =>
+      Array.isArray(item) && item[0] === 6 && typeof item[1] === "string"
+  );
+  if (redirect) {
+    return runGalleryDlDumpJson(redirect[1]);
+  }
+  return items;
+}
+
 export async function getTikTokPhotoInfos(url: string): Promise<TikTokPhotoData | { error: string }> {
   log.info({ url }, "Fetching TikTok photo post via gallery-dl");
   const startTime = Date.now();
 
   let items: GalleryDlItem[];
   try {
-    items = await runGalleryDlDumpJson(url);
+    items = await resolveItems(url);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "gallery-dl failed";
     log.error({ url, err, durationMs: Date.now() - startTime }, `gallery-dl error: ${msg}`);
