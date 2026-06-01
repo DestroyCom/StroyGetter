@@ -16,10 +16,11 @@ import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
 import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { track } from "@/lib/analytics";
-import type { VideoData } from "@/lib/types";
+import type { TikTokPhotoData, VideoData } from "@/lib/types";
 import { TIKTOK_ITAG } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VideoLoading } from "./VideoLoading";
+import { TikTokPhotoSlider } from "./TikTokPhotoSlider";
 
 const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? "";
 
@@ -96,6 +97,7 @@ export const VideoSelect = ({ source }: Props) => {
   const { isDownloading, setIsDownloading } = useDownloadState();
   const [loadProgress, setLoadProgress] = useState(0);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [photoData, setPhotoData] = useState<TikTokPhotoData | null>(null);
 
   useEffect(() => {
     if (!videoUrl) router.push("/");
@@ -110,6 +112,19 @@ export const VideoSelect = ({ source }: Props) => {
 
     getVideoInfos(videoUrl)
       .then((value) => {
+        // Photo post — render slider instead of format picker
+        if ("type" in value && value.type === "photo") {
+          setPhotoData(value);
+          setIsLoading(false);
+          track("video_loaded", {
+            source,
+            title: value.video_details.title,
+            author: value.video_details.author,
+            duration_s: 0,
+            format_count: value.images.length,
+          });
+          return;
+        }
         if (value.error) {
           const errorMessage =
             value.error === "AGE_RESTRICTED" ? t("errorAgeRestricted") : value.error;
@@ -217,6 +232,7 @@ export const VideoSelect = ({ source }: Props) => {
   };
 
   if (isLoading) return <VideoLoading />;
+  if (photoData) return <TikTokPhotoSlider data={photoData} />;
 
   if (error || !videoData) {
     return (
