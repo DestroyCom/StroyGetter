@@ -131,9 +131,25 @@ export function tiktok_validate(url: string): "video" | false {
   return false;
 }
 
-export function detectSource(url: string): "youtube" | "tiktok" | null {
+const twitch_vod_pattern = /^https:\/\/(www\.)?twitch\.tv\/videos\/\d+/;
+const twitch_clip_channel_pattern = /^https:\/\/(www\.)?twitch\.tv\/[\w]+\/clip\/[\w-]+/;
+const twitch_clip_short_pattern = /^https:\/\/clips\.twitch\.tv\/[\w-]+/;
+
+export function twitch_validate(url: string): "video" | false {
+  const u = url.trim();
+  if (
+    twitch_vod_pattern.test(u) ||
+    twitch_clip_channel_pattern.test(u) ||
+    twitch_clip_short_pattern.test(u)
+  )
+    return "video";
+  return false;
+}
+
+export function detectSource(url: string): "youtube" | "tiktok" | "twitch" | null {
   if (yt_validate(url)) return "youtube";
   if (tiktok_validate(url)) return "tiktok";
+  if (twitch_validate(url)) return "twitch";
   return null;
 }
 

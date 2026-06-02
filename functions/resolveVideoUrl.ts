@@ -13,7 +13,7 @@ export const resolveVideoUrl = async (query: string): Promise<string> => {
   const trimmed = query.trim();
 
   const source = detectSource(trimmed);
-  if (source === "youtube" || source === "tiktok") return trimmed;
+  if (source === "youtube" || source === "tiktok" || source === "twitch") return trimmed;
 
   // Fall back to YouTube search
   const innertube = await getInnertube();

@@ -1,6 +1,7 @@
 export interface FormatData {
   itag: number;
   qualityLabel: string;
+  formatId?: string; // e.g. "720p60", "1080p60__source" — Twitch format_id strings
 }
 
 export interface VideoData {
@@ -22,6 +23,12 @@ export const TIKTOK_ITAG = {
 } as const;
 
 export type TikTokItag = (typeof TIKTOK_ITAG)[keyof typeof TIKTOK_ITAG];
+
+export const TWITCH_ITAG = {
+  AUDIO: 401,
+} as const;
+
+export type TwitchItag = (typeof TWITCH_ITAG)[keyof typeof TWITCH_ITAG];
 
 export interface TikTokPhotoImage {
   url: string;
