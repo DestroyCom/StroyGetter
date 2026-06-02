@@ -14,6 +14,42 @@ export type UpdateEntry = {
 
 export const updates: UpdateEntry[] = [
   {
+    slug: "v3-13-0-twitch-downloader",
+    title: "Download Twitch VODs and clips — free, no app required",
+    date: "2026-05-29",
+    description:
+      "StroyGetter now supports Twitch. Download VODs at source quality or any resolution, grab clips, or extract audio as MP3 — same interface you already know.",
+    keywords: [
+      "twitch vod downloader",
+      "download twitch clip",
+      "twitch to mp4",
+      "twitch vod download online",
+      "twitch clip downloader",
+      "stroygetter twitch",
+      "télécharger vod twitch",
+      "descargar vod twitch",
+      "baixar vod twitch",
+    ],
+    sections: [
+      {
+        heading: "Paste a Twitch VOD or clip URL. Get the file.",
+        body: "StroyGetter now accepts Twitch URLs alongside YouTube and TikTok links. Paste any public Twitch VOD (twitch.tv/videos/...) or clip URL (clips.twitch.tv/... or twitch.tv/channel/clip/...) and you'll see the available resolutions and an audio option. No app to install, no account to create — same interface as always.",
+      },
+      {
+        heading: "Source quality, 720p60, 480p — your choice",
+        body: "Twitch stores VODs at multiple resolutions. The quality picker shows every option yt-dlp can find for that VOD: source quality (the original broadcast, typically 1080p60), 720p60, 480p, 360p, and 160p. Clips may have fewer options. Pick the resolution that fits your storage or bandwidth.",
+      },
+      {
+        heading: "Audio-only MP3 from Twitch streams",
+        body: "The Audio MP3 option strips the video track and exports just the audio at 192 kbps. Useful for podcast-style streams, talk shows, and music streams you want to carry around without the video.",
+      },
+      {
+        heading: "A dedicated Twitch page",
+        body: "We added /twitch as a standalone landing page for anyone searching specifically for a Twitch VOD or clip downloader. It covers how the tool works, which formats are available, and answers the most common questions — including what VODs and clips are, why some VODs are unavailable, and how many quality options to expect.",
+      },
+    ],
+  },
+  {
     slug: "v3-11-0-tiktok-downloader",
     title: "Download TikTok videos — no watermark, no app required",
     date: "2026-05-27",

@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...localeEntries("", new Date(), "monthly", 1),
     ...localeEntries("/tiktok", new Date(), "monthly", 0.9),
     ...localeEntries("/youtube", new Date(), "monthly", 0.9),
+    ...localeEntries("/twitch", new Date(), "monthly", 0.9),
     ...localeEntries("/library-ready", new Date("2026-05-20"), "monthly", 0.9),
     ...localeEntries("/how-to-use-library-ready", new Date("2026-05-20"), "monthly", 0.7),
     ...localeEntries("/how-to-download-youtube-videos", new Date("2026-05-11"), "monthly", 0.8),
