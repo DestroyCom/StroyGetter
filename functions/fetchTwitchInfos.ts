@@ -52,7 +52,7 @@ export const getTwitchInfos = async (url: string): Promise<VideoData | { error: 
     .sort((a, b) => (b.height ?? 0) - (a.height ?? 0))
     .map((f, i) => ({
       itag: TWITCH_ITAG.VIDEO_BASE + i,
-      qualityLabel: `${f.height}p${(f.fps ?? 0) > 30 ? ` ${f.fps}fps` : ""}`,
+      qualityLabel: `${f.height}p${(f.fps ?? 0) > 30 ? ` ${Math.round(f.fps ?? 0)}fps` : ""}`,
       formatId: f.format_id,
     }));
 
