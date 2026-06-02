@@ -195,7 +195,17 @@
     "eduCardTiktok2Title": "No quality picker?",
     "eduCardTiktok2Desc": "TikTok only publishes one video resolution per clip. yt-dlp picks the best available automatically — there's nothing to choose.",
     "eduCardTiktok3Title": "Video vs Audio on TikTok",
-    "eduCardTiktok3Desc": "No watermark and Watermark give you the full MP4 video. Audio strips the sound track and exports it as a plain MP3."
+    "eduCardTiktok3Desc": "No watermark and Watermark give you the full MP4 video. Audio strips the sound track and exports it as a plain MP3.",
+    "formatTwitchVideo": "Video",
+    "formatTwitchVideoSub": "MP4 · source quality",
+    "formatTwitchAudio": "Audio MP3",
+    "formatTwitchAudioSub": "MP3 · 192 kbps",
+    "eduCardTwitch1Title": "VOD vs clip — what's the difference?",
+    "eduCardTwitch1Desc": "VODs are full stream recordings saved to a channel's Past Broadcasts. Clips are short highlights (up to 60s) that anyone can create from a live stream.",
+    "eduCardTwitch2Title": "Quality picker explained",
+    "eduCardTwitch2Desc": "Twitch stores multiple resolutions for each VOD. Source quality is the original broadcast resolution, typically 1080p60. Pick the highest your device can handle.",
+    "eduCardTwitch3Title": "Audio only",
+    "eduCardTwitch3Desc": "Audio MP3 strips the video track and exports the stream audio as a 192 kbps MP3 — useful for podcasts, music streams, or just listening on the go."
   },
   "footer": {
     "tagline": "Free, open-source YouTube & TikTok downloader. No signup, no ads, no installs. Download MP4 video or MP3 audio directly from your browser.",

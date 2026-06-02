@@ -26,10 +26,11 @@ const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? 
 
 type YoutubeFmt = "mp4" | "mp3" | "library-ready";
 type TikTokFmt = "tiktok-watermark" | "tiktok-no-watermark" | "tiktok-audio";
-type Fmt = YoutubeFmt | TikTokFmt;
+type TwitchFmt = "twitch-video" | "twitch-audio";
+type Fmt = YoutubeFmt | TikTokFmt | TwitchFmt;
 
 interface Props {
-  source: "youtube" | "tiktok";
+  source: "youtube" | "tiktok" | "twitch";
 }
 
 export const VideoSelect = ({ source }: Props) => {
@@ -70,7 +71,12 @@ export const VideoSelect = ({ source }: Props) => {
     },
   ];
 
-  const FORMAT_TABS = source === "tiktok" ? TIKTOK_TABS : YOUTUBE_TABS;
+  const TWITCH_TABS: { id: TwitchFmt; label: string; sub: string; Icon: typeof Film }[] = [
+    { id: "twitch-video", label: t("formatTwitchVideo"), sub: t("formatTwitchVideoSub"), Icon: Film },
+    { id: "twitch-audio", label: t("formatTwitchAudio"), sub: t("formatTwitchAudioSub"), Icon: Music },
+  ];
+
+  const FORMAT_TABS = source === "tiktok" ? TIKTOK_TABS : source === "twitch" ? TWITCH_TABS : YOUTUBE_TABS;
 
   const EDU_CARDS =
     source === "tiktok"
@@ -79,13 +85,19 @@ export const VideoSelect = ({ source }: Props) => {
           { title: t("eduCardTiktok2Title"), desc: t("eduCardTiktok2Desc") },
           { title: t("eduCardTiktok3Title"), desc: t("eduCardTiktok3Desc") },
         ]
+      : source === "twitch"
+      ? [
+          { title: t("eduCardTwitch1Title"), desc: t("eduCardTwitch1Desc") },
+          { title: t("eduCardTwitch2Title"), desc: t("eduCardTwitch2Desc") },
+          { title: t("eduCardTwitch3Title"), desc: t("eduCardTwitch3Desc") },
+        ]
       : [
           { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
           { title: t("eduCard2Title"), desc: t("eduCard2Desc") },
           { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
         ];
 
-  const defaultFmt: Fmt = source === "tiktok" ? "tiktok-no-watermark" : "library-ready";
+  const defaultFmt: Fmt = source === "tiktok" ? "tiktok-no-watermark" : source === "twitch" ? "twitch-video" : "library-ready";
 
   const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
@@ -138,6 +150,9 @@ export const VideoSelect = ({ source }: Props) => {
         setFormats(value.format);
         if (source === "youtube" && value.format?.[0]?.itag) {
           setSelectedItag(value.format[0].itag.toString());
+        }
+        if (source === "twitch" && value.format?.[0]?.formatId) {
+          setSelectedItag(value.format[0].formatId);
         }
         setIsLoading(false);
         track("video_loaded", {
@@ -208,6 +223,10 @@ export const VideoSelect = ({ source }: Props) => {
         apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.WATERMARK}&title=${encodeURIComponent(videoData.title)}`;
       else if (fmt === "tiktok-no-watermark")
         apiUrl = `/api/download/tiktok-video?url=${encoded}&quality=${TIKTOK_ITAG.NO_WATERMARK}&title=${encodeURIComponent(videoData.title)}`;
+      else if (fmt === "twitch-video")
+        apiUrl = `/api/download/twitch-video?url=${encoded}&quality=${encodeURIComponent(selectedItag)}&title=${encodeURIComponent(videoData.title)}`;
+      else if (fmt === "twitch-audio")
+        apiUrl = `/api/download/twitch-audio?url=${encoded}&title=${encodeURIComponent(videoData.title)}`;
       /* tiktok-audio */ else apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
 
       const res = await fetch(apiUrl);
@@ -215,7 +234,7 @@ export const VideoSelect = ({ source }: Props) => {
 
       setLoadProgress(100);
 
-      const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark"].includes(fmt) ? "mp4" : "mp3";
+      const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark", "twitch-video"].includes(fmt) ? "mp4" : "mp3";
       const disposition = res.headers.get("content-disposition");
       const cdFilename = disposition?.match(/filename="([^"]+)"/)?.[1];
       const blob = await res.blob();
@@ -344,6 +363,37 @@ export const VideoSelect = ({ source }: Props) => {
                     .filter((f) => f.qualityLabel && f.itag)
                     .map((f) => (
                       <SelectItem key={f.itag} value={f.itag.toString()}>
+                        {f.qualityLabel}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Twitch quality selector */}
+          {fmt === "twitch-video" && source === "twitch" && formats && formats.length > 0 && (
+            <div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">
+                {t("videoQuality")}
+              </p>
+              <Select
+                value={selectedItag}
+                onValueChange={(value) => {
+                  const label = formats?.find((f) => f.formatId === value)?.qualityLabel ?? value;
+                  track("quality_changed", { quality_label: label });
+                  setSelectedItag(value);
+                }}
+                disabled={isDownloading}
+              >
+                <SelectTrigger className="w-full border-white/10 bg-stroy-950 text-white">
+                  <SelectValue placeholder={t("selectQuality")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {formats
+                    .filter((f) => f.qualityLabel && f.formatId)
+                    .map((f) => (
+                      <SelectItem key={f.formatId} value={f.formatId ?? ""}>
                         {f.qualityLabel}
                       </SelectItem>
                     ))}
