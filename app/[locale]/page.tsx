@@ -104,6 +104,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       badge: undefined,
       learnMore: { href: "/tiktok" as const, label: t("formatTiktokLearnMore") },
     },
+    {
+      Icon: Film,
+      title: t("formatTwitchTitle"),
+      meta: t("formatTwitchMeta"),
+      desc: t("formatTwitchDesc"),
+      features: [t("formatTwitchFeature1"), t("formatTwitchFeature2"), t("formatTwitchFeature3")],
+      featured: false,
+      badge: t("formatTwitchBadge"),
+      learnMore: { href: "/twitch" as const, label: t("formatTwitchLearnMore") },
+    },
   ];
 
   const FAQS = [
@@ -238,7 +248,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {FORMATS.map((f) => (
               <div
                 key={f.title}
