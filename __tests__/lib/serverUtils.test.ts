@@ -95,8 +95,8 @@ describe("twitch_validate", () => {
   it("returns 'video' for a VOD URL", () => {
     expect(twitch_validate("https://www.twitch.tv/videos/1234567890")).toBe("video");
   });
-  it("returns 'video' for a VOD URL with www", () => {
-    expect(twitch_validate("https://www.twitch.tv/videos/1234567890")).toBe("video");
+  it("returns 'video' for a VOD URL without www", () => {
+    expect(twitch_validate("https://twitch.tv/videos/1234567890")).toBe("video");
   });
   it("returns 'video' for a channel clip URL", () => {
     expect(twitch_validate("https://www.twitch.tv/clip5k/clip/SullenDeliciousLorisWow-u-SUuTpMLb1b8IZe")).toBe("video");
