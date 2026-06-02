@@ -30,10 +30,13 @@ export async function generateMetadata({
     openGraph: {
       title: t("tiktokTitle"),
       description: t("tiktokDesc"),
+      images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     },
     twitter: {
+      card: "summary_large_image",
       title: t("tiktokTitle"),
       description: t("tiktokDesc"),
+      images: ["/og-image.png"],
     },
   };
 }

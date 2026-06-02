@@ -31,10 +31,13 @@ export async function generateMetadata({
     openGraph: {
       title: t("youtubeTitle"),
       description: t("youtubeDesc"),
+      images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     },
     twitter: {
+      card: "summary_large_image",
       title: t("youtubeTitle"),
       description: t("youtubeDesc"),
+      images: ["/og-image.png"],
     },
   };
 }
