@@ -10,9 +10,10 @@ import { sanitizeDownloadTitle, twitch_validate } from "@/lib/serverUtils";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
 
-// Prefer a pure audio stream if available; fall back to best muxed stream with audio.
-// No [format_id!=download] guard needed — that's TikTok-specific.
-const TWITCH_AUDIO_FORMAT = "bestaudio[acodec!=none]/best[acodec!=none]";
+// Twitch clips only expose muxed streams (acodec reported as "unknown" by yt-dlp).
+// bestaudio/best is the universal selector: picks a pure audio stream if one exists,
+// otherwise falls back to the best muxed stream. ffmpeg then extracts audio.
+const TWITCH_AUDIO_FORMAT = "bestaudio/best";
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 

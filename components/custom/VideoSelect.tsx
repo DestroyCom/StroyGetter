@@ -140,7 +140,11 @@ export const VideoSelect = ({ source }: Props) => {
         }
         if (value.error) {
           const errorMessage =
-            value.error === "AGE_RESTRICTED" ? t("errorAgeRestricted") : value.error;
+            value.error === "AGE_RESTRICTED"
+              ? t("errorAgeRestricted")
+              : value.error === "TWITCH_VOD_DISABLED"
+                ? t("errorTwitchVodDisabled")
+                : value.error;
           track("error_displayed", { type: "video_load_error", message: value.error });
           setError(errorMessage);
           setIsLoading(false);

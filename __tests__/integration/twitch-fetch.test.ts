@@ -17,7 +17,7 @@ describe("Twitch fetch integration — real network required", () => {
   itLocal("getTwitchInfos returns video_details and dynamic formats for a clip", async () => {
     const result = await getTwitchInfos(CLIP_URL);
 
-    expect(result).not.toHaveProperty("error");
+    if ("error" in result) throw new Error(`Unexpected error: ${result.error}`);
 
     // video_details
     expect(result.video_details.title).toBeTruthy();
@@ -44,7 +44,7 @@ describe("Twitch fetch integration — real network required", () => {
   itLocal("getVideoInfos routes Twitch clip URL to getTwitchInfos", async () => {
     const result = await getVideoInfos(CLIP_URL);
 
-    expect(result).not.toHaveProperty("error");
+    if ("error" in result) throw new Error(`Unexpected error: ${result.error}`);
     expect(result.format.length).toBeGreaterThan(0);
     // All formats have formatId (Twitch-specific field)
     for (const f of result.format) {

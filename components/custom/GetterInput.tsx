@@ -42,9 +42,10 @@ export const GetterInput = () => {
     try {
       const resolvedUrl = await resolveVideoUrl(value);
       router.push(`/fetch?videoUrl=${resolvedUrl}`);
-    } catch {
+    } catch (err) {
       track("search_error", { query: value });
-      setError(t("errorNotFound"));
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg === "TWITCH_VOD_DISABLED" ? t("errorTwitchVodDisabled") : t("errorNotFound"));
       setIsLoading(false);
     }
   };
