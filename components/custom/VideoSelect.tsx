@@ -198,6 +198,8 @@ export const VideoSelect = ({ source }: Props) => {
     const quality =
       fmt === "mp4"
         ? (formats?.find((f) => f.itag.toString() === selectedItag)?.qualityLabel ?? selectedItag)
+        : fmt === "twitch-video"
+        ? (formats?.find((f) => f.formatId === selectedItag)?.qualityLabel ?? selectedItag)
         : fmt;
 
     track("download_started", {
@@ -227,7 +229,7 @@ export const VideoSelect = ({ source }: Props) => {
         apiUrl = `/api/download/twitch-video?url=${encoded}&quality=${encodeURIComponent(selectedItag)}&title=${encodeURIComponent(videoData.title)}`;
       else if (fmt === "twitch-audio")
         apiUrl = `/api/download/twitch-audio?url=${encoded}&title=${encodeURIComponent(videoData.title)}`;
-      /* tiktok-audio */ else apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
+      else apiUrl = `/api/download/tiktok-audio?url=${encoded}`;
 
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("Download failed");
@@ -372,7 +374,7 @@ export const VideoSelect = ({ source }: Props) => {
           )}
 
           {/* Twitch quality selector */}
-          {fmt === "twitch-video" && source === "twitch" && formats && formats.length > 0 && (
+          {fmt === "twitch-video" && formats && formats.length > 0 && (
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">
                 {t("videoQuality")}
