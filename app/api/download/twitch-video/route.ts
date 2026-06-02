@@ -121,11 +121,11 @@ export async function GET(request: Request) {
       return new Response("Invalid Twitch URL", { status: 400 });
     }
 
-    if (quality.trim() === "") {
-      log.warn({ quality }, "Invalid quality parameter — must be a non-empty formatId string");
-      return new Response("Invalid quality — must be a non-empty formatId (e.g. 720p60)", {
-        status: 400,
-      });
+    // Strict allowlist: Twitch format IDs are alphanumeric + underscores + dots + hyphens
+    // e.g. "720p60", "1080p60__source", "480p". Rejects path traversal and shell injection.
+    if (!/^[A-Za-z0-9_.-]{1,64}$/.test(quality)) {
+      log.warn({ quality }, "Invalid quality parameter — rejected by allowlist");
+      return new Response("Invalid quality value", { status: 400 });
     }
 
     // quality is the formatId string directly (e.g. "720p60", "1080p60__source")
