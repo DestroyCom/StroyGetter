@@ -7,6 +7,7 @@ import { detectSource } from "@/lib/serverUtils";
 import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
 import { getTikTokInfos } from "./fetchTiktokInfos";
+import { getTwitchInfos } from "./fetchTwitchInfos";
 
 const log = logger.child({ module: "fetch-video-infos" });
 
@@ -15,6 +16,10 @@ export const getVideoInfos = async (url: string) => {
 
   if (source === "tiktok") {
     return getTikTokInfos(url);
+  }
+
+  if (source === "twitch") {
+    return getTwitchInfos(url);
   }
 
   if (source !== "youtube") {
