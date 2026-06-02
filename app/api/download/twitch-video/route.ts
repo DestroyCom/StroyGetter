@@ -105,8 +105,6 @@ export async function GET(request: Request) {
     const guard = guardApiRequest(request);
     if (guard) return guard;
 
-    await getServerConf(); // side-effect only: initialises temp dirs and cleanup cron
-
     if (!url) {
       log.warn("Missing url parameter");
       return new Response("Missing url parameter", { status: 400 });
@@ -127,6 +125,8 @@ export async function GET(request: Request) {
       log.warn({ quality }, "Invalid quality parameter — rejected by allowlist");
       return new Response("Invalid quality value", { status: 400 });
     }
+
+    await getServerConf(); // side-effect only: initialises temp dirs and cleanup cron
 
     // quality is the formatId string directly (e.g. "720p60", "1080p60__source")
     const qualityLabel = quality;
