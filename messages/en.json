@@ -51,7 +51,7 @@
   "home": {
     "heroTitle": "Download YouTube, TikTok\n& Twitch videos and music.",
     "heroSubtitle": "free, online, no signup.",
-    "heroDesc": "The open-source downloader for YouTube and TikTok. Get a plain video or audio file, download TikTok without watermark, or pick <libraryReady>Library Ready</libraryReady> (YouTube) for a fully tagged MP3 with cover art, ID3 tags and synced lyrics.",
+    "heroDesc": "The open-source downloader for YouTube, TikTok and Twitch. Get a plain video or audio file, download TikTok without watermark, grab Twitch VODs and clips, or pick <libraryReady>Library Ready</libraryReady> (YouTube) for a fully tagged MP3 with cover art, ID3 tags and synced lyrics.",
     "heroLibraryReady": "Library Ready",
     "heroBadge1": "YouTube, TikTok & Twitch",
     "heroBadge2": "No ads, ever",
