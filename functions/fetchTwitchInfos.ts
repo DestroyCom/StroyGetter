@@ -3,7 +3,7 @@
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { selectYtDlpPath, twitch_validate } from "@/lib/serverUtils";
-import type { FormatData, VideoData } from "@/lib/types";
+import { TWITCH_ITAG, type FormatData, type VideoData } from "@/lib/types";
 import { getCookiesOpt } from "@/lib/ytdlp-cookies";
 
 const log = logger.child({ module: "fetch-twitch-infos" });
@@ -51,7 +51,7 @@ export const getTwitchInfos = async (url: string): Promise<VideoData | { error: 
     .filter((f) => f.height != null && f.vcodec !== "none")
     .sort((a, b) => (b.height ?? 0) - (a.height ?? 0))
     .map((f, i) => ({
-      itag: i + 410,
+      itag: TWITCH_ITAG.VIDEO_BASE + i,
       qualityLabel: `${f.height}p${(f.fps ?? 0) > 30 ? ` ${f.fps}fps` : ""}`,
       formatId: f.format_id,
     }));

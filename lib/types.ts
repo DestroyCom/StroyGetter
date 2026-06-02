@@ -26,6 +26,7 @@ export type TikTokItag = (typeof TIKTOK_ITAG)[keyof typeof TIKTOK_ITAG];
 
 export const TWITCH_ITAG = {
   AUDIO: 401,
+  VIDEO_BASE: 410,
 } as const;
 
 export type TwitchItag = (typeof TWITCH_ITAG)[keyof typeof TWITCH_ITAG];
