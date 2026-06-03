@@ -3,15 +3,10 @@ import { Check, Disc3, Download, Film, Link as LinkIcon, Music, Scale } from "lu
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Fragment, Suspense } from "react";
+import { FaqAccordion } from "@/components/custom/FaqAccordion";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { buildAlternates } from "@/i18n/metadata";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -299,22 +294,7 @@ export default async function YouTubePage({ params }: { params: Promise<{ locale
               <h2 className="mb-8 text-balance text-4xl font-bold leading-tight tracking-tight">
                 {t("faqTitle")}
               </h2>
-              <Accordion type="single" collapsible className="flex flex-col gap-2">
-                {FAQS.map((item, i) => (
-                  <AccordionItem
-                    key={item.q}
-                    value={`faq-${i}`}
-                    className="rounded-xl border border-white/10 bg-white/2 px-5 data-[state=open]:border-white/20 data-[state=open]:bg-white/4"
-                  >
-                    <AccordionTrigger className="py-4 text-left text-[15px] font-semibold hover:no-underline">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 text-sm leading-[1.65] text-white/75">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              <FaqAccordion faqs={FAQS} page="/youtube" />
             </div>
 
             <aside id="glossary" className="flex flex-col gap-5">

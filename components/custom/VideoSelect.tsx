@@ -197,6 +197,7 @@ export const VideoSelect = ({ source }: Props) => {
     setDownloadError(null);
     setIsDownloading(true);
     setLoadProgress(0);
+    const downloadStartMs = Date.now();
 
     const videoId = source === "youtube" ? extractYtId(videoUrl) : undefined;
     const quality =
@@ -250,6 +251,16 @@ export const VideoSelect = ({ source }: Props) => {
       a.download = cdFilename ?? `${videoData.title}.${ext}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      track("download_completed", {
+        ...(videoId !== undefined && { video_id: videoId }),
+        title: videoData.title,
+        format: fmt,
+        quality,
+        source,
+        duration_s: Number(videoData.duration ?? 0),
+        download_duration_ms: Date.now() - downloadStartMs,
+      });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       track("download_failed", { ...(videoId !== undefined && { video_id: videoId }), reason, source });

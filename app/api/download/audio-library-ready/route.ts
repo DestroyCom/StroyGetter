@@ -247,6 +247,9 @@ export async function GET(request: Request) {
       const stream = fs.createReadStream(mp3Path);
       stream.on("close", () => cleanFiles([mp3Path]));
 
+      const metadataSource = meta ? "primary" : ytMusicMeta ? "youtube-music" : deezerMeta ? "deezer" : "fallback";
+      const coverSource = meta?.coverUrl ? "primary" : deezerMeta?.coverUrl ? "deezer" : ytMusicMeta?.coverUrl ? "youtube-music" : canonical.coverUrl ? "canonical" : ytThumbnail ? "youtube-thumbnail" : null;
+
       void trackServer(
         "library_ready_completed",
         {
@@ -254,14 +257,11 @@ export async function GET(request: Request) {
           title: songMeta.title,
           artist: songMeta.artist ?? canonical.artist,
           metadata_fetched: !!meta,
+          metadata_source: metadataSource,
+          has_native_metadata: hasNativeMetadata,
           lyrics_found: !!lyrics,
-          cover_found: !!(
-            meta?.coverUrl ??
-            deezerMeta?.coverUrl ??
-            ytMusicMeta?.coverUrl ??
-            canonical.coverUrl ??
-            ytThumbnail
-          ),
+          cover_found: !!(meta?.coverUrl ?? deezerMeta?.coverUrl ?? ytMusicMeta?.coverUrl ?? canonical.coverUrl ?? ytThumbnail),
+          cover_source: coverSource,
         },
         {
           url: "/api/download/audio-library-ready",

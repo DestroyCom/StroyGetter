@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { trackServer } from "@/lib/analytics-server";
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
@@ -143,6 +144,7 @@ export async function GET(request: Request) {
     // Keep the internal cache title simple
     const title = titleParam ?? "Twitch Video";
 
+    let cacheHit = false;
     const resolveFilePath = async (): Promise<string> => {
       // Check DB cache first
       const cached = await prisma.file.findFirst({
@@ -150,6 +152,7 @@ export async function GET(request: Request) {
       });
       if (cached && fs.existsSync(cached.path)) {
         log.info({ cacheKey, filePath: cached.path }, "Cache hit — serving existing file");
+        cacheHit = true;
         return cached.path;
       }
       if (cached && !fs.existsSync(cached.path)) {
@@ -215,6 +218,12 @@ export async function GET(request: Request) {
       const totalMs = Date.now() - requestStart;
 
       log.info({ cacheKey, filePath, fileSizeBytes, totalMs }, "Sending Twitch video response");
+
+      void trackServer(
+        "download_completed",
+        { source: "twitch", format: "twitch-video", title, quality, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
+        { url: "/api/download/twitch-video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+      );
 
       const stream = fs.createReadStream(filePath);
 

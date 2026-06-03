@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { trackServer } from "@/lib/analytics-server";
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
@@ -186,6 +187,12 @@ export async function GET(request: Request) {
       const fileSizeBytes = fs.existsSync(mp3Path) ? fs.statSync(mp3Path).size : 0;
       const totalMs = Date.now() - requestStart;
       log.info({ url, fileSizeBytes, totalMs }, "Sending TikTok audio response");
+
+      void trackServer(
+        "download_completed",
+        { source: "tiktok", format: "tiktok-audio", file_size_bytes: fileSizeBytes, total_ms: totalMs },
+        { url: "/api/download/tiktok-audio", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+      );
 
       const stream = fs.createReadStream(mp3Path);
       stream.on("close", () => cleanFiles([mp3Path]));

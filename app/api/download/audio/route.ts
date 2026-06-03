@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { trackServer } from "@/lib/analytics-server";
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { downloadAudioWithFfmpegTags } from "@/lib/audio-convert";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
@@ -112,6 +113,12 @@ export async function GET(request: Request) {
 
       const stream = fs.createReadStream(mp3Path);
       stream.on("close", () => cleanFiles([mp3Path]));
+
+      void trackServer(
+        "download_completed",
+        { source: "youtube", format: "mp3", title, video_id: videoId, duration_s: durationSec, file_size_bytes: fileSizeBytes, total_ms: totalMs },
+        { url: "/api/download/audio", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+      );
 
       // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
       return new NextResponse(stream as any, {
