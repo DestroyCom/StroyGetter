@@ -91,9 +91,9 @@ export default async function TwitchPage({ params }: { params: Promise<{ locale:
         data={{
           "@context": "https://schema.org",
           "@type": "HowTo",
-          name: "How to download a Twitch VOD or clip",
+          name: "How to download a Twitch clip",
           description:
-            "Download any public Twitch VOD or clip as MP4 or MP3 in three steps — no install, no signup.",
+            "Download any public Twitch clip as MP4 or MP3 in three steps — no install, no signup.",
           step: HOW_STEPS.map((s) => ({
             "@type": "HowToStep",
             name: s.title,
