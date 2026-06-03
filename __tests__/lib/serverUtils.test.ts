@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectSource, sanitizeDownloadTitle, sanitizeFilename, tiktok_validate, yt_validate } from "@/lib/serverUtils";
+import { detectSource, sanitizeDownloadTitle, sanitizeFilename, tiktok_validate, twitch_validate, yt_validate } from "@/lib/serverUtils";
 
 describe("yt_validate", () => {
   it("returns 'video' for a standard watch URL", () => {
@@ -91,6 +91,33 @@ describe("tiktok_validate", () => {
   });
 });
 
+describe("twitch_validate", () => {
+  it("returns false for a VOD URL (VODs disabled)", () => {
+    expect(twitch_validate("https://www.twitch.tv/videos/1234567890")).toBe(false);
+  });
+  it("returns false for a VOD URL without www (VODs disabled)", () => {
+    expect(twitch_validate("https://twitch.tv/videos/1234567890")).toBe(false);
+  });
+  it("returns 'video' for a channel clip URL", () => {
+    expect(twitch_validate("https://www.twitch.tv/clip5k/clip/SullenDeliciousLorisWow-u-SUuTpMLb1b8IZe")).toBe("video");
+  });
+  it("returns 'video' for a clips.twitch.tv URL", () => {
+    expect(twitch_validate("https://clips.twitch.tv/SomeCoolSlugHere")).toBe("video");
+  });
+  it("returns false for a YouTube URL", () => {
+    expect(twitch_validate("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe(false);
+  });
+  it("returns false for a TikTok URL", () => {
+    expect(twitch_validate("https://www.tiktok.com/@user/video/123456789")).toBe(false);
+  });
+  it("returns false for http clip URL (not https)", () => {
+    expect(twitch_validate("http://clips.twitch.tv/SomeClipSlug")).toBe(false);
+  });
+  it("returns false for twitch channel root URL", () => {
+    expect(twitch_validate("https://www.twitch.tv/shroud")).toBe(false);
+  });
+});
+
 describe("detectSource", () => {
   it("returns 'youtube' for a YouTube URL", () => {
     expect(detectSource("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe("youtube");
@@ -109,6 +136,12 @@ describe("detectSource", () => {
   });
   it("returns null for plain text", () => {
     expect(detectSource("rick roll")).toBeNull();
+  });
+  it("returns null for a Twitch VOD URL (VODs disabled)", () => {
+    expect(detectSource("https://www.twitch.tv/videos/1234567890")).toBeNull();
+  });
+  it("returns 'twitch' for a Twitch clip URL", () => {
+    expect(detectSource("https://clips.twitch.tv/SomeCoolSlugHere")).toBe("twitch");
   });
 });
 

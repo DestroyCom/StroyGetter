@@ -3,10 +3,11 @@
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { detectSource } from "@/lib/serverUtils";
+import { detectSource, twitch_is_vod } from "@/lib/serverUtils";
 import type { FormatData, VideoData } from "@/lib/types";
 import { getVideoFormats } from "@/lib/ytdlp-info";
 import { getTikTokInfos } from "./fetchTiktokInfos";
+import { getTwitchInfos } from "./fetchTwitchInfos";
 
 const log = logger.child({ module: "fetch-video-infos" });
 
@@ -17,7 +18,15 @@ export const getVideoInfos = async (url: string) => {
     return getTikTokInfos(url);
   }
 
+  if (source === "twitch") {
+    return getTwitchInfos(url);
+  }
+
   if (source !== "youtube") {
+    if (twitch_is_vod(url)) {
+      log.warn({ url }, "Twitch VOD requested — VOD support temporarily disabled");
+      return { error: "TWITCH_VOD_DISABLED" };
+    }
     log.warn({ url }, "URL validation failed — not a valid YouTube video URL");
     return { error: "Invalid URL" };
   }

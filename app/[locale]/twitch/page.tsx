@@ -1,19 +1,13 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
-import { Check, Disc3, Download, Film, Link as LinkIcon, Music, Scale } from "lucide-react";
+import { Check, Download, Film, Link as LinkIcon, Music, Scale } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Fragment, Suspense } from "react";
+import { FaqAccordion } from "@/components/custom/FaqAccordion";
 import { GetterInput } from "@/components/custom/GetterInput";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { buildAlternates } from "@/i18n/metadata";
-import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/lib/site-config";
 
@@ -23,8 +17,22 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
   return {
-    alternates: buildAlternates(locale, ""),
+    title: t("twitchTitle"),
+    description: t("twitchDesc"),
+    alternates: buildAlternates(locale, "/twitch"),
+    openGraph: {
+      title: t("twitchTitle"),
+      description: t("twitchDesc"),
+      images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("twitchTitle"),
+      description: t("twitchDesc"),
+      images: ["/og-image.png"],
+    },
   };
 }
 
@@ -32,19 +40,10 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function TwitchPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("home");
-
-  const GLOSSARY = [
-    { term: t("glossaryMp4Term"), def: t("glossaryMp4") },
-    { term: t("glossaryH264Term"), def: t("glossaryH264") },
-    { term: t("glossaryMp3Term"), def: t("glossaryMp3") },
-    { term: t("glossaryId3Term"), def: t("glossaryId3") },
-    { term: t("glossaryResolutionTerm"), def: t("glossaryRes") },
-    { term: t("glossarySampleRateTerm"), def: t("glossarySampleRate") },
-  ];
+  const t = await getTranslations("twitch");
 
   const HOW_STEPS = [
     { Icon: LinkIcon, n: "01", title: t("step1Title"), body: t("step1Body") },
@@ -54,65 +53,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   const FORMATS = [
     {
-      Icon: Disc3,
-      title: t("formatLibraryReadyTitle"),
-      meta: t("formatLibraryReadyMeta"),
-      badge: t("formatLibraryReadyBadge"),
-      desc: t("formatLibraryReadyDesc"),
-      features: [
-        t("formatLibraryReadyFeature1"),
-        t("formatLibraryReadyFeature2"),
-        t("formatLibraryReadyFeature3"),
-        t("formatLibraryReadyFeature4"),
-      ],
+      Icon: Film,
+      title: t("formatSrcTitle"),
+      meta: t("formatSrcMeta"),
+      desc: t("formatSrcDesc"),
+      features: [t("formatSrcFeature1"), t("formatSrcFeature2"), t("formatSrcFeature3")],
       featured: true,
     },
     {
       Icon: Film,
-      title: t("formatMp4Title"),
-      meta: t("formatMp4Meta"),
-      desc: t("formatMp4Desc"),
-      features: [
-        t("formatMp4Feature1"),
-        t("formatMp4Feature2"),
-        t("formatMp4Feature3"),
-        t("formatMp4Feature4"),
-      ],
+      title: t("format720Title"),
+      meta: t("format720Meta"),
+      desc: t("format720Desc"),
+      features: [t("format720Feature1"), t("format720Feature2")],
       featured: false,
-      badge: undefined,
     },
     {
       Icon: Music,
-      title: t("formatMp3Title"),
-      meta: t("formatMp3Meta"),
-      desc: t("formatMp3Desc"),
-      features: [t("formatMp3Feature1"), t("formatMp3Feature2")],
+      title: t("formatAudioTitle"),
+      meta: t("formatAudioMeta"),
+      desc: t("formatAudioDesc"),
+      features: [t("formatAudioFeature1"), t("formatAudioFeature2")],
       featured: false,
-      badge: undefined,
-    },
-    {
-      Icon: Film,
-      title: t("formatTiktokTitle"),
-      meta: t("formatTiktokMeta"),
-      desc: t("formatTiktokDesc"),
-      features: [
-        t("formatTiktokFeature1"),
-        t("formatTiktokFeature2"),
-        t("formatTiktokFeature3"),
-      ],
-      featured: false,
-      badge: undefined,
-      learnMore: { href: "/tiktok" as const, label: t("formatTiktokLearnMore") },
-    },
-    {
-      Icon: Film,
-      title: t("formatTwitchTitle"),
-      meta: t("formatTwitchMeta"),
-      desc: t("formatTwitchDesc"),
-      features: [t("formatTwitchFeature1"), t("formatTwitchFeature2"), t("formatTwitchFeature3")],
-      featured: false,
-      badge: t("formatTwitchBadge"),
-      learnMore: { href: "/twitch" as const, label: t("formatTwitchLearnMore") },
     },
   ];
 
@@ -121,10 +83,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { q: t("faq2Q"), a: t("faq2A") },
     { q: t("faq3Q"), a: t("faq3A") },
     { q: t("faq4Q"), a: t("faq4A") },
-    { q: t("faq5Q"), a: t("faq5A") },
-    { q: t("faq6Q"), a: t("faq6A") },
-    { q: t("faqTiktok1Q"), a: t("faqTiktok1A") },
-    { q: t("faqTiktok2Q"), a: t("faqTiktok2A") },
   ];
 
   return (
@@ -133,9 +91,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         data={{
           "@context": "https://schema.org",
           "@type": "HowTo",
-          name: "How to download a YouTube video with StroyGetter",
+          name: "How to download a Twitch clip",
           description:
-            "Download any public YouTube video as MP4, MP3 or Library Ready in three steps — no install, no signup.",
+            "Download any public Twitch clip as MP4 or MP3 in three steps — no install, no signup.",
           step: HOW_STEPS.map((s) => ({
             "@type": "HowToStep",
             name: s.title,
@@ -172,11 +130,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/78">
-            {t.rich("heroDesc", {
-              libraryReady: (chunks) => (
-                <strong className="font-semibold text-white">{chunks}</strong>
-              ),
-            })}
+            {t("heroDesc")}
           </p>
 
           <Suspense fallback={<SkeletonInput />}>
@@ -248,7 +202,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-3">
             {FORMATS.map((f) => (
               <div
                 key={f.title}
@@ -256,15 +210,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   f.featured ? "border-stroy-300/30 bg-stroy-700" : "border-white/6 bg-stroy-800"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-white/6 text-stroy-100">
-                    <f.Icon size={18} />
-                  </div>
-                  {f.badge && (
-                    <span className="rounded-full bg-stroy-300 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-stroy-900">
-                      {f.badge}
-                    </span>
-                  )}
+                <div className="flex size-10 items-center justify-center rounded-xl bg-white/6 text-stroy-100">
+                  <f.Icon size={18} />
                 </div>
                 <div>
                   <h3 className="mb-1 text-[19px] font-bold tracking-tight">{f.title}</h3>
@@ -283,22 +230,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     </li>
                   ))}
                 </ul>
-                {f.featured && (
-                  <Link
-                    href="/library-ready"
-                    className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
-                  >
-                    {t("formatLibraryReadyLearnMore")}
-                  </Link>
-                )}
-                {"learnMore" in f && f.learnMore && (
-                  <Link
-                    href={f.learnMore.href}
-                    className="mt-1 text-[12px] font-semibold text-stroy-300 underline underline-offset-2 hover:text-white"
-                  >
-                    {f.learnMore.label}
-                  </Link>
-                )}
               </div>
             ))}
           </div>
@@ -306,7 +237,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </section>
 
-      {/* ── FAQ + GLOSSARY ── */}
+      {/* ── FAQ ── */}
       <section className="bg-stroy-800 px-4 py-20 md:px-14 md:py-24" id="faq">
         <div className="mx-auto max-w-9xl">
           <div className="grid gap-14 md:grid-cols-[1.4fr_1fr]">
@@ -317,41 +248,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <h2 className="mb-8 text-balance text-4xl font-bold leading-tight tracking-tight">
                 {t("faqTitle")}
               </h2>
-              <Accordion type="single" collapsible className="flex flex-col gap-2">
-                {FAQS.map((item, i) => (
-                  <AccordionItem
-                    key={item.q}
-                    value={`faq-${i}`}
-                    className="rounded-xl border border-white/10 bg-white/2 px-5 data-[state=open]:border-white/20 data-[state=open]:bg-white/4"
-                  >
-                    <AccordionTrigger className="py-4 text-left text-[15px] font-semibold hover:no-underline">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 text-sm leading-[1.65] text-white/75">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              <FaqAccordion faqs={FAQS} page="/twitch" />
             </div>
 
-            <aside id="glossary" className="flex flex-col gap-5">
-              <div className="rounded-2xl border border-white/6 bg-black/18 p-7">
-                <h3 className="mb-1.5 text-xl font-bold tracking-tight">{t("glossaryTitle")}</h3>
-                <p className="mb-5 text-sm leading-snug text-white/65">{t("glossaryDesc")}</p>
-                <div className="flex flex-col gap-1">
-                  {GLOSSARY.map((g) => (
-                    <div
-                      key={g.term}
-                      className="flex cursor-default items-center justify-between rounded-lg px-3.5 py-3 text-sm transition-colors hover:bg-white/5"
-                    >
-                      <span className="font-semibold">{g.term}</span>
-                      <span className="font-mono text-[11px] text-white/50">{g.def}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
+            <aside className="flex flex-col gap-5">
               <a
                 href={siteConfig.githubUrl}
                 target="_blank"

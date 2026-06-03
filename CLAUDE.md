@@ -1,6 +1,15 @@
 # StroyGetter (Next.js 16, pnpm)
 
-Next.js 16 YouTube video downloader. Downloads streams via yt-dlp, merges audio+video with FFmpeg, caches results in SQLite.
+Next.js 16 video downloader (YouTube + TikTok). Downloads streams via yt-dlp, merges audio+video with FFmpeg, caches results in SQLite.
+
+## Reference Docs
+
+| Document                                  | Quand l'utiliser                       |
+| ----------------------------------------- | -------------------------------------- |
+| [Architecture](docs/architecture.md)      | Structure des fichiers et dossiers     |
+| [Environment Variables](docs/env-vars.md) | Configuration docker-compose / runtime |
+| [i18n Guide](docs/i18n-guide.md)          | Ajouter une nouvelle locale            |
+| [Deployment](docs/deployment.md)          | Release pipeline, Docker, CI           |
 
 ## Commands
 
@@ -8,64 +17,14 @@ Next.js 16 YouTube video downloader. Downloads streams via yt-dlp, merges audio+
 pnpm dev             # Development server
 pnpm build           # Production build (also runs copy-binaries.js postbuild)
 pnpm start           # Start production server
+pnpm format          # Biome format (write)
 pnpm lint            # Biome lint
 pnpm knip            # Dead code detection
 pnpm db:deploy       # Run Prisma migrations + generate client
+pnpm test            # Run all tests (vitest)
+pnpm test:unit       # Unit tests only (lib/)
+pnpm test:watch      # Watch mode
 ```
-
-## Architecture
-
-```text
-app/
-  page.tsx            # Home — URL input
-  fetch/page.tsx      # Quality selection after URL submitted
-  api/video-converter/route.ts  # GET endpoint: streams download/merge/serve
-components/custom/    # GetterInput, VideoSelect, VideoLoading, etc.
-functions/            # Server actions (fetchVideoinfos, getYoutubeUrl)
-lib/
-  serverUtils.ts      # initializeConf, selectYtDlpPath, sanitizeFilename, yt_validate
-  types.ts
-scripts/cleanup.ts    # Cron job: deletes old cached files + DB records
-prisma/schema.prisma  # SQLite: Video (url unique) → File (hash unique)
-```
-
-## Environment Variables
-
-All vars are **server-only runtime** — no `NEXT_PUBLIC_*`. Configure in docker-compose; never rebuild the image to change these.
-
-```env
-DATABASE_URL=file:./database/dev.db   # SQLite path (required)
-CLEANUP_INTERVAL=7                    # Days before file expiry (default: 7 prod, 1 dev)
-CRON=0 0 * * *                        # Cleanup schedule (default: daily prod, every min dev)
-MAX_FILESIZE=8G                       # Max size per yt-dlp stream (default: 8G). Passed as --max-filesize to yt-dlp.
-COOKIES_PATH=/run/secrets/cookies.txt # Optional. Netscape-format cookies file for age-restricted videos. Mount via Docker secret/volume.
-LOG_LEVEL=info                        # Pino log level: trace|debug|info|warn|error|fatal (default: debug dev, info prod)
-SITE_URL=https://stroygetter.fr       # Canonical base URL — sitemap, robots.txt, OpenGraph, JSON-LD (default: stroygetter.fr)
-GOOGLE_SITE_VERIFICATION=<token>      # Google Search Console verification token
-YANDEX_SITE_VERIFICATION=<token>      # Yandex Webmaster verification token
-BING_SITE_VERIFICATION=<token>        # Bing Webmaster token (msvalidate.01)
-UMAMI_URL=...                         # Self-hosted Umami instance base URL (script, recorder, API)
-UMAMI_WEBSITE_ID=<id>                 # Umami website ID for stroygetter.fr
-EMAIL_DMCA=dmca@...                   # DMCA contact email shown in legal pages
-EMAIL_PRIVACY=privacy@...             # Privacy contact email shown in legal pages
-BANNER_TEXT=...                       # Optional. Non-empty string enables the news banner. Empty or unset = hidden.
-BANNER_HREF=/tiktok                   # Optional. Link for the banner (relative path or absolute URL). Omit for text-only.
-```
-
-## News Banner
-
-A thin announcement strip rendered above the site header. Fully runtime-controlled — no rebuild required.
-
-**To enable:** set `BANNER_TEXT` in your env/docker-compose and restart the container.
-**To disable:** unset `BANNER_TEXT` (or set it to empty) and restart.
-
-```env
-BANNER_TEXT=NEW: StroyGetter now supports TikTok — free & no watermark →
-BANNER_HREF=/tiktok
-```
-
-`BANNER_HREF` is optional. Accepts a relative path (`/tiktok`) or an absolute URL (e.g. a blog post). Omit for text-only.
-The text is a single string, not per-locale — write it in English or whatever language fits your audience.
 
 ## Key Patterns
 
@@ -81,26 +40,6 @@ The text is a single string, not per-locale — write it in English or whatever 
 
 **Audio path**: `quality=audio` streams directly (ffmpeg → PassThrough → Response). Thumbnail fetched to a temp file for album art embedding, deleted after ffmpeg closes.
 
-## i18n — Adding a new locale or language variant
-
-Active locales (BCP 47): `en`, `fr-FR`, `es-419`, `pt-BR`.
-
-**To add a new locale** (e.g. `fr-CA`, `pt-PT`, `es-MX`):
-
-1. Add the locale code to `locales` in `i18n/routing.ts`
-2. Create `messages/<locale>.json` — copy the closest existing locale as a base
-3. Add a display label in `components/custom/LocaleSwitcher.tsx` (`LOCALE_LABELS`)
-4. Translate `messages/<locale>.json`
-
-Everything else (sitemap, hreflang alternates, static params) auto-updates via `buildAlternates()` in `i18n/metadata.ts` and `routing.locales`.
-
-**Locale code conventions used here:**
-
-- Generic English: `en` (covers all regions — do NOT use `en-US`)
-- French France: `fr-FR`
-- Latin American Spanish: `es-419` (UN M.49 region code, Google-supported)
-- Brazilian Portuguese: `pt-BR`
-
 ## Prisma 7 Notes
 
 **Singleton required**: Always use `import { prisma } from "@/lib/prisma"` — never `new PrismaClient()`. Prisma 7 requires a `PrismaLibSql` driver adapter; bare `new PrismaClient()` throws at runtime.
@@ -108,15 +47,3 @@ Everything else (sitemap, hreflang alternates, static params) auto-updates via `
 **No `$disconnect()` on singleton**: Calling `prisma.$disconnect()` on the shared instance breaks subsequent requests/cron runs.
 
 **Security hook on Write tool**: Files containing ytdl `.exec` calls trigger a Write-tool block. Use the Edit tool for surgical changes to `route.ts` and similar files.
-
-## Deployment
-
-**Docker**: `docker-compose up -d` (uses `Dockerfile`, mounts SQLite + temp via volume).
-
-**Live URL**: `https://stroygetter.fr` (configured via `SITE_URL` env var at runtime).
-
-**Release pipeline**: Push to the `prod` branch (not `master`) triggers CI: creates git tag from commit message → builds Docker image → publishes GitHub release.
-
-**CI secret**: The `.env` file is injected from the `ENVFILE` GitHub secret during image builds. Never committed.
-
-**Binary copy**: `copy-binaries.js` runs postbuild to copy the yt-dlp binary into `.next/standalone/`. This is required for the standalone output to work.

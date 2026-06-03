@@ -7,20 +7,20 @@ import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
-import { tiktok_validate } from "@/lib/serverUtils";
+import { sanitizeDownloadTitle, twitch_validate } from "@/lib/serverUtils";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
 
-// Prefer a pure audio stream if available; fall back to best muxed stream with audio.
-// The [acodec!=none] guard prevents downloading a video-only stream that would produce
-// a silent MP3 after ffmpeg extraction.
-const TIKTOK_AUDIO_FORMAT = "bestaudio[acodec!=none]/best[acodec!=none][format_id!=download]";
+// Twitch clips only expose muxed streams (acodec reported as "unknown" by yt-dlp).
+// bestaudio/best is the universal selector: picks a pure audio stream if one exists,
+// otherwise falls back to the best muxed stream. ffmpeg then extracts audio.
+const TWITCH_AUDIO_FORMAT = "bestaudio/best";
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 
-function downloadTiktokToFile(url: string, outputPath: string): Promise<void> {
+function downloadTwitchToFile(url: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const log = getLog("tiktok-audio-download");
+    const log = getLog("twitch-audio-download");
     const bin = getYtDlpBinaryPath();
     const cookiesArgs = getCookiesArgs();
 
@@ -32,13 +32,13 @@ function downloadTiktokToFile(url: string, outputPath: string): Promise<void> {
       MAX_FILESIZE,
       ...cookiesArgs,
       "-f",
-      TIKTOK_AUDIO_FORMAT,
+      TWITCH_AUDIO_FORMAT,
       "-o",
       outputPath,
       url,
     ];
 
-    log.info({ url, outputPath }, "Starting yt-dlp TikTok download for audio extraction");
+    log.info({ url, outputPath }, "Starting yt-dlp Twitch download for audio extraction");
     const startTime = Date.now();
 
     const proc = spawn(bin, args);
@@ -88,7 +88,7 @@ function extractAudioWithFfmpeg(
   outputPath: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const log = getLog("tiktok-audio-ffmpeg");
+    const log = getLog("twitch-audio-ffmpeg");
 
     const args = ["-i", inputPath, "-vn", "-acodec", "libmp3lame", "-ab", "192k", "-y", outputPath];
 
@@ -137,12 +137,13 @@ export async function GET(request: Request) {
   const ipHash = hashIp(ip);
 
   return runWithRequestContext(reqId, ipHash, async () => {
-    const log = getLog("tiktok-audio");
+    const log = getLog("twitch-audio");
     const requestStart = Date.now();
 
-    const url = new URL(request.url).searchParams.get("url");
+    const params = new URL(request.url).searchParams;
+    const url = params.get("url");
 
-    log.info({ url }, "TikTok audio download request received");
+    log.info({ url }, "Twitch audio download request received");
 
     const guard = guardApiRequest(request);
     if (guard) return guard;
@@ -152,9 +153,9 @@ export async function GET(request: Request) {
       return new Response("Missing url parameter", { status: 400 });
     }
 
-    if (!tiktok_validate(url)) {
-      log.warn({ url }, "Invalid TikTok URL");
-      return new Response("Invalid TikTok URL", { status: 400 });
+    if (!twitch_validate(url)) {
+      log.warn({ url }, "Invalid Twitch URL");
+      return new Response("Invalid Twitch URL", { status: 400 });
     }
 
     let ffmpegPath: string;
@@ -166,13 +167,16 @@ export async function GET(request: Request) {
     }
     if (!ffmpegPath) return new Response("Server configuration error", { status: 500 });
 
+    const titleParam = params.get("title");
+    const downloadFilename = titleParam ? sanitizeDownloadTitle(titleParam) : "Twitch_Audio";
+
     const timestamp = Date.now();
-    const sourcePath = path.join(TEMP_DIR, "source", `tiktok_audio_src_${timestamp}.mp4`);
-    const mp3Path = path.join(TEMP_DIR, "source", `tiktok_audio_${timestamp}.mp3`);
+    const sourcePath = path.join(TEMP_DIR, "source", `twitch_audio_src_${timestamp}.mp4`);
+    const mp3Path = path.join(TEMP_DIR, "source", `twitch_audio_${timestamp}.mp3`);
 
     try {
       try {
-        await downloadTiktokToFile(url, sourcePath);
+        await downloadTwitchToFile(url, sourcePath);
       } catch (err) {
         cleanFiles([sourcePath]);
         throw err;
@@ -186,12 +190,12 @@ export async function GET(request: Request) {
 
       const fileSizeBytes = fs.existsSync(mp3Path) ? fs.statSync(mp3Path).size : 0;
       const totalMs = Date.now() - requestStart;
-      log.info({ url, fileSizeBytes, totalMs }, "Sending TikTok audio response");
+      log.info({ url, fileSizeBytes, totalMs }, "Sending Twitch audio response");
 
       void trackServer(
         "download_completed",
-        { source: "tiktok", format: "tiktok-audio", file_size_bytes: fileSizeBytes, total_ms: totalMs },
-        { url: "/api/download/tiktok-audio", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+        { source: "twitch", format: "twitch-audio", title: downloadFilename, file_size_bytes: fileSizeBytes, total_ms: totalMs },
+        { url: "/api/download/twitch-audio", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
       );
 
       const stream = fs.createReadStream(mp3Path);
@@ -201,12 +205,12 @@ export async function GET(request: Request) {
       return new NextResponse(stream as any, {
         headers: {
           "Content-Type": "audio/mpeg",
-          "Content-Disposition": buildContentDisposition("tiktok_audio", "mp3"),
+          "Content-Disposition": buildContentDisposition(downloadFilename, "mp3"),
         },
       });
     } catch (err) {
       const totalMs = Date.now() - requestStart;
-      log.error({ err, url, totalMs }, "TikTok audio extraction failed");
+      log.error({ err, url, totalMs }, "Twitch audio extraction failed");
       cleanFiles([mp3Path]);
       return new Response("An error occurred while processing", { status: 500 });
     }

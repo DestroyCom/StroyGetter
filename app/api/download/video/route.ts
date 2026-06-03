@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { trackServer } from "@/lib/analytics-server";
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { prisma } from "@/lib/prisma";
@@ -210,11 +211,13 @@ export async function GET(request: Request) {
     const mergedPath = path.join(TEMP_DIR, "cached", `${mergedName}.mp4`);
     const cacheKey = `${videoId}:${quality}`;
 
+    let cacheHit = false;
     const resolveFilePath = async (): Promise<string> => {
       // Check DB cache first
       const cached = await prisma.file.findFirst({ where: { video: { url }, quality } });
       if (cached && fs.existsSync(cached.path)) {
         log.info({ cacheKey, filePath: cached.path }, "Cache hit — serving existing file");
+        cacheHit = true;
         return cached.path;
       }
       if (cached && !fs.existsSync(cached.path)) {
@@ -256,6 +259,12 @@ export async function GET(request: Request) {
       const totalMs = Date.now() - requestStart;
 
       log.info({ cacheKey, filePath, fileSizeBytes, totalMs, title }, "Sending video response");
+
+      void trackServer(
+        "download_completed",
+        { source: "youtube", format: "mp4", title, video_id: videoId, quality, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
+        { url: "/api/download/video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+      );
 
       const stream = fs.createReadStream(filePath);
 

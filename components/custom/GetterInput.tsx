@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, Clipboard, Loader2, Search } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useDownloadState } from "@/components/custom/FetchPageShell";
@@ -14,9 +14,12 @@ const isKnownVideoUrl = (v: string): boolean =>
 
 export const GetterInput = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
   const t = useTranslations("getterInput");
+
+  const landingPage = ["/youtube", "/tiktok", "/twitch", "/"].includes(pathname) ? pathname : null;
 
   const { isDownloading } = useDownloadState();
 
@@ -38,13 +41,14 @@ export const GetterInput = () => {
   const submitUrl = async (value: string, source: "typed" | "pasted" = "typed") => {
     setError("");
     setIsLoading(true);
-    track("search", { query: value, is_url: isKnownVideoUrl(value), source });
+    track("search", { query: value, is_url: isKnownVideoUrl(value), source, ...(landingPage && { landing_page: landingPage }) });
     try {
       const resolvedUrl = await resolveVideoUrl(value);
       router.push(`/fetch?videoUrl=${resolvedUrl}`);
-    } catch {
-      track("search_error", { query: value });
-      setError(t("errorNotFound"));
+    } catch (err) {
+      track("search_error", { query: value, error_type: err instanceof Error ? err.message : "unknown" });
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg === "TWITCH_VOD_DISABLED" ? t("errorTwitchVodDisabled") : t("errorNotFound"));
       setIsLoading(false);
     }
   };

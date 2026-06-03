@@ -63,6 +63,8 @@ export async function generateMetadata({
       "free video downloader",
       "youtube mp4 download",
       "youtube mp3 converter",
+      "twitch downloader",
+      "download twitch clip",
     ],
     publisher: "StroyCo",
     openGraph: {

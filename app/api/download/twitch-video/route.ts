@@ -8,35 +8,22 @@ import { prisma } from "@/lib/prisma";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
-import { sanitizeDownloadTitle, sanitizeFilename, tiktok_validate } from "@/lib/serverUtils";
-import { TIKTOK_ITAG } from "@/lib/types";
+import { sanitizeDownloadTitle, sanitizeFilename, twitch_validate } from "@/lib/serverUtils";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
-
-// Maps quality param to yt-dlp format selector
-const FORMAT_SELECTOR: Record<string, string> = {
-  [TIKTOK_ITAG.WATERMARK]: "download",
-  [TIKTOK_ITAG.NO_WATERMARK]: "best[vcodec^=h264][format_id!=download]",
-};
-
-// Maps quality param to cache label
-const QUALITY_LABEL: Record<string, string> = {
-  [TIKTOK_ITAG.WATERMARK]: "tiktok-watermark",
-  [TIKTOK_ITAG.NO_WATERMARK]: "tiktok-no-watermark",
-};
 
 const DOWNLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_FILESIZE = process.env.MAX_FILESIZE ?? "8G";
 
 const _inFlight = new Map<string, Promise<string>>();
 
-function downloadTiktokToFile(
+function downloadTwitchToFile(
   url: string,
   formatSelector: string,
   outputPath: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const log = getLog("tiktok-download");
+    const log = getLog("twitch-download");
     const bin = getYtDlpBinaryPath();
     const cookiesArgs = getCookiesArgs();
 
@@ -54,7 +41,7 @@ function downloadTiktokToFile(
       url,
     ];
 
-    log.info({ url, formatSelector, outputPath }, "Starting yt-dlp TikTok download");
+    log.info({ url, formatSelector, outputPath }, "Starting yt-dlp Twitch download");
     const startTime = Date.now();
 
     const proc = spawn(bin, args);
@@ -107,19 +94,17 @@ export async function GET(request: Request) {
   const ipHash = hashIp(ip);
 
   return runWithRequestContext(reqId, ipHash, async () => {
-    const log = getLog("tiktok-video");
+    const log = getLog("twitch-video");
     const requestStart = Date.now();
 
     const params = new URL(request.url).searchParams;
     const url = params.get("url");
     const quality = params.get("quality");
 
-    log.info({ url, quality }, "TikTok video download request received");
+    log.info({ url, quality }, "Twitch video download request received");
 
     const guard = guardApiRequest(request);
     if (guard) return guard;
-
-    await getServerConf(); // side-effect only: initialises temp dirs and cleanup cron (ffmpegPath not needed here)
 
     if (!url) {
       log.warn("Missing url parameter");
@@ -130,36 +115,34 @@ export async function GET(request: Request) {
       return new Response("Missing quality parameter", { status: 400 });
     }
 
-    if (!tiktok_validate(url)) {
-      log.warn({ url }, "Invalid TikTok URL");
-      return new Response("Invalid TikTok URL", { status: 400 });
+    if (!twitch_validate(url)) {
+      log.warn({ url }, "Invalid Twitch URL");
+      return new Response("Invalid Twitch URL", { status: 400 });
     }
 
-    const formatSelector = FORMAT_SELECTOR[quality];
-    if (!formatSelector) {
-      log.warn({ quality }, "Invalid quality parameter — must be 301 or 302");
-      return new Response("Invalid quality. Use 301 (watermark) or 302 (no-watermark)", {
-        status: 400,
-      });
+    // Strict allowlist: Twitch format IDs are alphanumeric + underscores + dots + hyphens
+    // e.g. "720p60", "1080p60__source", "480p". Rejects path traversal and shell injection.
+    if (!/^[A-Za-z0-9_.-]{1,64}$/.test(quality)) {
+      log.warn({ quality }, "Invalid quality parameter — rejected by allowlist");
+      return new Response("Invalid quality value", { status: 400 });
     }
 
-    const qualityLabel = QUALITY_LABEL[quality];
-    // Cap at 200 so the full filename ("tiktok_" + url + "_302.mp4") stays under 255 bytes
-    const sanitizedUrl = sanitizeFilename(url).slice(0, 200);
-    const cachedName = `tiktok_${sanitizedUrl}_${quality}.mp4`;
+    await getServerConf(); // side-effect only: initialises temp dirs and cleanup cron
+
+    // quality is the formatId string directly (e.g. "720p60", "1080p60__source")
+    const qualityLabel = quality;
+    // Cap at 180 chars (formatId can be longer than a numeric itag)
+    const sanitizedUrl = sanitizeFilename(url).slice(0, 180);
+    const cachedName = `twitch_${sanitizedUrl}_${quality}.mp4`;
     const outputPath = path.join(TEMP_DIR, "cached", cachedName);
     const cacheKey = `${url}:${qualityLabel}`;
 
-    // Build download filename: @handle-title-videoId.mp4
-    const handleMatch = url.match(/tiktok\.com\/@([\w.]+)\/(?:video|photo)\//);
-    const handle = handleMatch ? `@${handleMatch[1]}` : null;
-    const videoId = url.match(/\/(?:video|photo)\/(\d+)/)?.[1] ?? null;
+    // Build download filename from title param or fallback
     const titleParam = params.get("title");
-    const titlePart = titleParam ? sanitizeDownloadTitle(titleParam) : null;
-    const downloadFilename = [handle, titlePart, videoId].filter(Boolean).join("-") || "TikTok_Video";
+    const downloadFilename = titleParam ? sanitizeDownloadTitle(titleParam) : "Twitch_Video";
 
     // Keep the internal cache title simple
-    const title = titleParam ?? "TikTok Video";
+    const title = titleParam ?? "Twitch Video";
 
     let cacheHit = false;
     const resolveFilePath = async (): Promise<string> => {
@@ -181,15 +164,15 @@ export async function GET(request: Request) {
           log.warn({ err, fileId: cached.id }, "Failed to delete stale file entry — continuing");
         });
       } else {
-        log.debug({ cacheKey }, "Cache miss — starting TikTok download");
+        log.debug({ cacheKey }, "Cache miss — starting Twitch download");
       }
 
       // Use a unique temp path during download, then keep as cached path
-      const outputFilename = `tiktok_${sanitizedUrl}_${quality}_${Date.now()}.mp4`;
+      const outputFilename = `twitch_${sanitizedUrl}_${quality}_${Date.now()}.mp4`;
       const tempDownloadPath = path.join(TEMP_DIR, "source", outputFilename);
 
       try {
-        await downloadTiktokToFile(url, formatSelector, tempDownloadPath);
+        await downloadTwitchToFile(url, quality, tempDownloadPath);
       } catch (err) {
         cleanFiles([tempDownloadPath]);
         throw err;
@@ -234,12 +217,12 @@ export async function GET(request: Request) {
       const fileSizeBytes = fs.existsSync(filePath) ? fs.statSync(filePath).size : 0;
       const totalMs = Date.now() - requestStart;
 
-      log.info({ cacheKey, filePath, fileSizeBytes, totalMs }, "Sending TikTok video response");
+      log.info({ cacheKey, filePath, fileSizeBytes, totalMs }, "Sending Twitch video response");
 
       void trackServer(
         "download_completed",
-        { source: "tiktok", format: qualityLabel, title, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
-        { url: "/api/download/tiktok-video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+        { source: "twitch", format: "twitch-video", title, quality, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
+        { url: "/api/download/twitch-video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
       );
 
       const stream = fs.createReadStream(filePath);
@@ -253,7 +236,7 @@ export async function GET(request: Request) {
       });
     } catch (err) {
       const totalMs = Date.now() - requestStart;
-      log.error({ err, url, quality, totalMs }, "TikTok video download failed");
+      log.error({ err, url, quality, totalMs }, "Twitch video download failed");
       return new Response("An error occurred while processing", { status: 500 });
     }
   });

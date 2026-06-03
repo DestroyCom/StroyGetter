@@ -33,6 +33,7 @@ export function TikTokPhotoSlider({ data }: Props) {
   const handleDownload = async (imageUrl: string, index: number) => {
     setDownloadError(null);
     setDownloadingIndex(index);
+    const downloadStartMs = Date.now();
     track("download_started", {
       source: "tiktok",
       format: "tiktok-photo",
@@ -55,7 +56,7 @@ export function TikTokPhotoSlider({ data }: Props) {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      track("download_completed", { source: "tiktok", format: "tiktok-photo" });
+      track("download_completed", { source: "tiktok", format: "tiktok-photo", download_duration_ms: Date.now() - downloadStartMs });
     } catch (err) {
       const reason = err instanceof Error ? err.message : "unknown";
       track("download_failed", { source: "tiktok", format: "tiktok-photo", reason });

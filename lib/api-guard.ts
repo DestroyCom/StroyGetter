@@ -1,3 +1,4 @@
+import { trackServer } from "@/lib/analytics-server";
 import { isRateLimited } from "@/lib/rate-limiter";
 import { getLog, hashIp } from "./request-context";
 
@@ -17,6 +18,7 @@ export function guardApiRequest(request: Request): Response | null {
 
   if (isRateLimited(ip)) {
     log.warn({ ipHash, path }, "Rate limit triggered");
+    void trackServer("rate_limited", { ip_hash: ipHash, path });
     return new Response("Too Many Requests", { status: 429 });
   }
 
