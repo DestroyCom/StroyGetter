@@ -25,10 +25,12 @@ export function FaqAccordion({ faqs, page }: Props) {
       collapsible
       className="flex flex-col gap-2"
       onValueChange={(value) => {
-        if (!value) return;
-        const index = parseInt(value.replace("faq-", ""), 10);
-        const question = faqs[index]?.q;
-        if (question) track("faq_opened", { page, question });
+        const match = value?.match(/^faq-(\d+)$/);
+        if (!match) return;
+        const index = parseInt(match[1], 10);
+        if (Number.isNaN(index) || index < 0 || index >= faqs.length) return;
+        const question = faqs[index].q;
+        track("faq_opened", { page, question });
       }}
     >
       {faqs.map((item, i) => (

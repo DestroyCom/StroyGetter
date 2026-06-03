@@ -33,12 +33,11 @@ describe("Twitch fetch integration — real network required", () => {
       expect(f.qualityLabel).toBeTruthy();
       expect(f.formatId).toBeTruthy();
     }
-    // Sorted descending by height (qualityLabel contains height, first should be highest)
-    const firstLabel = result.format[0].qualityLabel;
-    const lastLabel = result.format[result.format.length - 1].qualityLabel;
-    const firstHeight = parseInt(firstLabel);
-    const lastHeight = parseInt(lastLabel);
-    expect(firstHeight).toBeGreaterThanOrEqual(lastHeight);
+    // Sorted descending by height — every adjacent pair must satisfy heights[i] >= heights[i+1]
+    const heights = result.format.map((f) => parseInt(f.qualityLabel, 10));
+    for (let i = 0; i < heights.length - 1; i++) {
+      expect(heights[i]).toBeGreaterThanOrEqual(heights[i + 1]);
+    }
   }, 30_000);
 
   itLocal("getVideoInfos routes Twitch clip URL to getTwitchInfos", async () => {

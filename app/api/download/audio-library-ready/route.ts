@@ -248,7 +248,7 @@ export async function GET(request: Request) {
       stream.on("close", () => cleanFiles([mp3Path]));
 
       const metadataSource = meta ? "primary" : ytMusicMeta ? "youtube-music" : deezerMeta ? "deezer" : "fallback";
-      const coverSource = meta?.coverUrl ? "primary" : deezerMeta?.coverUrl ? "deezer" : ytMusicMeta?.coverUrl ? "youtube-music" : canonical.coverUrl ? "canonical" : ytThumbnail ? "youtube-thumbnail" : null;
+      const coverSource = meta?.coverUrl ? "primary" : ytMusicMeta?.coverUrl ? "youtube-music" : deezerMeta?.coverUrl ? "deezer" : canonical.coverUrl ? "canonical" : ytThumbnail ? "youtube-thumbnail" : null;
 
       void trackServer(
         "library_ready_completed",

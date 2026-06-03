@@ -110,8 +110,8 @@ describe("twitch_validate", () => {
   it("returns false for a TikTok URL", () => {
     expect(twitch_validate("https://www.tiktok.com/@user/video/123456789")).toBe(false);
   });
-  it("returns false for http (not https)", () => {
-    expect(twitch_validate("http://www.twitch.tv/videos/123456")).toBe(false);
+  it("returns false for http clip URL (not https)", () => {
+    expect(twitch_validate("http://clips.twitch.tv/SomeClipSlug")).toBe(false);
   });
   it("returns false for twitch channel root URL", () => {
     expect(twitch_validate("https://www.twitch.tv/shroud")).toBe(false);
