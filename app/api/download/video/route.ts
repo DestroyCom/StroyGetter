@@ -10,6 +10,7 @@ import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/requ
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
 import { sanitizeFilename } from "@/lib/serverUtils";
+import { siteConfig } from "@/lib/site-config";
 import type { FormatData, VideoData } from "@/lib/types";
 import { downloadStreamsToFiles } from "@/lib/video-download";
 import { getVideoFormats } from "@/lib/ytdlp-info";
@@ -120,6 +121,8 @@ export async function GET(request: Request) {
 
     const guard = guardApiRequest(request);
     if (guard) return guard;
+
+    if (!siteConfig.enableYoutube) return new Response("Gone", { status: 410 });
 
     if (!url) {
       log.warn("Missing url parameter");

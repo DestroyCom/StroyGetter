@@ -163,7 +163,8 @@
     "searching": "Buscando…",
     "errorNotFound": "No se encontró ningún video. Intenta otra búsqueda o pega la URL directamente.",
     "errorClipboard": "Pégalo manualmente o concede permiso para usar el portapapeles.",
-    "errorTwitchVodDisabled": "La capacidad de alojamiento actual de StroyGetter no permite descargar VODs de Twitch de varias horas. Solo se admiten clips por el momento."
+    "errorTwitchVodDisabled": "La capacidad de alojamiento actual de StroyGetter no permite descargar VODs de Twitch de varias horas. Solo se admiten clips por el momento.",
+    "errorPlatformDisabled": "Esta plataforma no está habilitada en esta instancia."
   },
   "videoSelect": {
     "chooseFormat": "Elegir formato",

@@ -90,30 +90,42 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       featured: false,
       badge: undefined,
     },
-    {
-      Icon: Film,
-      title: t("formatTiktokTitle"),
-      meta: t("formatTiktokMeta"),
-      desc: t("formatTiktokDesc"),
-      features: [
-        t("formatTiktokFeature1"),
-        t("formatTiktokFeature2"),
-        t("formatTiktokFeature3"),
-      ],
-      featured: false,
-      badge: undefined,
-      learnMore: { href: "/tiktok" as const, label: t("formatTiktokLearnMore") },
-    },
-    {
-      Icon: Film,
-      title: t("formatTwitchTitle"),
-      meta: t("formatTwitchMeta"),
-      desc: t("formatTwitchDesc"),
-      features: [t("formatTwitchFeature1"), t("formatTwitchFeature2"), t("formatTwitchFeature3")],
-      featured: false,
-      badge: t("formatTwitchBadge"),
-      learnMore: { href: "/twitch" as const, label: t("formatTwitchLearnMore") },
-    },
+    ...(siteConfig.enableTiktok
+      ? [
+          {
+            Icon: Film,
+            title: t("formatTiktokTitle"),
+            meta: t("formatTiktokMeta"),
+            desc: t("formatTiktokDesc"),
+            features: [
+              t("formatTiktokFeature1"),
+              t("formatTiktokFeature2"),
+              t("formatTiktokFeature3"),
+            ],
+            featured: false,
+            badge: undefined,
+            learnMore: { href: "/tiktok" as const, label: t("formatTiktokLearnMore") },
+          },
+        ]
+      : []),
+    ...(siteConfig.enableTwitch
+      ? [
+          {
+            Icon: Film,
+            title: t("formatTwitchTitle"),
+            meta: t("formatTwitchMeta"),
+            desc: t("formatTwitchDesc"),
+            features: [
+              t("formatTwitchFeature1"),
+              t("formatTwitchFeature2"),
+              t("formatTwitchFeature3"),
+            ],
+            featured: false,
+            badge: t("formatTwitchBadge"),
+            learnMore: { href: "/twitch" as const, label: t("formatTwitchLearnMore") },
+          },
+        ]
+      : []),
   ];
 
   const FAQS = [

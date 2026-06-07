@@ -47,4 +47,9 @@ export const siteConfig = {
 
   /** News banner link — optional relative path (e.g. /tiktok) or absolute URL */
   bannerHref: process.env.BANNER_HREF ?? "",
+
+  /** Platform feature flags — set to "false" to disable a platform entirely */
+  enableYoutube: process.env.ENABLE_YOUTUBE !== "false",
+  enableTiktok: process.env.ENABLE_TIKTOK !== "false",
+  enableTwitch: process.env.ENABLE_TWITCH !== "false",
 } as const;

@@ -48,7 +48,14 @@ export const GetterInput = () => {
     } catch (err) {
       track("search_error", { query: value, error_type: err instanceof Error ? err.message : "unknown" });
       const msg = err instanceof Error ? err.message : "";
-      setError(msg === "TWITCH_VOD_DISABLED" ? t("errorTwitchVodDisabled") : t("errorNotFound"));
+      const PLATFORM_DISABLED_ERRORS = ["YOUTUBE_DISABLED", "TIKTOK_DISABLED", "TWITCH_DISABLED"];
+      setError(
+        msg === "TWITCH_VOD_DISABLED"
+          ? t("errorTwitchVodDisabled")
+          : PLATFORM_DISABLED_ERRORS.includes(msg)
+            ? t("errorPlatformDisabled")
+            : t("errorNotFound")
+      );
       setIsLoading(false);
     }
   };

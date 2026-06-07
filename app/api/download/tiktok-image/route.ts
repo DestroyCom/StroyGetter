@@ -1,5 +1,6 @@
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
+import { siteConfig } from "@/lib/site-config";
 
 const TIKTOK_CDN_HOSTNAMES = [
   ".tiktokcdn-eu.com",
@@ -28,6 +29,8 @@ export async function GET(request: Request) {
 
     const guard = guardApiRequest(request);
     if (guard) return guard;
+
+    if (!siteConfig.enableTiktok) return new Response("Gone", { status: 410 });
 
     const params = new URL(request.url).searchParams;
     const imageUrl = params.get("url");

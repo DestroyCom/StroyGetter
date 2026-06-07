@@ -8,6 +8,7 @@ import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
 import { getServerConf } from "@/lib/server-conf";
+import { siteConfig } from "@/lib/site-config";
 
 export async function GET(request: Request) {
   const reqId = generateReqId();
@@ -24,6 +25,8 @@ export async function GET(request: Request) {
 
     const guard = guardApiRequest(request);
     if (guard) return guard;
+
+    if (!siteConfig.enableYoutube) return new Response("Gone", { status: 410 });
 
     if (!url) {
       log.warn("Missing url parameter");

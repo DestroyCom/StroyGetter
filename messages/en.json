@@ -163,7 +163,8 @@
     "searching": "Searching…",
     "errorNotFound": "No video found. Try a different search or paste a YouTube URL directly.",
     "errorClipboard": "Please paste manually or grant clipboard permission",
-    "errorTwitchVodDisabled": "StroyGetter's current hosting capacity doesn't support multi-hour Twitch VOD downloads. Clips only for now."
+    "errorTwitchVodDisabled": "StroyGetter's current hosting capacity doesn't support multi-hour Twitch VOD downloads. Clips only for now.",
+    "errorPlatformDisabled": "This platform is not enabled on this instance."
   },
   "videoSelect": {
     "chooseFormat": "Choose format",
