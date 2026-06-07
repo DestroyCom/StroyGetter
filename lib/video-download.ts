@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import { getLog } from "@/lib/request-context";
+import { getBgutilArgs } from "@/lib/ytdlp-bgutil";
 import { getYtDlpBinaryPath } from "@/lib/ytdlp-binary";
 import { getCookiesArgs } from "@/lib/ytdlp-cookies";
 
@@ -60,8 +61,9 @@ export async function downloadStreamsToFiles(
   const startTime = Date.now();
 
   const cookiesArgs = getCookiesArgs();
-  const audioProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
-  const videoProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, "-f", formatItag, url]);
+  const bgutilArgs = getBgutilArgs();
+  const audioProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, ...bgutilArgs, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
+  const videoProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, ...bgutilArgs, "-f", formatItag, url]);
 
   if (!audioProc.stdout || !videoProc.stdout) {
     audioProc.kill();

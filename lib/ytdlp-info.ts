@@ -1,5 +1,6 @@
 import { selectYtDlpPath } from "@/lib/serverUtils";
 import type { FormatData } from "@/lib/types";
+import { getBgutilOpt } from "@/lib/ytdlp-bgutil";
 import { getCookiesOpt } from "@/lib/ytdlp-cookies";
 
 type RawFormat = {
@@ -20,6 +21,7 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
     noPlaylist: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
     ...getCookiesOpt(),
+    ...getBgutilOpt(),
   });
 
   const rawFormats = (info as { formats?: RawFormat[] }).formats ?? [];

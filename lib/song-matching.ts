@@ -2,6 +2,7 @@ import { searchDeezerByQuery } from "@/lib/metadata/providers/deezer";
 import { searchItunesByQuery } from "@/lib/metadata/providers/itunes";
 import type { SongMetadata } from "@/lib/metadata/types";
 import { selectYtDlpPath } from "@/lib/serverUtils";
+import { getBgutilOpt } from "@/lib/ytdlp-bgutil";
 
 type SubMap = Record<string, Array<{ ext: string; url: string }>>;
 
@@ -33,6 +34,7 @@ export async function getYtDlpFullInfo(url: string): Promise<YtDlpFullInfo> {
     noWarnings: true,
     noCheckCertificates: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+    ...getBgutilOpt(),
   });
   return info as unknown as YtDlpFullInfo;
 }

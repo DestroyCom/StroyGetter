@@ -52,6 +52,7 @@ RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
     chmod +x node_modules/youtube-dl-exec/bin/yt-dlp && \
     echo "yt-dlp ready: $(yt-dlp --version)" && \
     rm .ytdlp-version
+RUN pip3 install --no-cache-dir --break-system-packages -U bgutil-ytdlp-pot-provider
 
 # ── gallery-dl ───────────────────────────────────────────────────────────────
 COPY .gallery-dl-version .gallery-dl-version
