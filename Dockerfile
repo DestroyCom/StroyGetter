@@ -77,9 +77,14 @@ RUN GALLERY_DL_VERSION=$(cat .gallery-dl-version) && \
 #
 # Version pinned to what pnpm-lock.yaml resolves.  If a bump breaks this
 # COPY (path not found), update the version from `pnpm list pino-abstract-transport`.
+# ── pino worker-thread dependencies ──────────────────────────────────────────
 COPY --from=builder --chown=nextjs:nodejs \
     /app/node_modules/.pnpm/pino-abstract-transport@3.0.0/node_modules/pino-abstract-transport \
     ./node_modules/pino-abstract-transport
+
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/split2@4.2.0/node_modules/split2 \
+    ./node_modules/split2
 
 # Migration tooling in an isolated directory (avoids conflicts with standalone)
 COPY --from=builder /app/node_modules   /migrate/node_modules
