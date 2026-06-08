@@ -78,13 +78,40 @@ RUN GALLERY_DL_VERSION=$(cat .gallery-dl-version) && \
 # Version pinned to what pnpm-lock.yaml resolves.  If a bump breaks this
 # COPY (path not found), update the version from `pnpm list pino-abstract-transport`.
 # ── pino worker-thread dependencies ──────────────────────────────────────────
+# ── pino worker-thread dependencies ──────────────────────────────────────────
 COPY --from=builder --chown=nextjs:nodejs \
     /app/node_modules/.pnpm/pino-abstract-transport@3.0.0/node_modules/pino-abstract-transport \
     ./node_modules/pino-abstract-transport
-
 COPY --from=builder --chown=nextjs:nodejs \
     /app/node_modules/.pnpm/split2@4.2.0/node_modules/split2 \
     ./node_modules/split2
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/real-require@0.2.0/node_modules/real-require \
+    ./node_modules/real-require
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/sonic-boom@4.2.1/node_modules/sonic-boom \
+    ./node_modules/sonic-boom
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/thread-stream@4.2.0/node_modules/thread-stream \
+    ./node_modules/thread-stream
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/on-exit-leak-free@2.1.2/node_modules/on-exit-leak-free \
+    ./node_modules/on-exit-leak-free
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/atomic-sleep@1.0.0/node_modules/atomic-sleep \
+    ./node_modules/atomic-sleep
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers \
+    ./node_modules/pino-std-serializers
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/quick-format-unescaped@4.0.4/node_modules/quick-format-unescaped \
+    ./node_modules/quick-format-unescaped
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/safe-stable-stringify@2.5.0/node_modules/safe-stable-stringify \
+    ./node_modules/safe-stable-stringify
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/process-warning@5.0.0/node_modules/process-warning \
+    ./node_modules/process-warning
 
 # Migration tooling in an isolated directory (avoids conflicts with standalone)
 COPY --from=builder /app/node_modules   /migrate/node_modules
