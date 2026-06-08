@@ -37,7 +37,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 
 # ── yt-dlp ───────────────────────────────────────────────────────────────────
 COPY .ytdlp-version .ytdlp-version
-RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
+RUN YTDLP_VERSION=$(cat .ytdlp-version | tr -d '[:space:]') && \
     pip3 install --no-cache-dir --break-system-packages "yt-dlp==${YTDLP_VERSION}" && \
     mkdir -p node_modules/youtube-dl-exec/bin && \
     cp "$(which yt-dlp)" node_modules/youtube-dl-exec/bin/yt-dlp && \

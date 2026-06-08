@@ -30,7 +30,7 @@ jobs:
       - name: Check & update yt-dlp version
         id: check
         run: |
-          LATEST=$(curl -sf https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest | jq -r '.tag_name')
+          LATEST=$(curl -sf "https://pypi.org/pypi/yt-dlp/json" | jq -r '.info.version')
           CURRENT=$(cat .ytdlp-version 2>/dev/null | tr -d '[:space:]' || echo "")
           echo "Latest: $LATEST — Current: $CURRENT"
           echo "version=$LATEST" >> "$GITHUB_OUTPUT"
