@@ -36,13 +36,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 
 # ── yt-dlp ───────────────────────────────────────────────────────────────────
-# Install via pip3 (pure Python — architecture-independent, works on Alpine
-# musl without glibc issues). Then expose it at the path selectYtDlpPath()
-# probes: node_modules/youtube-dl-exec/bin/yt-dlp.
-#
-# PyPI strips leading zeros from version components:
-#   .ytdlp-version: 2026.03.17  →  pip version: 2026.3.17
-# awk handles the conversion.
 COPY .ytdlp-version .ytdlp-version
 RUN YTDLP_VERSION=$(awk -F. '{printf "%d.%d.%d",$1,$2,$3}' .ytdlp-version) && \
     pip3 install --no-cache-dir --break-system-packages "yt-dlp==${YTDLP_VERSION}" && \
@@ -66,19 +59,14 @@ RUN GALLERY_DL_VERSION=$(cat .gallery-dl-version) && \
     rm .gallery-dl-version
 
 # ── pino worker-thread dependencies ──────────────────────────────────────────
-# Turbopack (Next.js ≥16.1, PR #86375) writes symlinks for transitive
-# serverExternalPackages into .next/node_modules/<pkg>-<hash>@ that point
-# back four levels to the original node_modules/.pnpm/… tree.  Those symlink
-# targets do NOT exist in the standalone image, so the worker threads crash
-# with "Cannot find module 'pino-abstract-transport'" at runtime.
+# Turbopack (Next.js ≥16.1, PR #86375) writes symlinks pour les
+# serverExternalPackages dans .next/node_modules/<pkg>-<hash>@ qui pointent
+# vers node_modules/.pnpm/… — ces chemins n'existent pas dans le standalone.
+# Fix : copier les vrais fichiers dans node_modules flat ET dans .pnpm/node_modules/
+# pour couvrir les deux chemins de résolution possibles.
 #
-# Fix: copy the real package files directly into the flat node_modules so
-# Node's resolver can always find them, regardless of the pnpm layout.
-#
-# Version pinned to what pnpm-lock.yaml resolves.  If a bump breaks this
-# COPY (path not found), update the version from `pnpm list pino-abstract-transport`.
-# ── pino worker-thread dependencies ──────────────────────────────────────────
-# ── pino worker-thread dependencies ──────────────────────────────────────────
+# real-require : @0.2.0 est un symlink pnpm sans src/ dans le builder,
+# on copie @1.0.0 (fichiers réels) vers les deux destinations attendues.
 COPY --from=builder --chown=nextjs:nodejs \
     /app/node_modules/.pnpm/pino-abstract-transport@3.0.0/node_modules/pino-abstract-transport \
     ./node_modules/pino-abstract-transport
@@ -86,8 +74,14 @@ COPY --from=builder --chown=nextjs:nodejs \
     /app/node_modules/.pnpm/split2@4.2.0/node_modules/split2 \
     ./node_modules/split2
 COPY --from=builder --chown=nextjs:nodejs \
-    /app/node_modules/.pnpm/real-require@0.2.0/node_modules/real-require \
+    /app/node_modules/.pnpm/real-require@1.0.0/node_modules/real-require \
     ./node_modules/real-require
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/real-require@1.0.0/node_modules/real-require \
+    ./node_modules/.pnpm/real-require@0.2.0/node_modules/real-require
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/node_modules/.pnpm/real-require@1.0.0/node_modules/real-require \
+    ./node_modules/.pnpm/node_modules/real-require
 COPY --from=builder --chown=nextjs:nodejs \
     /app/node_modules/.pnpm/sonic-boom@4.2.1/node_modules/sonic-boom \
     ./node_modules/sonic-boom
