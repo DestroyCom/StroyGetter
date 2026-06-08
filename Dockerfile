@@ -28,7 +28,7 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-RUN apk add --no-cache ffmpeg python3 py3-pip su-exec
+RUN apk add --no-cache ffmpeg python3 py3-pip su-exec nodejs
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 # Next.js standalone + static assets
