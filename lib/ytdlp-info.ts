@@ -19,6 +19,7 @@ export async function getVideoFormats(url: string): Promise<FormatData[]> {
     noWarnings: true,
     noCheckCertificates: true,
     noPlaylist: true,
+    format: "bestvideo*+bestaudio*/best*",
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
     ...getCookiesOpt(),
     ...getBgutilOpt(),
