@@ -695,6 +695,20 @@
     "macosAsDesc": "macOS 12 Monterey o superior. Build ARM64 nativo para Macs con Apple Silicon.",
     "macosIntelLabel": "macOS Intel",
     "macosIntelMeta": ".dmg — x86_64",
-    "macosIntelDesc": "macOS 12 Monterey o superior. Build x86_64 para Macs con procesador Intel."
+    "macosIntelDesc": "macOS 12 Monterey o superior. Build x86_64 para Macs con procesador Intel.",
+    "featuresLabel": "Funcionalidades",
+    "featuresTitle": "Todo lo que tiene la versión web, y más",
+    "feat1Title": "YouTube multi-calidad",
+    "feat1Desc": "Todas las resoluciones que yt-dlp encuentra para el video, desde 4K hasta 360p. Elige una vez, descarga una vez.",
+    "feat2Title": "TikTok sin marca de agua",
+    "feat2Desc": "Flujo H264 original directamente desde el CDN de TikTok — sin marca en el fotograma.",
+    "feat3Title": "Clips de Twitch",
+    "feat3Desc": "Clips públicos de Twitch en calidad fuente o cualquier resolución disponible, exportados como MP4 o MP3.",
+    "feat4Title": "Library Ready",
+    "feat4Desc": "MP3 con título, artista, portada en alta resolución desde iTunes y letras sincronizadas desde LRClib — listo para Apple Music, Plexamp, Poweramp.",
+    "feat5Title": "Editor de metadatos",
+    "feat5Desc": "Editor integrado para corregir etiquetas antes de descargar. Útil cuando yt-dlp devuelve itags incorrectos o artista/título equivocado — corrígelo una vez, descarga limpio.",
+    "feat6Title": "Historial local",
+    "feat6Desc": "Cada descarga se registra localmente en SQLite. Vuelve a descargar cualquier archivo desde el historial sin volver a buscarlo."
   }
 }

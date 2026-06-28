@@ -1,5 +1,5 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
-import { ArrowRight, Check, Clock, Download, FileCheck, Key, Monitor, Server, Shield, ShieldCheck, Smartphone, Terminal, Zap } from "lucide-react";
+import { ArrowRight, Check, Clock, Download, FileCheck, Film, History, Key, Monitor, Music, Pencil, Server, Shield, ShieldCheck, Smartphone, Terminal, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
@@ -199,6 +199,43 @@ export default async function NativeAppPage({
                 </div>
                 <h3 className="mb-2 text-lg font-bold tracking-tight">{item.title}</h3>
                 <p className="text-sm leading-relaxed text-white/70">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section className="bg-stroy-500 px-4 py-20 md:px-14 md:py-24">
+        <div className="mx-auto max-w-9xl">
+          <div className="mb-10">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-stroy-300">
+              {t("featuresLabel")}
+            </p>
+            <h2 className="text-balance text-4xl font-bold leading-tight tracking-tight">
+              {t("featuresTitle")}
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { Icon: Film,    title: t("feat1Title"), desc: t("feat1Desc") },
+              { Icon: Smartphone, title: t("feat2Title"), desc: t("feat2Desc") },
+              { Icon: Monitor, title: t("feat3Title"), desc: t("feat3Desc") },
+              { Icon: Music,   title: t("feat4Title"), desc: t("feat4Desc"), featured: true },
+              { Icon: Pencil,  title: t("feat5Title"), desc: t("feat5Desc"), featured: true },
+              { Icon: History, title: t("feat6Title"), desc: t("feat6Desc") },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className={`flex flex-col gap-4 rounded-2xl border p-7 ${"featured" in f && f.featured ? "border-stroy-300/30 bg-stroy-700" : "border-white/8 bg-stroy-800"}`}
+              >
+                <div className="flex size-10 items-center justify-center rounded-xl bg-white/6 text-stroy-100">
+                  <f.Icon size={18} />
+                </div>
+                <div>
+                  <h3 className="mb-1.5 text-[17px] font-bold tracking-tight">{f.title}</h3>
+                  <p className="text-sm leading-relaxed text-white/70">{f.desc}</p>
+                </div>
               </div>
             ))}
           </div>
