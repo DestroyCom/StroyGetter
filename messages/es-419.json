@@ -691,6 +691,7 @@
     "gpgDesc": "Las releases están firmadas con la clave GPG 6C1D622641F44493. Importa la clave pública desde GitHub y luego verifica el archivo de firma .asc incluido en cada release.",
     "virusTitle": "Análisis VirusTotal",
     "virusDesc": "Cada binario se envía a VirusTotal antes de publicar la release. VirusTotal analiza el archivo con más de 70 antivirus simultáneamente. El enlace del análisis se publica en la descripción de la release de GitHub.",
-    "virusBtn": "Ver release en GitHub →"
+    "virusBtn": "Ver release en GitHub →",
+    "latestVersion": "Última versión disponible: "
   }
 }

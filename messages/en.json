@@ -691,6 +691,7 @@
     "gpgDesc": "Releases are signed with GPG key 6C1D622641F44493. Import the public key from GitHub, then verify the .asc signature file included with each release.",
     "virusTitle": "VirusTotal scan",
     "virusDesc": "Every binary is submitted to VirusTotal before the release is published. VirusTotal runs the file through 70+ antivirus engines simultaneously. The scan link is posted in the GitHub release description.",
-    "virusBtn": "Open release on GitHub →"
+    "virusBtn": "Open release on GitHub →",
+    "latestVersion": "Latest version: "
   }
 }

@@ -40,6 +40,24 @@ export function generateStaticParams() {
 
 const RELEASES_URL = `${siteConfig.githubNativeUrl}/releases/latest`;
 
+async function fetchLatestVersion(): Promise<string | null> {
+  try {
+    const res = await fetch(
+      "https://api.github.com/repos/DestroyCom/Stroygetter-Native/releases/latest",
+      {
+        headers: { Accept: "application/vnd.github.v3+json" },
+        cache: "force-cache",
+        next: { revalidate: 3600 },
+      }
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { tag_name?: string };
+    return data.tag_name ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const SECURITY_CMDS = {
   sha256: "shasum -a 256 -c SHA256SUMS-PLATFORM.txt",
   attest: "gh attestation verify FILE --repo DestroyCom/Stroygetter-Native",
@@ -53,7 +71,10 @@ export default async function NativeAppPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("nativeApp");
+  const [t, latestVersion] = await Promise.all([
+    getTranslations("nativeApp"),
+    fetchLatestVersion(),
+  ]);
 
   const WHY = [
     { Icon: Server, title: t("why1Title"), body: t("why1Body") },
@@ -108,8 +129,14 @@ export default async function NativeAppPage({
       {/* ── HERO ── */}
       <section className="bg-stroy-500 px-4 py-20 md:py-28">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-5 text-[12px] font-bold uppercase tracking-widest text-stroy-300">
-            {t("label")}
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-3 text-[12px] font-bold uppercase tracking-widest text-stroy-300">
+            <span>{t("label")}</span>
+            {latestVersion && (
+              <>
+                <span className="opacity-40">·</span>
+                <span>{t("latestVersion")}{latestVersion}</span>
+              </>
+            )}
           </div>
           <h1 className="mb-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight md:text-6xl">
             {t("heroTitle")}
