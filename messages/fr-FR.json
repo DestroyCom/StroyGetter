@@ -661,9 +661,6 @@
     "windowsLabel": "Windows",
     "windowsMeta": "installateur .exe",
     "windowsDesc": "Windows 10 ou supérieur. Installateur 64 bits, version portable sans droits admin.",
-    "macosLabel": "macOS",
-    "macosMeta": "image .dmg",
-    "macosDesc": "macOS 12 Monterey ou supérieur. Binaire universel (Apple Silicon + Intel).",
     "androidLabel": "Android",
     "androidMeta": ".apk — bientôt disponible",
     "androidDesc": "Le support Android est en cours de développement et arrivera dans une prochaine version. Suivez le dépôt GitHub pour les mises à jour.",
@@ -692,6 +689,12 @@
     "virusTitle": "Scan VirusTotal",
     "virusDesc": "Chaque binaire est soumis à VirusTotal avant la publication de la release. VirusTotal analyse le fichier avec plus de 70 antivirus simultanément. Le lien du scan est posté dans la description de la release GitHub.",
     "virusBtn": "Voir la release sur GitHub →",
-    "latestVersion": "Dernière version disponible : "
+    "latestVersion": "Dernière version disponible : ",
+    "macosAsLabel": "macOS Apple Silicon",
+    "macosAsMeta": ".dmg — M1/M2/M3/M4",
+    "macosAsDesc": "macOS 12 Monterey ou supérieur. Build ARM64 natif pour les Macs Apple Silicon.",
+    "macosIntelLabel": "macOS Intel",
+    "macosIntelMeta": ".dmg — x86_64",
+    "macosIntelDesc": "macOS 12 Monterey ou supérieur. Build x86_64 pour les Macs à processeur Intel."
   }
 }

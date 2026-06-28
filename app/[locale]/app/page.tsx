@@ -92,9 +92,16 @@ export default async function NativeAppPage({
     },
     {
       Icon: Monitor,
-      label: t("macosLabel"),
-      meta: t("macosMeta"),
-      desc: t("macosDesc"),
+      label: t("macosAsLabel"),
+      meta: t("macosAsMeta"),
+      desc: t("macosAsDesc"),
+      href: RELEASES_URL,
+    },
+    {
+      Icon: Monitor,
+      label: t("macosIntelLabel"),
+      meta: t("macosIntelMeta"),
+      desc: t("macosIntelDesc"),
       href: RELEASES_URL,
     },
     {
@@ -211,7 +218,7 @@ export default async function NativeAppPage({
             <p className="text-sm text-white/65">{t("downloadDesc")}</p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {PLATFORMS.map((p) => (
               <a
                 key={p.label}
