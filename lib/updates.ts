@@ -14,6 +14,49 @@ export type UpdateEntry = {
 
 export const updates: UpdateEntry[] = [
   {
+    slug: "stroygetter-native-app",
+    title: "StroyGetter Native is here — a desktop app for Windows, macOS and Linux",
+    date: "2026-06-28",
+    description:
+      "StroyGetter Native brings the full downloader to your desktop. YouTube, TikTok, Twitch, Library Ready — all running locally, no server required. ~20 MB, no dependencies.",
+    keywords: [
+      "stroygetter native app",
+      "stroygetter desktop",
+      "youtube downloader desktop app",
+      "youtube downloader offline",
+      "tiktok downloader app windows",
+      "library ready mp3 desktop",
+      "téléchargeur youtube application bureau",
+      "descargar youtube app escritorio",
+    ],
+    sections: [
+      {
+        heading: "Everything you know, running on your machine",
+        body: "StroyGetter Native is a desktop client for the tool you already use at stroygetter.fr. It ships with the same interface, the same formats, and the same logic — except nothing goes through a server. yt-dlp and FFmpeg are bundled inside the installer. You paste a link, pick a format, and the file lands on your drive. The web server being up or down is no longer your problem.",
+      },
+      {
+        heading: "YouTube, TikTok, Twitch — and Library Ready",
+        body: "YouTube downloads come with the full quality picker: every resolution yt-dlp finds is listed, plus an audio-only MP3 option. TikTok gives you video with watermark, video without watermark, and audio. Twitch supports public clips. The Library Ready mode — the feature that embeds title, artist, high-resolution artwork from iTunes, and synchronised lyrics from LRClib directly into the MP3 — is fully available in the desktop app. Drop the file into Apple Music, Plexamp, or Poweramp and everything is already filled in.",
+      },
+      {
+        heading: "Windows, macOS (Apple Silicon + Intel), and Linux",
+        body: "The first release ships four builds: Windows x64, macOS Apple Silicon, macOS Intel, and Linux x64. Android support is in progress and will arrive in a future release. Each binary is a single self-contained file — no runtime to install, no PATH to configure, no Python or Node.js required. On macOS, because the app is not signed with an Apple Developer certificate, you may need to right-click and choose Open on the first launch, or run xattr -d com.apple.quarantine /Applications/StroyGetter.app from the terminal.",
+      },
+      {
+        heading: "20 MB, not 300 MB",
+        body: "StroyGetter Native is built with Tauri v2. Tauri uses the operating system's own WebView rather than shipping a full Chromium browser, which is what most desktop apps built with Electron do. The result is an installer around 20 MB. Memory usage at runtime is similarly lightweight — the download engine runs in Rust and processes files without touching the UI thread.",
+      },
+      {
+        heading: "Verified binaries — four ways to check",
+        body: "Every release includes a SHA256SUMS file you can verify with shasum -a 256 -c. GitHub Attestations (SLSA level 2) prove that each binary was built from the exact commit in CI — verifiable with the gh CLI. Releases are also signed with GPG key 6C1D622641F44493, importable from github.com/DestroyCom.gpg. Finally, every binary is submitted to VirusTotal before release and the scan link is posted in the release description. Full verification instructions are in SECURITY.md in the repository.",
+      },
+      {
+        heading: "Download and source",
+        body: "Binaries are on GitHub Releases at github.com/DestroyCom/Stroygetter-Native/releases/latest. The full source — Rust backend, React frontend, Tauri config, and CI workflows — is MIT licensed and available in the same repository. Bug reports and contributions are welcome.",
+      },
+    ],
+  },
+  {
     slug: "v3-14-0-twitch-downloader",
     title: "Download Twitch clips — free, no app required",
     date: "2026-05-29",

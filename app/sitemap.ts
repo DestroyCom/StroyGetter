@@ -25,6 +25,7 @@ function localeEntries(
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...localeEntries("", new Date(), "monthly", 1),
+    ...localeEntries("/app", new Date("2026-06-28"), "monthly", 0.9),
     ...localeEntries("/tiktok", new Date(), "monthly", 0.9),
     ...localeEntries("/youtube", new Date(), "monthly", 0.9),
     ...localeEntries("/twitch", new Date(), "monthly", 0.9),

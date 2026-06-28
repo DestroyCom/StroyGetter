@@ -16,7 +16,9 @@
     "twitchTitle": "StroyGetter — Téléchargeur de clips Twitch gratuit",
     "twitchDesc": "Téléchargez des clips Twitch en MP4 (qualité source, 720p, 480p) ou extrayez l'audio en MP3. Gratuit, sans inscription, sans appli.",
     "youtubeTitle": "StroyGetter — Téléchargeur YouTube gratuit",
-    "youtubeDesc": "Téléchargez de la musique YouTube en MP3 Library Ready — pochette, tags ID3 et paroles synchronisées inclus. Supporte aussi le MP4 jusqu'en 4K. Gratuit."
+    "youtubeDesc": "Téléchargez de la musique YouTube en MP3 Library Ready — pochette, tags ID3 et paroles synchronisées inclus. Supporte aussi le MP4 jusqu'en 4K. Gratuit.",
+    "appTitle": "StroyGetter App — Téléchargeur Desktop & Mobile",
+    "appDesc": "Téléchargez StroyGetter en tant qu'application native pour Windows, macOS ou Android. Téléchargez des vidéos YouTube et TikTok hors ligne, sans dépendre d'un serveur."
   },
   "nav": {
     "howItWorks": "Comment ça marche",
@@ -31,7 +33,8 @@
     "home": "Accueil StroyGetter",
     "mainNavigation": "Navigation principale",
     "githubAriaLabel": "StroyGetter sur GitHub",
-    "mobileNavigation": "Navigation mobile"
+    "mobileNavigation": "Navigation mobile",
+    "app": "App"
   },
   "common": {
     "openDownloader": "Ouvrir le téléchargeur",
@@ -240,7 +243,8 @@
     "legalPrivacy": "Confidentialité",
     "legalDmca": "DMCA",
     "legalCookies": "Cookies",
-    "legalContact": "Contact"
+    "legalContact": "Contact",
+    "toolApp": "App Desktop & Mobile"
   },
   "libraryReady": {
     "badge": "Library Ready",
@@ -634,5 +638,59 @@
     "faq4A": "Les clips Twitch proposent généralement 360p, 480p, 720p60 et 1080p60 (source). Le sélecteur de qualité affiche automatiquement toutes les résolutions disponibles.",
     "githubTitle": "StroyGetter est open source",
     "githubDesc": "Mettez une étoile, signalez des problèmes ou contribuez sur GitHub."
+  },
+  "nativeApp": {
+    "label": "App native",
+    "heroTitle": "StroyGetter sur votre appareil",
+    "heroSubtitle": "hors ligne, sans serveur requis",
+    "heroDesc": "Le même téléchargeur que vous connaissez, empaqueté en application native. Téléchargez des vidéos YouTube et TikTok même quand le serveur est indisponible.",
+    "badge1": "Sans dépendance serveur",
+    "badge2": "Gratuit & open source",
+    "badge3": "Windows · macOS · Linux",
+    "whyTitle": "Pourquoi une app native ?",
+    "whyLabel": "Le problème",
+    "why1Title": "Les pannes arrivent",
+    "why1Body": "Quand le serveur web est hors ligne, vous ne pouvez rien télécharger. L'application native tourne entièrement sur votre appareil — aucune connexion requise au-delà de la vidéo elle-même.",
+    "why2Title": "Accès instantané",
+    "why2Body": "Pas d'onglet à ouvrir, pas d'URL à taper. Lancez l'app, collez un lien et téléchargez. Elle reste dans votre barre des tâches, toujours prête.",
+    "why3Title": "Interface identique",
+    "why3Body": "Même design, mêmes fonctionnalités. Vidéo YouTube, TikTok sans filigrane, audio seul — tout ce que vous connaissez, dans une fenêtre native.",
+    "downloadTitle": "Télécharger",
+    "downloadLabel": "Choisissez votre plateforme",
+    "downloadDesc": "Tous les binaires sont gratuits, open source et compilés directement depuis le dépôt GitHub.",
+    "windowsLabel": "Windows",
+    "windowsMeta": "installateur .exe",
+    "windowsDesc": "Windows 10 ou supérieur. Installateur 64 bits, version portable sans droits admin.",
+    "macosLabel": "macOS",
+    "macosMeta": "image .dmg",
+    "macosDesc": "macOS 12 Monterey ou supérieur. Binaire universel (Apple Silicon + Intel).",
+    "androidLabel": "Android",
+    "androidMeta": ".apk — bientôt disponible",
+    "androidDesc": "Le support Android est en cours de développement et arrivera dans une prochaine version. Suivez le dépôt GitHub pour les mises à jour.",
+    "downloadBtn": "Télécharger pour {platform}",
+    "allReleasesBtn": "Toutes les releases sur GitHub",
+    "sourceTitle": "Open source",
+    "sourceDesc": "StroyGetter Native est entièrement open source. Lisez le code, signalez des problèmes ou contribuez sur GitHub.",
+    "sourceBtn": "Voir le code sur GitHub",
+    "ctaTitle": "Vous préférez la version web ?",
+    "ctaDesc": "Le téléchargeur web est toujours à jour et ne nécessite aucune installation. Utilisez-le directement depuis votre navigateur.",
+    "ctaBtn": "Ouvrir le téléchargeur web",
+    "linuxLabel": "Linux",
+    "linuxMeta": ".AppImage / .deb",
+    "linuxDesc": "Linux x64. AppImage sans installation ; paquet .deb pour les distributions basées sur Debian.",
+    "comingSoon": "Bientôt disponible",
+    "securityTitle": "Comment vérifier l'authenticité de l'app ?",
+    "securityLabel": "Sécurité",
+    "securityDesc": "Chaque binaire de StroyGetter Native est vérifié par quatre méthodes indépendantes avant sa publication. Vous pouvez utiliser l'une d'elles pour confirmer que ce que vous avez téléchargé correspond exactement à ce qui a été compilé depuis le code source.",
+    "securityDocsBtn": "Guide de vérification complet (SECURITY.md)",
+    "sha256Title": "Checksum SHA-256",
+    "sha256Desc": "Chaque release inclut un fichier SHA256SUMS-PLATFORM.txt. Téléchargez-le en même temps que le binaire et exécutez la commande ci-dessous pour confirmer que le fichier n'a pas été modifié.",
+    "attestTitle": "GitHub Attestations (SLSA)",
+    "attestDesc": "Les GitHub Attestations prouvent que le binaire a été compilé par le pipeline CI officiel à partir d'un commit précis — pas assemblé manuellement ou sur une machine non fiable. Nécessite le CLI GitHub.",
+    "gpgTitle": "Signature GPG",
+    "gpgDesc": "Les releases sont signées avec la clé GPG 6C1D622641F44493. Importez la clé publique depuis GitHub, puis vérifiez le fichier de signature .asc inclus dans chaque release.",
+    "virusTitle": "Scan VirusTotal",
+    "virusDesc": "Chaque binaire est soumis à VirusTotal avant la publication de la release. VirusTotal analyse le fichier avec plus de 70 antivirus simultanément. Le lien du scan est posté dans la description de la release GitHub.",
+    "virusBtn": "Voir la release sur GitHub →"
   }
 }

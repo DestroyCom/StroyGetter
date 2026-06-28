@@ -24,6 +24,7 @@ export function SiteHeader() {
     { label: t("faq"), href: "/#faq" },
     { label: t("guide"), href: "/how-to-download-youtube-videos" },
     { label: t("updates"), href: "/updates" },
+    { label: t("app"), href: "/app" },
   ];
 
   return (

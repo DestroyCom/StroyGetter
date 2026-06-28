@@ -12,6 +12,10 @@ export const siteConfig = {
   githubUrl:
     process.env.GITHUB_URL ?? "https://github.com/DestroyCom/StroyGetter",
 
+  /** GitHub repository URL for the native app */
+  githubNativeUrl:
+    process.env.GITHUB_NATIVE_URL ?? "https://github.com/DestroyCom/Stroygetter-Native",
+
   /** DMCA / copyright takedown email */
   emailDmca: process.env.EMAIL_DMCA ?? "",
 

@@ -16,7 +16,9 @@
     "youtubeTitle": "StroyGetter — Free YouTube Video Downloader: MP4, MP3 & Library Ready",
     "youtubeDesc": "Download YouTube videos as MP4 (up to 4K), plain MP3 or Library Ready — tagged MP3 with cover art, ID3 tags and synced lyrics. Free, no signup, no ads.",
     "twitchTitle": "StroyGetter — Free Twitch Clip Downloader",
-    "twitchDesc": "Download Twitch clips as MP4 (source quality, 720p, 480p) or extract audio as MP3. Free, no signup, no app required."
+    "twitchDesc": "Download Twitch clips as MP4 (source quality, 720p, 480p) or extract audio as MP3. Free, no signup, no app required.",
+    "appTitle": "StroyGetter App — Desktop & Mobile Downloader",
+    "appDesc": "Download StroyGetter as a native app for Windows, macOS or Android. Download YouTube and TikTok videos offline, without depending on any server."
   },
   "nav": {
     "howItWorks": "How it works",
@@ -31,7 +33,8 @@
     "home": "StroyGetter home",
     "mainNavigation": "Main navigation",
     "githubAriaLabel": "StroyGetter on GitHub",
-    "mobileNavigation": "Mobile navigation"
+    "mobileNavigation": "Mobile navigation",
+    "app": "App"
   },
   "common": {
     "openDownloader": "Open the downloader",
@@ -240,7 +243,8 @@
     "legalPrivacy": "Privacy",
     "legalDmca": "DMCA",
     "legalCookies": "Cookies",
-    "legalContact": "Contact"
+    "legalContact": "Contact",
+    "toolApp": "Desktop & Mobile App"
   },
   "libraryReady": {
     "badge": "Library Ready",
@@ -634,5 +638,59 @@
     "downloading": "Downloading…",
     "photoCount": "{count, plural, one {# photo} other {# photos}}",
     "errorDownload": "Download failed. Try again."
+  },
+  "nativeApp": {
+    "label": "Native App",
+    "heroTitle": "StroyGetter on your device",
+    "heroSubtitle": "offline, no server required",
+    "heroDesc": "The same downloader you know, packaged as a native app. Download YouTube and TikTok videos even when the server is unavailable.",
+    "badge1": "No server dependency",
+    "badge2": "Free & open source",
+    "badge3": "Windows · macOS · Linux",
+    "whyTitle": "Why a native app?",
+    "whyLabel": "The problem",
+    "why1Title": "Server outages happen",
+    "why1Body": "When the web server is down, you can't download anything. The native app runs entirely on your device — no internet required beyond fetching the video itself.",
+    "why2Title": "Instant access",
+    "why2Body": "No browser tab to open, no URL to type. Launch the app, paste a link, and download. It stays in your taskbar, always ready.",
+    "why3Title": "Identical interface",
+    "why3Body": "Same design, same features. YouTube video, TikTok without watermark, audio-only — everything you're used to, wrapped in a native window.",
+    "downloadTitle": "Download",
+    "downloadLabel": "Choose your platform",
+    "downloadDesc": "All binaries are free, open source, and built directly from the GitHub repository.",
+    "windowsLabel": "Windows",
+    "windowsMeta": ".exe installer",
+    "windowsDesc": "Windows 10 or later. 64-bit installer, no admin rights required for portable version.",
+    "macosLabel": "macOS",
+    "macosMeta": ".dmg image",
+    "macosDesc": "macOS 12 Monterey or later. Universal binary (Apple Silicon + Intel).",
+    "androidLabel": "Android",
+    "androidMeta": ".apk — coming soon",
+    "androidDesc": "Android support is in progress and will ship in a future release. Follow the GitHub repository for updates.",
+    "downloadBtn": "Download for {platform}",
+    "allReleasesBtn": "All releases on GitHub",
+    "sourceTitle": "Open source",
+    "sourceDesc": "StroyGetter Native is fully open source. Read the code, report issues, or contribute on GitHub.",
+    "sourceBtn": "View source on GitHub",
+    "ctaTitle": "Prefer the web version?",
+    "ctaDesc": "The web downloader is always up to date and requires no install. Use it directly from your browser.",
+    "ctaBtn": "Open web downloader",
+    "linuxLabel": "Linux",
+    "linuxMeta": ".AppImage / .deb",
+    "linuxDesc": "Linux x64. AppImage runs without install; .deb package for Debian-based distributions.",
+    "comingSoon": "Coming soon",
+    "securityTitle": "How to verify the app's authenticity?",
+    "securityLabel": "Security",
+    "securityDesc": "Every StroyGetter Native binary is verified by four independent methods before release. You can use any of them to confirm that what you downloaded is exactly what was built from the source code.",
+    "securityDocsBtn": "Full verification guide (SECURITY.md)",
+    "sha256Title": "SHA-256 checksum",
+    "sha256Desc": "Each release includes a SHA256SUMS-PLATFORM.txt file. Download it alongside the binary and run the command below to confirm the file hasn't been altered.",
+    "attestTitle": "GitHub Attestations (SLSA)",
+    "attestDesc": "GitHub Attestations prove that the binary was built by the official CI pipeline from a specific commit — not assembled manually or on an untrusted machine. Requires the GitHub CLI.",
+    "gpgTitle": "GPG signature",
+    "gpgDesc": "Releases are signed with GPG key 6C1D622641F44493. Import the public key from GitHub, then verify the .asc signature file included with each release.",
+    "virusTitle": "VirusTotal scan",
+    "virusDesc": "Every binary is submitted to VirusTotal before the release is published. VirusTotal runs the file through 70+ antivirus engines simultaneously. The scan link is posted in the GitHub release description.",
+    "virusBtn": "Open release on GitHub →"
   }
 }

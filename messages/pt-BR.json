@@ -16,7 +16,9 @@
     "twitchTitle": "StroyGetter — Baixador de clips do Twitch grátis",
     "twitchDesc": "Baixe clips do Twitch em MP4 (qualidade fonte, 720p, 480p) ou extraia o áudio como MP3. Grátis, sem cadastro, sem app.",
     "youtubeTitle": "StroyGetter — Baixador de YouTube gratuito",
-    "youtubeDesc": "Baixe músicas do YouTube como MP3 Library Ready com capa, tags ID3 e letras sincronizadas. Também suporta MP4 até 4K."
+    "youtubeDesc": "Baixe músicas do YouTube como MP3 Library Ready com capa, tags ID3 e letras sincronizadas. Também suporta MP4 até 4K.",
+    "appTitle": "StroyGetter App — Baixador Desktop e Mobile",
+    "appDesc": "Baixe o StroyGetter como aplicativo nativo para Windows, macOS ou Android. Baixe vídeos do YouTube e TikTok offline, sem depender de nenhum servidor."
   },
   "nav": {
     "howItWorks": "Como funciona",
@@ -31,7 +33,8 @@
     "home": "Início do StroyGetter",
     "mainNavigation": "Navegação principal",
     "githubAriaLabel": "StroyGetter no GitHub",
-    "mobileNavigation": "Navegação móvel"
+    "mobileNavigation": "Navegação móvel",
+    "app": "App"
   },
   "common": {
     "openDownloader": "Abrir o baixador",
@@ -240,7 +243,8 @@
     "legalPrivacy": "Privacidade",
     "legalDmca": "DMCA",
     "legalCookies": "Cookies",
-    "legalContact": "Contato"
+    "legalContact": "Contato",
+    "toolApp": "App Desktop e Mobile"
   },
   "libraryReady": {
     "badge": "Library Ready",
@@ -634,5 +638,59 @@
     "faq4A": "Clips do Twitch geralmente oferecem 360p, 480p, 720p60 e 1080p60 (fonte). O seletor de qualidade exibe automaticamente todas as resoluções disponíveis.",
     "githubTitle": "StroyGetter é open source",
     "githubDesc": "Dê uma estrela, reporte problemas ou contribua no GitHub."
+  },
+  "nativeApp": {
+    "label": "App nativo",
+    "heroTitle": "StroyGetter no seu dispositivo",
+    "heroSubtitle": "offline, sem servidor necessário",
+    "heroDesc": "O mesmo baixador que você conhece, empacotado como app nativo. Baixe vídeos do YouTube e TikTok mesmo quando o servidor estiver indisponível.",
+    "badge1": "Sem dependência de servidor",
+    "badge2": "Gratuito e open source",
+    "badge3": "Windows · macOS · Linux",
+    "whyTitle": "Por que um app nativo?",
+    "whyLabel": "O problema",
+    "why1Title": "Interrupções acontecem",
+    "why1Body": "Quando o servidor web está fora do ar, você não consegue baixar nada. O app nativo roda inteiramente no seu dispositivo — sem internet além do próprio vídeo.",
+    "why2Title": "Acesso instantâneo",
+    "why2Body": "Sem aba para abrir nem URL para digitar. Abra o app, cole um link e baixe. Fica na sua barra de tarefas, sempre pronto.",
+    "why3Title": "Interface idêntica",
+    "why3Body": "Mesmo design, mesmas funções. Vídeo YouTube, TikTok sem marca d'água, só áudio — tudo que você já conhece, numa janela nativa.",
+    "downloadTitle": "Baixar",
+    "downloadLabel": "Escolha sua plataforma",
+    "downloadDesc": "Todos os binários são gratuitos, open source e compilados diretamente do repositório do GitHub.",
+    "windowsLabel": "Windows",
+    "windowsMeta": "instalador .exe",
+    "windowsDesc": "Windows 10 ou superior. Instalador 64 bits, versão portátil sem direitos de administrador.",
+    "macosLabel": "macOS",
+    "macosMeta": "imagem .dmg",
+    "macosDesc": "macOS 12 Monterey ou superior. Binário universal (Apple Silicon + Intel).",
+    "androidLabel": "Android",
+    "androidMeta": ".apk — em breve",
+    "androidDesc": "O suporte ao Android está em desenvolvimento e chegará numa versão futura. Acompanhe o repositório no GitHub.",
+    "downloadBtn": "Baixar para {platform}",
+    "allReleasesBtn": "Todos os lançamentos no GitHub",
+    "sourceTitle": "Open source",
+    "sourceDesc": "StroyGetter Native é totalmente open source. Leia o código, reporte problemas ou contribua no GitHub.",
+    "sourceBtn": "Ver código no GitHub",
+    "ctaTitle": "Prefere a versão web?",
+    "ctaDesc": "O baixador web está sempre atualizado e não requer instalação. Use diretamente pelo navegador.",
+    "ctaBtn": "Abrir baixador web",
+    "linuxLabel": "Linux",
+    "linuxMeta": ".AppImage / .deb",
+    "linuxDesc": "Linux x64. AppImage sem instalação; pacote .deb para distribuições baseadas em Debian.",
+    "comingSoon": "Em breve",
+    "securityTitle": "Como verificar a autenticidade do app?",
+    "securityLabel": "Segurança",
+    "securityDesc": "Cada binário do StroyGetter Native é verificado por quatro métodos independentes antes do lançamento. Você pode usar qualquer um deles para confirmar que o que baixou é exatamente o que foi compilado a partir do código fonte.",
+    "securityDocsBtn": "Guia completo de verificação (SECURITY.md)",
+    "sha256Title": "Checksum SHA-256",
+    "sha256Desc": "Cada release inclui um arquivo SHA256SUMS-PLATFORM.txt. Baixe-o junto com o binário e execute o comando abaixo para confirmar que o arquivo não foi alterado.",
+    "attestTitle": "GitHub Attestations (SLSA)",
+    "attestDesc": "As GitHub Attestations provam que o binário foi compilado pelo pipeline CI oficial a partir de um commit específico — não montado manualmente ou em uma máquina não confiável. Requer o CLI do GitHub.",
+    "gpgTitle": "Assinatura GPG",
+    "gpgDesc": "Os lançamentos são assinados com a chave GPG 6C1D622641F44493. Importe a chave pública do GitHub e verifique o arquivo de assinatura .asc incluído em cada release.",
+    "virusTitle": "Análise VirusTotal",
+    "virusDesc": "Cada binário é enviado ao VirusTotal antes da publicação. O VirusTotal analisa o arquivo com mais de 70 antivírus simultaneamente. O link da análise é publicado na descrição do release no GitHub.",
+    "virusBtn": "Ver release no GitHub →"
   }
 }

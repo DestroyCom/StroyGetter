@@ -59,6 +59,11 @@ export function SiteFooter() {
                   {t("toolFaq")}
                 </Link>
               </li>
+              <li>
+                <Link href="/app" className="transition-colors hover:text-white">
+                  {t("toolApp")}
+                </Link>
+              </li>
             </ul>
           </div>
 
