@@ -1,5 +1,5 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
-import { ArrowRight, Check, Clock, Download, FileCheck, Film, History, Key, Monitor, Music, Pencil, Server, Shield, ShieldCheck, Smartphone, Terminal, Zap } from "lucide-react";
+import { ArrowRight, Check, Download, ExternalLink, FileCheck, Film, History, Key, Monitor, Music, Pencil, Server, Shield, ShieldCheck, Smartphone, Terminal, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
@@ -281,8 +281,8 @@ export default async function NativeAppPage({
               </a>
             ))}
 
-            {/* Android — coming soon */}
-            <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-stroy-800 p-8 opacity-60">
+            {/* Android — community alternatives */}
+            <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-stroy-700 p-8">
               <div className="flex size-11 items-center justify-center rounded-xl border border-white/6 bg-stroy-950 text-stroy-200">
                 <Smartphone size={20} />
               </div>
@@ -293,10 +293,26 @@ export default async function NativeAppPage({
                 </p>
               </div>
               <p className="flex-1 text-sm leading-relaxed text-white/70">{t("androidDesc")}</p>
-              <span className="inline-flex items-center gap-2 text-sm font-semibold text-white/40">
-                <Clock size={14} />
-                {t("comingSoon")}
-              </span>
+              <div className="flex flex-col gap-2">
+                <a
+                  href="https://github.com/deniscerri/ytdlnis"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors hover:text-white"
+                >
+                  <ExternalLink size={14} />
+                  YTDLnis
+                </a>
+                <a
+                  href="https://github.com/junkfood02/Seal"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors hover:text-white"
+                >
+                  <ExternalLink size={14} />
+                  Seal
+                </a>
+              </div>
             </div>
           </div>
 
