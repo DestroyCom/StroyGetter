@@ -59,7 +59,22 @@ export function generateStaticParams() {
 
 const RELEASES_URL = `${siteConfig.githubNativeUrl}/releases/latest`;
 
-async function fetchLatestVersion(): Promise<string | null> {
+type ReleaseAssets = {
+  version: string | null;
+  windows: string | null;
+  macos: string | null;
+  linuxAppImage: string | null;
+  linuxDeb: string | null;
+};
+
+async function fetchLatestRelease(): Promise<ReleaseAssets> {
+  const empty: ReleaseAssets = {
+    version: null,
+    windows: null,
+    macos: null,
+    linuxAppImage: null,
+    linuxDeb: null,
+  };
   try {
     const res = await fetch(
       "https://api.github.com/repos/DestroyCom/Stroygetter-Native/releases/latest",
@@ -69,11 +84,23 @@ async function fetchLatestVersion(): Promise<string | null> {
         next: { revalidate: 3600 },
       }
     );
-    if (!res.ok) return null;
-    const data = (await res.json()) as { tag_name?: string };
-    return data.tag_name ?? null;
+    if (!res.ok) return empty;
+    const data = (await res.json()) as {
+      tag_name?: string;
+      assets?: { name: string; browser_download_url: string }[];
+    };
+    const assets = data.assets ?? [];
+    const find = (pattern: RegExp) =>
+      assets.find((a) => pattern.test(a.name))?.browser_download_url ?? null;
+    return {
+      version: data.tag_name ?? null,
+      windows: find(/x64-setup\.exe$/),
+      macos: find(/aarch64\.dmg$/),
+      linuxAppImage: find(/amd64\.AppImage$/),
+      linuxDeb: find(/amd64\.deb$/),
+    };
   } catch {
-    return null;
+    return empty;
   }
 }
 
@@ -86,10 +113,11 @@ const SECURITY_CMDS = {
 export default async function NativeAppPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, latestVersion] = await Promise.all([
+  const [t, release] = await Promise.all([
     getTranslations("nativeApp"),
-    fetchLatestVersion(),
+    fetchLatestRelease(),
   ]);
+  const { version: latestVersion } = release;
 
   const WHY = [
     { Icon: Server, title: t("why1Title"), body: t("why1Body") },
@@ -103,21 +131,25 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
       label: t("windowsLabel"),
       meta: t("windowsMeta"),
       desc: t("windowsDesc"),
-      href: RELEASES_URL,
+      href: release.windows ?? RELEASES_URL,
+      filename: "_x64-setup.exe",
     },
     {
       Icon: Monitor,
       label: t("macosAsLabel"),
       meta: t("macosAsMeta"),
       desc: t("macosAsDesc"),
-      href: RELEASES_URL,
+      href: release.macos ?? RELEASES_URL,
+      filename: "_aarch64.dmg",
     },
     {
       Icon: Terminal,
       label: t("linuxLabel"),
       meta: t("linuxMeta"),
       desc: t("linuxDesc"),
-      href: RELEASES_URL,
+      hrefAppImage: release.linuxAppImage ?? RELEASES_URL,
+      hrefDeb: release.linuxDeb ?? RELEASES_URL,
+      filename: "_amd64.AppImage / _amd64.deb",
     },
   ];
 
@@ -268,30 +300,69 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {PLATFORMS.map((p) => (
-              <a
-                key={p.label}
-                href={p.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="group flex flex-col gap-4 rounded-2xl border border-white/10 bg-stroy-700 p-8 transition-colors hover:border-white/25 hover:bg-stroy-600"
-              >
-                <div className="flex size-11 items-center justify-center rounded-xl border border-white/6 bg-stroy-950 text-stroy-200">
-                  <p.Icon size={20} />
+            {PLATFORMS.map((p) => {
+              const isLinux = "hrefAppImage" in p;
+              return isLinux ? (
+                <div
+                  key={p.label}
+                  className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-stroy-700 p-8"
+                >
+                  <div className="flex size-11 items-center justify-center rounded-xl border border-white/6 bg-stroy-950 text-stroy-200">
+                    <p.Icon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="mb-1 text-xl font-bold tracking-tight">{p.label}</h3>
+                    <p className="font-mono text-[11px] uppercase tracking-wider text-stroy-300">
+                      {p.meta}
+                    </p>
+                  </div>
+                  <p className="flex-1 text-sm leading-relaxed text-white/70">{p.desc}</p>
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={p.hrefAppImage}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors hover:text-white"
+                    >
+                      <Download size={14} />
+                      {t("downloadAppImage")}
+                    </a>
+                    <a
+                      href={p.hrefDeb}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors hover:text-white"
+                    >
+                      <Download size={14} />
+                      {t("downloadDeb")}
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="mb-1 text-xl font-bold tracking-tight">{p.label}</h3>
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-stroy-300">
-                    {p.meta}
-                  </p>
-                </div>
-                <p className="flex-1 text-sm leading-relaxed text-white/70">{p.desc}</p>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors group-hover:text-white">
-                  <Download size={14} />
-                  {t("downloadBtn", { platform: p.label })}
-                </span>
-              </a>
-            ))}
+              ) : (
+                <a
+                  key={p.label}
+                  href={p.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="group flex flex-col gap-4 rounded-2xl border border-white/10 bg-stroy-700 p-8 transition-colors hover:border-white/25 hover:bg-stroy-600"
+                >
+                  <div className="flex size-11 items-center justify-center rounded-xl border border-white/6 bg-stroy-950 text-stroy-200">
+                    <p.Icon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="mb-1 text-xl font-bold tracking-tight">{p.label}</h3>
+                    <p className="font-mono text-[11px] uppercase tracking-wider text-stroy-300">
+                      {p.meta}
+                    </p>
+                  </div>
+                  <p className="flex-1 text-sm leading-relaxed text-white/70">{p.desc}</p>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors group-hover:text-white">
+                    <Download size={14} />
+                    {t("downloadBtn", { platform: p.label })}
+                  </span>
+                </a>
+              );
+            })}
 
             {/* Android — community alternatives */}
             <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-stroy-700 p-8">
@@ -328,7 +399,28 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
             </div>
           </div>
 
-          <div className="mt-8 text-center">
+          {/* ── FILE GUIDE ── */}
+          <div className="mt-8 rounded-2xl border border-white/8 bg-stroy-800 px-6 py-5">
+            <p className="mb-4 text-sm font-bold text-white/90">{t("fileGuideTitle")}</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[
+                { label: t("fileGuideWindows"), file: "_x64-setup.exe" },
+                { label: t("fileGuideMac"), file: "_aarch64.dmg" },
+                { label: t("fileGuideLinuxAppImage"), file: "_amd64.AppImage" },
+                { label: t("fileGuideLinuxDeb"), file: "_amd64.deb" },
+              ].map(({ label, file }) => (
+                <div key={file} className="flex items-center justify-between gap-4 rounded-xl bg-white/4 px-4 py-2.5">
+                  <span className="text-sm text-white/70">{label}</span>
+                  <code className="shrink-0 rounded bg-black/30 px-2 py-0.5 font-mono text-[11px] text-stroy-300">
+                    {file}
+                  </code>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] text-white/40">{t("fileGuideNote")}</p>
+          </div>
+
+          <div className="mt-6 text-center">
             <a
               href={`${siteConfig.githubNativeUrl}/releases`}
               target="_blank"
