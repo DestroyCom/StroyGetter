@@ -141,6 +141,8 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
       desc: t("macosAsDesc"),
       href: release.macos ?? RELEASES_URL,
       filename: "_aarch64.dmg",
+      gatekeeperHint: t("macosGatekeeperHint"),
+      gatekeeperCmd: t("macosGatekeeperCmd"),
     },
     {
       Icon: Terminal,
@@ -302,6 +304,7 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PLATFORMS.map((p) => {
               const isLinux = "hrefAppImage" in p;
+              const hasGatekeeperHint = "gatekeeperHint" in p;
               return isLinux ? (
                 <div
                   key={p.label}
@@ -337,6 +340,39 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
                       {t("downloadDeb")}
                     </a>
                   </div>
+                </div>
+              ) : hasGatekeeperHint ? (
+                <div
+                  key={p.label}
+                  className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-stroy-700 p-8"
+                >
+                  <div className="flex size-11 items-center justify-center rounded-xl border border-white/6 bg-stroy-950 text-stroy-200">
+                    <p.Icon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="mb-1 text-xl font-bold tracking-tight">{p.label}</h3>
+                    <p className="font-mono text-[11px] uppercase tracking-wider text-stroy-300">
+                      {p.meta}
+                    </p>
+                  </div>
+                  <p className="flex-1 text-sm leading-relaxed text-white/70">{p.desc}</p>
+                  <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3">
+                    <p className="mb-2 text-[11px] leading-relaxed text-amber-300/80">
+                      {p.gatekeeperHint}
+                    </p>
+                    <code className="block select-all font-mono text-[10px] text-amber-200/70">
+                      {p.gatekeeperCmd}
+                    </code>
+                  </div>
+                  <a
+                    href={p.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-stroy-300 transition-colors hover:text-white"
+                  >
+                    <Download size={14} />
+                    {t("downloadBtn", { platform: p.label })}
+                  </a>
                 </div>
               ) : (
                 <a

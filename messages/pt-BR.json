@@ -701,6 +701,8 @@
     "macosAsLabel": "macOS Apple Silicon",
     "macosAsMeta": ".dmg — M1/M2/M3/M4",
     "macosAsDesc": "macOS 12 Monterey ou superior. Build ARM64 nativo — roda nativamente em Apple Silicon e via Rosetta 2 em Macs Intel. Sem build Intel dedicado.",
+    "macosGatekeeperHint": "O macOS pode bloquear o app no primeiro lançamento. Clique direito → Abrir, ou no terminal:",
+    "macosGatekeeperCmd": "xattr -d com.apple.quarantine /Applications/StroyGetter.app",
     "featuresLabel": "Funcionalidades",
     "featuresTitle": "Tudo que a versão web oferece, e mais",
     "feat1Title": "YouTube multi-qualidade",
