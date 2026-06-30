@@ -39,12 +39,24 @@ export const updates: UpdateEntry[] = [
         body: "YouTube downloads come with the full quality picker: every resolution yt-dlp finds is listed, plus an audio-only MP3 option. TikTok gives you video with watermark, video without watermark, and audio. Twitch supports public clips. The Library Ready mode — the feature that embeds title, artist, high-resolution artwork from iTunes, and synchronised lyrics from LRClib directly into the MP3 — is fully available in the desktop app. Drop the file into Apple Music, Plexamp, or Poweramp and everything is already filled in.",
       },
       {
-        heading: "Windows, macOS (Apple Silicon + Intel), and Linux",
-        body: "The first release ships four builds: Windows x64, macOS Apple Silicon, macOS Intel, and Linux x64. Android support is in progress and will arrive in a future release. Each binary is a single self-contained file — no runtime to install, no PATH to configure, no Python or Node.js required. On macOS, because the app is not signed with an Apple Developer certificate, you may need to right-click and choose Open on the first launch, or run xattr -d com.apple.quarantine /Applications/StroyGetter.app from the terminal.",
+        heading: "Windows, macOS Apple Silicon, and Linux",
+        body: "The first release ships three builds: Windows x64, macOS Apple Silicon, and Linux x64. The macOS build is ARM64-native and runs via Rosetta 2 on Intel Macs — no dedicated Intel binary is produced. Android was not pursued; for Android users, the recommended open-source alternatives are YTDLnis (github.com/deniscerri/ytdlnis) and Seal (github.com/junkfood02/Seal). Each binary is a single self-contained file — no runtime to install, no PATH to configure, no Python or Node.js required. On macOS, because the app is not signed with an Apple Developer certificate, you may need to right-click and choose Open on the first launch, or run xattr -d com.apple.quarantine /Applications/StroyGetter.app from the terminal.",
       },
       {
         heading: "20 MB, not 300 MB",
         body: "StroyGetter Native is built with Tauri v2. Tauri uses the operating system's own WebView rather than shipping a full Chromium browser, which is what most desktop apps built with Electron do. The result is an installer around 20 MB. Memory usage at runtime is similarly lightweight — the download engine runs in Rust and processes files without touching the UI thread.",
+      },
+      {
+        heading: "Built-in metadata editor",
+        body: "StroyGetter Native includes a metadata editor that lets you review and correct ID3 tags — title, artist, album, artwork, and lyrics — before the download starts. This is particularly useful when yt-dlp returns incorrect or mismatched metadata: you can fix the tags once in the editor and the downloaded file will already be clean. No post-processing required.",
+      },
+      {
+        heading: "Available in 4 languages",
+        body: "The interface is fully available in English, French, Spanish (Latin America), and Brazilian Portuguese. Language is detected automatically from your OS or browser preferences on first launch, and can be changed at any time from the Settings screen inside the app.",
+      },
+      {
+        heading: "Anonymous analytics and crash reporting — opt-out any time",
+        body: "StroyGetter Native includes two optional telemetry systems: Umami for anonymous usage analytics and GlitchTip for crash reports. Both are disabled by default and can be toggled independently in the Settings screen. Nothing is collected without your explicit consent. No personal data, no identifiers — just aggregate counts and stack traces when something breaks.",
       },
       {
         heading: "Verified binaries — four ways to check",
@@ -218,8 +230,7 @@ export const updates: UpdateEntry[] = [
   },
   {
     slug: "v3-4-0-rebuilt-2026",
-    title:
-      "StroyGetter is rebuilt from the ground up — faster and more reliable",
+    title: "StroyGetter is rebuilt from the ground up — faster and more reliable",
     date: "2026-05-01",
     description:
       "A complete rebuild of StroyGetter for 2026. Faster downloads, better handling of high-resolution videos, and a lighter, more reliable server.",

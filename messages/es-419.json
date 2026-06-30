@@ -692,10 +692,7 @@
     "latestVersion": "Última versión disponible: ",
     "macosAsLabel": "macOS Apple Silicon",
     "macosAsMeta": ".dmg — M1/M2/M3/M4",
-    "macosAsDesc": "macOS 12 Monterey o superior. Build ARM64 nativo para Macs con Apple Silicon.",
-    "macosIntelLabel": "macOS Intel",
-    "macosIntelMeta": ".dmg — x86_64",
-    "macosIntelDesc": "macOS 12 Monterey o superior. Build x86_64 para Macs con procesador Intel.",
+    "macosAsDesc": "macOS 12 Monterey o superior. Build ARM64 nativo — funciona de forma nativa en Apple Silicon y vía Rosetta 2 en Macs Intel. Sin build Intel dedicado.",
     "featuresLabel": "Funcionalidades",
     "featuresTitle": "Todo lo que tiene la versión web, y más",
     "feat1Title": "YouTube multi-calidad",
@@ -709,6 +706,8 @@
     "feat5Title": "Editor de metadatos",
     "feat5Desc": "Editor integrado para corregir etiquetas antes de descargar. Útil cuando yt-dlp devuelve itags incorrectos o artista/título equivocado — corrígelo una vez, descarga limpio.",
     "feat6Title": "Historial local",
-    "feat6Desc": "Cada descarga se registra localmente en SQLite. Vuelve a descargar cualquier archivo desde el historial sin volver a buscarlo."
+    "feat6Desc": "Cada descarga se registra localmente en SQLite. Vuelve a descargar cualquier archivo desde el historial sin volver a buscarlo.",
+    "feat7Title": "Disponible en 4 idiomas",
+    "feat7Desc": "La interfaz está disponible en inglés, francés, español (América Latina) y portugués de Brasil. El idioma se detecta automáticamente desde las preferencias de tu OS/navegador y se puede cambiar en los Ajustes."
   }
 }

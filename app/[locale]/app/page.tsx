@@ -1,5 +1,24 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
-import { ArrowRight, Check, Download, ExternalLink, FileCheck, Film, History, Key, Monitor, Music, Pencil, Server, Shield, ShieldCheck, Smartphone, Terminal, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Download,
+  ExternalLink,
+  FileCheck,
+  Film,
+  Globe,
+  History,
+  Key,
+  Monitor,
+  Music,
+  Pencil,
+  Server,
+  Shield,
+  ShieldCheck,
+  Smartphone,
+  Terminal,
+  Zap,
+} from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
@@ -64,11 +83,7 @@ const SECURITY_CMDS = {
   gpg: "curl https://github.com/DestroyCom.gpg | gpg --import\ngpg --verify FILE.asc FILE",
 } as const;
 
-export default async function NativeAppPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function NativeAppPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const [t, latestVersion] = await Promise.all([
@@ -95,13 +110,6 @@ export default async function NativeAppPage({
       label: t("macosAsLabel"),
       meta: t("macosAsMeta"),
       desc: t("macosAsDesc"),
-      href: RELEASES_URL,
-    },
-    {
-      Icon: Monitor,
-      label: t("macosIntelLabel"),
-      meta: t("macosIntelMeta"),
-      desc: t("macosIntelDesc"),
       href: RELEASES_URL,
     },
     {
@@ -141,7 +149,10 @@ export default async function NativeAppPage({
             {latestVersion && (
               <>
                 <span className="opacity-40">·</span>
-                <span>{t("latestVersion")}{latestVersion}</span>
+                <span>
+                  {t("latestVersion")}
+                  {latestVersion}
+                </span>
               </>
             )}
           </div>
@@ -218,12 +229,13 @@ export default async function NativeAppPage({
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { Icon: Film,    title: t("feat1Title"), desc: t("feat1Desc") },
+              { Icon: Film, title: t("feat1Title"), desc: t("feat1Desc") },
               { Icon: Smartphone, title: t("feat2Title"), desc: t("feat2Desc") },
               { Icon: Monitor, title: t("feat3Title"), desc: t("feat3Desc") },
-              { Icon: Music,   title: t("feat4Title"), desc: t("feat4Desc"), featured: true },
-              { Icon: Pencil,  title: t("feat5Title"), desc: t("feat5Desc"), featured: true },
+              { Icon: Music, title: t("feat4Title"), desc: t("feat4Desc"), featured: true },
+              { Icon: Pencil, title: t("feat5Title"), desc: t("feat5Desc"), featured: true },
               { Icon: History, title: t("feat6Title"), desc: t("feat6Desc") },
+              { Icon: Globe, title: t("feat7Title"), desc: t("feat7Desc") },
             ].map((f) => (
               <div
                 key={f.title}
@@ -255,7 +267,7 @@ export default async function NativeAppPage({
             <p className="text-sm text-white/65">{t("downloadDesc")}</p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PLATFORMS.map((p) => (
               <a
                 key={p.label}
