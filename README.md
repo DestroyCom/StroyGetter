@@ -82,6 +82,12 @@ pnpm dev                      # starts on http://localhost:3000
 | `EMAIL_PRIVACY` | `privacy@contact-stroygetter.stroyco.eu` | Privacy policy contact email shown in legal pages |
 | `BANNER_TEXT` | — | Optional. Non-empty string shows a news banner above the header. Unset or empty = hidden. No rebuild needed. |
 | `BANNER_HREF` | — | Optional. Link for the banner — relative path (e.g. `/tiktok`) or absolute URL. Omit for text-only. |
+| `YOUTUBE_DISABLED_MESSAGE` | — | Custom error shown in the search input when `ENABLE_YOUTUBE=false`. Falls back to the i18n default if unset. |
+| `YOUTUBE_DISABLED_HREF` | — | Optional link for the YouTube disabled error (relative path or absolute URL). |
+| `TIKTOK_DISABLED_MESSAGE` | — | Custom error shown when `ENABLE_TIKTOK=false`. |
+| `TIKTOK_DISABLED_HREF` | — | Optional link for the TikTok disabled error. |
+| `TWITCH_DISABLED_MESSAGE` | — | Custom error shown when `ENABLE_TWITCH=false`. |
+| `TWITCH_DISABLED_HREF` | — | Optional link for the Twitch disabled error. |
 
 ### With Docker (local)
 

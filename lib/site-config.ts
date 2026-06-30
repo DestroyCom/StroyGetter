@@ -9,8 +9,7 @@ export const siteConfig = {
   url: (process.env.SITE_URL ?? "https://stroygetter.fr").replace(/\/+$/, ""),
 
   /** GitHub repository URL */
-  githubUrl:
-    process.env.GITHUB_URL ?? "https://github.com/DestroyCom/StroyGetter",
+  githubUrl: process.env.GITHUB_URL ?? "https://github.com/DestroyCom/StroyGetter",
 
   /** GitHub repository URL for the native app */
   githubNativeUrl:
@@ -56,4 +55,12 @@ export const siteConfig = {
   enableYoutube: process.env.ENABLE_YOUTUBE !== "false",
   enableTiktok: process.env.ENABLE_TIKTOK !== "false",
   enableTwitch: process.env.ENABLE_TWITCH !== "false",
+
+  /** Custom error messages shown when a platform is disabled. Empty = fallback to i18n default. */
+  youtubeDisabledMessage: process.env.YOUTUBE_DISABLED_MESSAGE ?? "",
+  youtubeDisabledHref: process.env.YOUTUBE_DISABLED_HREF ?? "",
+  tiktokDisabledMessage: process.env.TIKTOK_DISABLED_MESSAGE ?? "",
+  tiktokDisabledHref: process.env.TIKTOK_DISABLED_HREF ?? "",
+  twitchDisabledMessage: process.env.TWITCH_DISABLED_MESSAGE ?? "",
+  twitchDisabledHref: process.env.TWITCH_DISABLED_HREF ?? "",
 } as const;

@@ -9,10 +9,18 @@ import { resolveVideoUrl } from "@/functions/resolveVideoUrl";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
 
+type DisabledMessage = { text: string; href?: string };
+
+type DisabledMessages = {
+  youtube?: DisabledMessage;
+  tiktok?: DisabledMessage;
+  twitch?: DisabledMessage;
+};
+
 const isKnownVideoUrl = (v: string): boolean =>
   v.includes("youtube.com") || v.includes("youtu.be") || v.includes("tiktok.com");
 
-export const GetterInput = () => {
+export const GetterInput = ({ disabledMessages }: { disabledMessages?: DisabledMessages }) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -25,7 +33,7 @@ export const GetterInput = () => {
 
   const [url, setUrl] = useState(videoUrl || "");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<DisabledMessage | null>(null);
   const [pasteError, setPasteError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,24 +46,34 @@ export const GetterInput = () => {
     if (videoUrl) setUrl(videoUrl);
   }, [videoUrl]);
 
+  const resolveDisabledError = (msg: string): DisabledMessage => {
+    if (msg === "TWITCH_VOD_DISABLED") return { text: t("errorTwitchVodDisabled") };
+    if (msg === "YOUTUBE_DISABLED" && disabledMessages?.youtube) return disabledMessages.youtube;
+    if (msg === "TIKTOK_DISABLED" && disabledMessages?.tiktok) return disabledMessages.tiktok;
+    if (msg === "TWITCH_DISABLED" && disabledMessages?.twitch) return disabledMessages.twitch;
+    if (["YOUTUBE_DISABLED", "TIKTOK_DISABLED", "TWITCH_DISABLED"].includes(msg))
+      return { text: t("errorPlatformDisabled") };
+    return { text: t("errorNotFound") };
+  };
+
   const submitUrl = async (value: string, source: "typed" | "pasted" = "typed") => {
-    setError("");
+    setError(null);
     setIsLoading(true);
-    track("search", { query: value, is_url: isKnownVideoUrl(value), source, ...(landingPage && { landing_page: landingPage }) });
+    track("search", {
+      query: value,
+      is_url: isKnownVideoUrl(value),
+      source,
+      ...(landingPage && { landing_page: landingPage }),
+    });
     try {
       const resolvedUrl = await resolveVideoUrl(value);
       router.push(`/fetch?videoUrl=${resolvedUrl}`);
     } catch (err) {
-      track("search_error", { query: value, error_type: err instanceof Error ? err.message : "unknown" });
-      const msg = err instanceof Error ? err.message : "";
-      const PLATFORM_DISABLED_ERRORS = ["YOUTUBE_DISABLED", "TIKTOK_DISABLED", "TWITCH_DISABLED"];
-      setError(
-        msg === "TWITCH_VOD_DISABLED"
-          ? t("errorTwitchVodDisabled")
-          : PLATFORM_DISABLED_ERRORS.includes(msg)
-            ? t("errorPlatformDisabled")
-            : t("errorNotFound")
-      );
+      track("search_error", {
+        query: value,
+        error_type: err instanceof Error ? err.message : "unknown",
+      });
+      setError(resolveDisabledError(err instanceof Error ? err.message : ""));
       setIsLoading(false);
     }
   };
@@ -101,7 +119,7 @@ export const GetterInput = () => {
           value={url}
           onChange={(e) => {
             setUrl(e.target.value);
-            if (error) setError("");
+            if (error) setError(null);
           }}
         />
         <button
@@ -117,7 +135,17 @@ export const GetterInput = () => {
       </label>
 
       {pasteError && <p className="mb-2 text-center text-xs text-red-400">{pasteError}</p>}
-      {error && <p className="mb-2 text-center text-xs text-red-400">{error}</p>}
+      {error &&
+        (error.href ? (
+          <a
+            href={error.href}
+            className="mb-2 block text-center text-xs font-semibold text-red-400 underline underline-offset-2 hover:text-red-300"
+          >
+            {error.text}
+          </a>
+        ) : (
+          <p className="mb-2 text-center text-xs text-red-400">{error.text}</p>
+        ))}
 
       <button
         type="submit"

@@ -11,7 +11,7 @@ import {
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
-import { GetterInput } from "@/components/custom/GetterInput";
+import { GetterInputServer } from "@/components/custom/GetterInputServer";
 import { JsonLd } from "@/components/custom/JsonLd";
 import { SkeletonInput } from "@/components/custom/SkeletonInput";
 import { buildAlternates } from "@/i18n/metadata";
@@ -137,7 +137,7 @@ export default async function LibraryReadyPage({
           </p>
 
           <Suspense fallback={<SkeletonInput />}>
-            <GetterInput />
+            <GetterInputServer />
           </Suspense>
 
           <div className="mt-6 flex flex-wrap justify-center gap-x-7 gap-y-2 text-sm text-white/70">
