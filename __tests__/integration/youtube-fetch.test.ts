@@ -44,6 +44,6 @@ describe("YouTube fetch integration — real network required", () => {
       const title = info.basic_info.title ?? "";
       expect(title).toContain(expectedTitle);
     },
-    15_000,
+    15_000
   );
 });

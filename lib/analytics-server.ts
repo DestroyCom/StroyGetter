@@ -11,7 +11,7 @@ interface TrackContext {
 export async function trackServer(
   event: string,
   data?: ServerData,
-  context?: TrackContext,
+  context?: TrackContext
 ): Promise<void> {
   const umamiUrl = process.env.UMAMI_URL;
   const websiteId = process.env.UMAMI_WEBSITE_ID;
@@ -29,8 +29,7 @@ export async function trackServer(
         website: websiteId,
         url: context?.url ?? "/",
         hostname:
-          context?.hostname ??
-          new URL(process.env.SITE_URL ?? "https://stroygetter.fr").hostname,
+          context?.hostname ?? new URL(process.env.SITE_URL ?? "https://stroygetter.fr").hostname,
         language: context?.language ?? "",
         referrer: context?.referrer ?? "",
         name: event,

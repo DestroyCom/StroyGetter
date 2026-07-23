@@ -11,8 +11,8 @@ vi.mock("@/lib/request-context", () => ({
   hashIp: vi.fn((ip) => `hash(${ip})`),
 }));
 
-import { isRateLimited } from "@/lib/rate-limiter";
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
+import { isRateLimited } from "@/lib/rate-limiter";
 
 function makeRequest(headers: Record<string, string> = {}, url = "https://example.com/api/test") {
   return new Request(url, { headers });

@@ -224,8 +224,20 @@ export async function GET(request: Request) {
 
       void trackServer(
         "download_completed",
-        { source: "twitch", format: "twitch-video", title, quality, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
-        { url: "/api/download/twitch-video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+        {
+          source: "twitch",
+          format: "twitch-video",
+          title,
+          quality,
+          cache_hit: cacheHit,
+          file_size_bytes: fileSizeBytes,
+          total_ms: totalMs,
+        },
+        {
+          url: "/api/download/twitch-video",
+          userAgent: request.headers.get("user-agent") ?? undefined,
+          language: request.headers.get("accept-language")?.split(",")[0] ?? undefined,
+        }
       );
 
       const stream = fs.createReadStream(filePath);

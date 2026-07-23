@@ -265,8 +265,21 @@ export async function GET(request: Request) {
 
       void trackServer(
         "download_completed",
-        { source: "youtube", format: "mp4", title, video_id: videoId, quality, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
-        { url: "/api/download/video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+        {
+          source: "youtube",
+          format: "mp4",
+          title,
+          video_id: videoId,
+          quality,
+          cache_hit: cacheHit,
+          file_size_bytes: fileSizeBytes,
+          total_ms: totalMs,
+        },
+        {
+          url: "/api/download/video",
+          userAgent: request.headers.get("user-agent") ?? undefined,
+          language: request.headers.get("accept-language")?.split(",")[0] ?? undefined,
+        }
       );
 
       const stream = fs.createReadStream(filePath);

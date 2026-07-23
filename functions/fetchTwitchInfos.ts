@@ -3,7 +3,7 @@
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { selectYtDlpPath, twitch_validate } from "@/lib/serverUtils";
-import { TWITCH_ITAG, type FormatData, type VideoData } from "@/lib/types";
+import { type FormatData, TWITCH_ITAG, type VideoData } from "@/lib/types";
 import { getCookiesOpt } from "@/lib/ytdlp-cookies";
 
 const log = logger.child({ module: "fetch-twitch-infos" });

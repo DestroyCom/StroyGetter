@@ -44,7 +44,7 @@ describe("isRateLimited", () => {
     for (let i = 0; i < 9; i++) fn("1.2.3.4");
     vi.setSystemTime(30_000);
     expect(fn("1.2.3.4")).toBe(false); // 10th — allowed
-    expect(fn("1.2.3.4")).toBe(true);  // 11th — blocked
+    expect(fn("1.2.3.4")).toBe(true); // 11th — blocked
     vi.setSystemTime(61_000);
     expect(fn("1.2.3.4")).toBe(false); // 9 expired, 1+1=2 remain
   });

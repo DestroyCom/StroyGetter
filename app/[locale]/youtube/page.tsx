@@ -172,7 +172,7 @@ export default async function YouTubePage({ params }: { params: Promise<{ locale
                 <span key={badge} className="flex items-center gap-1.5">
                   <Check size={14} className="text-stroy-300" /> {badge}
                 </span>
-              ),
+              )
             )}
           </div>
           <p className="mt-3 text-xs italic text-white/50">{t("ytHeroDisclaimer")}</p>

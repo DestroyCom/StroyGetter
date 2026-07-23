@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { detectSource, sanitizeDownloadTitle, sanitizeFilename, tiktok_validate, twitch_validate, yt_validate } from "@/lib/serverUtils";
+import {
+  detectSource,
+  sanitizeDownloadTitle,
+  sanitizeFilename,
+  tiktok_validate,
+  twitch_validate,
+  yt_validate,
+} from "@/lib/serverUtils";
 
 describe("yt_validate", () => {
   it("returns 'video' for a standard watch URL", () => {
@@ -99,7 +106,9 @@ describe("twitch_validate", () => {
     expect(twitch_validate("https://twitch.tv/videos/1234567890")).toBe(false);
   });
   it("returns 'video' for a channel clip URL", () => {
-    expect(twitch_validate("https://www.twitch.tv/clip5k/clip/SullenDeliciousLorisWow-u-SUuTpMLb1b8IZe")).toBe("video");
+    expect(
+      twitch_validate("https://www.twitch.tv/clip5k/clip/SullenDeliciousLorisWow-u-SUuTpMLb1b8IZe")
+    ).toBe("video");
   });
   it("returns 'video' for a clips.twitch.tv URL", () => {
     expect(twitch_validate("https://clips.twitch.tv/SomeCoolSlugHere")).toBe("video");

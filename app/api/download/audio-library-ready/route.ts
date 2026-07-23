@@ -83,7 +83,16 @@ export async function GET(request: Request) {
 
     // ── Phase 2: Canonical identity ───────────────────────────────────────────
     const hasNativeMetadata = !!(fullInfo.track && fullInfo.artist);
-    let canonical: { artist: string; title: string; album?: string; year?: number; trackNumber?: number; genre?: string; coverUrl?: string; label?: string };
+    let canonical: {
+      artist: string;
+      title: string;
+      album?: string;
+      year?: number;
+      trackNumber?: number;
+      genre?: string;
+      coverUrl?: string;
+      label?: string;
+    };
 
     if (hasNativeMetadata) {
       canonical = { artist: match.artist, title: match.title };
@@ -250,8 +259,24 @@ export async function GET(request: Request) {
       const stream = fs.createReadStream(mp3Path);
       stream.on("close", () => cleanFiles([mp3Path]));
 
-      const metadataSource = meta ? "primary" : ytMusicMeta ? "youtube-music" : deezerMeta ? "deezer" : "fallback";
-      const coverSource = meta?.coverUrl ? "primary" : ytMusicMeta?.coverUrl ? "youtube-music" : deezerMeta?.coverUrl ? "deezer" : canonical.coverUrl ? "canonical" : ytThumbnail ? "youtube-thumbnail" : null;
+      const metadataSource = meta
+        ? "primary"
+        : ytMusicMeta
+          ? "youtube-music"
+          : deezerMeta
+            ? "deezer"
+            : "fallback";
+      const coverSource = meta?.coverUrl
+        ? "primary"
+        : ytMusicMeta?.coverUrl
+          ? "youtube-music"
+          : deezerMeta?.coverUrl
+            ? "deezer"
+            : canonical.coverUrl
+              ? "canonical"
+              : ytThumbnail
+                ? "youtube-thumbnail"
+                : null;
 
       void trackServer(
         "library_ready_completed",
@@ -263,7 +288,13 @@ export async function GET(request: Request) {
           metadata_source: metadataSource,
           has_native_metadata: hasNativeMetadata,
           lyrics_found: !!lyrics,
-          cover_found: !!(meta?.coverUrl ?? deezerMeta?.coverUrl ?? ytMusicMeta?.coverUrl ?? canonical.coverUrl ?? ytThumbnail),
+          cover_found: !!(
+            meta?.coverUrl ??
+            deezerMeta?.coverUrl ??
+            ytMusicMeta?.coverUrl ??
+            canonical.coverUrl ??
+            ytThumbnail
+          ),
           cover_source: coverSource,
         },
         {

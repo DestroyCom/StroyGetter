@@ -56,7 +56,11 @@ export function TikTokPhotoSlider({ data }: Props) {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      track("download_completed", { source: "tiktok", format: "tiktok-photo", download_duration_ms: Date.now() - downloadStartMs });
+      track("download_completed", {
+        source: "tiktok",
+        format: "tiktok-photo",
+        download_duration_ms: Date.now() - downloadStartMs,
+      });
     } catch (err) {
       const reason = err instanceof Error ? err.message : "unknown";
       track("download_failed", { source: "tiktok", format: "tiktok-photo", reason });

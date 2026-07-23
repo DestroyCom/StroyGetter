@@ -22,7 +22,6 @@ export function getGalleryDlBinaryPath(): string {
     } catch {}
   }
 
-  if (!_bin)
-    throw new Error("gallery-dl not found. Run: pip3 install gallery-dl==1.32.1");
+  if (!_bin) throw new Error("gallery-dl not found. Run: pip3 install gallery-dl==1.32.1");
   return _bin;
 }

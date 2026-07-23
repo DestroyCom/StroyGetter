@@ -159,7 +159,8 @@ export async function GET(request: Request) {
     const videoId = url.match(/\/(?:video|photo)\/(\d+)/)?.[1] ?? null;
     const titleParam = params.get("title");
     const titlePart = titleParam ? sanitizeDownloadTitle(titleParam) : null;
-    const downloadFilename = [handle, titlePart, videoId].filter(Boolean).join("-") || "TikTok_Video";
+    const downloadFilename =
+      [handle, titlePart, videoId].filter(Boolean).join("-") || "TikTok_Video";
 
     // Keep the internal cache title simple
     const title = titleParam ?? "TikTok Video";
@@ -241,8 +242,19 @@ export async function GET(request: Request) {
 
       void trackServer(
         "download_completed",
-        { source: "tiktok", format: qualityLabel, title, cache_hit: cacheHit, file_size_bytes: fileSizeBytes, total_ms: totalMs },
-        { url: "/api/download/tiktok-video", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+        {
+          source: "tiktok",
+          format: qualityLabel,
+          title,
+          cache_hit: cacheHit,
+          file_size_bytes: fileSizeBytes,
+          total_ms: totalMs,
+        },
+        {
+          url: "/api/download/tiktok-video",
+          userAgent: request.headers.get("user-agent") ?? undefined,
+          language: request.headers.get("accept-language")?.split(",")[0] ?? undefined,
+        }
       );
 
       const stream = fs.createReadStream(filePath);

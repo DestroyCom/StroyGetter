@@ -1,12 +1,12 @@
 "use client";
 
-import { track } from "@/lib/analytics";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { track } from "@/lib/analytics";
 
 interface FaqItem {
   q: string;

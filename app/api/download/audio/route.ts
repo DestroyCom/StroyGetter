@@ -119,8 +119,20 @@ export async function GET(request: Request) {
 
       void trackServer(
         "download_completed",
-        { source: "youtube", format: "mp3", title, video_id: videoId, duration_s: durationSec, file_size_bytes: fileSizeBytes, total_ms: totalMs },
-        { url: "/api/download/audio", userAgent: request.headers.get("user-agent") ?? undefined, language: request.headers.get("accept-language")?.split(",")[0] ?? undefined },
+        {
+          source: "youtube",
+          format: "mp3",
+          title,
+          video_id: videoId,
+          duration_s: durationSec,
+          file_size_bytes: fileSizeBytes,
+          total_ms: totalMs,
+        },
+        {
+          url: "/api/download/audio",
+          userAgent: request.headers.get("user-agent") ?? undefined,
+          language: request.headers.get("accept-language")?.split(",")[0] ?? undefined,
+        }
       );
 
       // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast

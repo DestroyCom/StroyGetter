@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { detectTiktokType } from "@/lib/tiktok-detect";
 
 const mockFetch = vi.fn();
@@ -10,16 +10,12 @@ beforeEach(() => {
 
 describe("detectTiktokType", () => {
   it("returns 'photo' for explicit /photo/ URL", async () => {
-    const result = await detectTiktokType(
-      "https://www.tiktok.com/@user/photo/7646118320072330518"
-    );
+    const result = await detectTiktokType("https://www.tiktok.com/@user/photo/7646118320072330518");
     expect(result).toBe("photo");
   });
 
   it("returns 'video' for explicit /video/ URL", async () => {
-    const result = await detectTiktokType(
-      "https://www.tiktok.com/@user/video/7642004084970540321"
-    );
+    const result = await detectTiktokType("https://www.tiktok.com/@user/video/7642004084970540321");
     expect(result).toBe("video");
   });
 

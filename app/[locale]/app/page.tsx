@@ -113,10 +113,7 @@ const SECURITY_CMDS = {
 export default async function NativeAppPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, release] = await Promise.all([
-    getTranslations("nativeApp"),
-    fetchLatestRelease(),
-  ]);
+  const [t, release] = await Promise.all([getTranslations("nativeApp"), fetchLatestRelease()]);
   const { version: latestVersion } = release;
 
   const WHY = [
@@ -445,7 +442,10 @@ export default async function NativeAppPage({ params }: { params: Promise<{ loca
                 { label: t("fileGuideLinuxAppImage"), file: "_amd64.AppImage" },
                 { label: t("fileGuideLinuxDeb"), file: "_amd64.deb" },
               ].map(({ label, file }) => (
-                <div key={file} className="flex items-center justify-between gap-4 rounded-xl bg-white/4 px-4 py-2.5">
+                <div
+                  key={file}
+                  className="flex items-center justify-between gap-4 rounded-xl bg-white/4 px-4 py-2.5"
+                >
                   <span className="text-sm text-white/70">{label}</span>
                   <code className="shrink-0 rounded bg-black/30 px-2 py-0.5 font-mono text-[11px] text-stroy-300">
                     {file}

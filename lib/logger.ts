@@ -93,5 +93,5 @@ export const logger = pino(
     base: { service: "stroygetter" },
     timestamp: pino.stdTimeFunctions.isoTime,
   },
-  transport,
+  transport
 );

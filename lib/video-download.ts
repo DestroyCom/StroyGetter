@@ -62,8 +62,22 @@ export async function downloadStreamsToFiles(
 
   const cookiesArgs = getCookiesArgs();
   const bgutilArgs = getBgutilArgs();
-  const audioProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, ...bgutilArgs, "-f", "ba[ext=m4a]/ba[acodec^=mp4a]/ba", url]);
-  const videoProc = spawn(bin, [...YT_DLP_BASE, ...cookiesArgs, ...bgutilArgs, "-f", formatItag, url]);
+  const audioProc = spawn(bin, [
+    ...YT_DLP_BASE,
+    ...cookiesArgs,
+    ...bgutilArgs,
+    "-f",
+    "ba[ext=m4a]/ba[acodec^=mp4a]/ba",
+    url,
+  ]);
+  const videoProc = spawn(bin, [
+    ...YT_DLP_BASE,
+    ...cookiesArgs,
+    ...bgutilArgs,
+    "-f",
+    formatItag,
+    url,
+  ]);
 
   if (!audioProc.stdout || !videoProc.stdout) {
     audioProc.kill();

@@ -25,9 +25,7 @@ describe("extractVideoId", () => {
   });
   it("extracts ID from a YouTube Mix / Radio URL (list=RD...)", () => {
     expect(
-      extractVideoId(
-        "https://www.youtube.com/watch?v=luotSpkyCVU&list=RDluotSpkyCVU&start_radio=1"
-      )
+      extractVideoId("https://www.youtube.com/watch?v=luotSpkyCVU&list=RDluotSpkyCVU&start_radio=1")
     ).toBe("luotSpkyCVU");
   });
   it("extracts ID from a youtu.be URL with si= tracking param", () => {

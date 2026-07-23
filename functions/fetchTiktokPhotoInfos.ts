@@ -1,8 +1,8 @@
 "use server";
 
 import { spawn } from "node:child_process";
-import { logger } from "@/lib/logger";
 import { getGalleryDlBinaryPath } from "@/lib/gallery-dl-binary";
+import { logger } from "@/lib/logger";
 import type { TikTokPhotoData } from "@/lib/types";
 
 const log = logger.child({ module: "fetch-tiktok-photo-infos" });
@@ -64,7 +64,9 @@ async function resolveItems(url: string): Promise<GalleryDlItem[]> {
   return items;
 }
 
-export async function getTikTokPhotoInfos(url: string): Promise<TikTokPhotoData | { error: string }> {
+export async function getTikTokPhotoInfos(
+  url: string
+): Promise<TikTokPhotoData | { error: string }> {
   log.info({ url }, "Fetching TikTok photo post via gallery-dl");
   const startTime = Date.now();
 
@@ -105,8 +107,7 @@ export async function getTikTokPhotoInfos(url: string): Promise<TikTokPhotoData 
     };
   });
 
-  const thumbnail: string =
-    data.imagePost?.cover?.imageURL?.urlList?.[0] ?? images[0]?.url ?? "";
+  const thumbnail: string = data.imagePost?.cover?.imageURL?.urlList?.[0] ?? images[0]?.url ?? "";
 
   log.info(
     { url, imageCount: images.length, durationMs: Date.now() - startTime },

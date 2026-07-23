@@ -22,9 +22,7 @@ export const youtubeMusicProvider: MetadataProvider = {
 
       // thumbnail.contents holds the array of sized thumbnails on YT Music
       const thumbs = song.thumbnail?.contents ?? [];
-      const best = [...thumbs].sort(
-        (a, b) => (b.width ?? 0) - (a.width ?? 0)
-      )[0];
+      const best = [...thumbs].sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0];
       const coverUrl: string | undefined = best?.url;
 
       if (!coverUrl) return null;

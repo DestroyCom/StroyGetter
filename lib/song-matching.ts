@@ -41,23 +41,32 @@ export async function getYtDlpFullInfo(url: string): Promise<YtDlpFullInfo> {
 
 // Strips trailing noise (M/V, Official Video, pipe-rest, etc.) from a YouTube title until stable.
 export function stripNoise(s: string): string {
-  let out = s.replace(/\s*\|.*$/, '').trim();
-  let prev = '';
+  let out = s.replace(/\s*\|.*$/, "").trim();
+  let prev = "";
   while (prev !== out) {
     prev = out;
     out = out
       // Bare dash-prefixed noise suffix at end (run first so "- Official Video" strips as one unit)
-      .replace(/\s*[-–—]\s*(?:official|officiel|lyrics?|audio|video|music|visualizer|mv|clip|live|performance|remaster(?:ed)?).*/gi, '')
+      .replace(
+        /\s*[-–—]\s*(?:official|officiel|lyrics?|audio|video|music|visualizer|mv|clip|live|performance|remaster(?:ed)?).*/gi,
+        ""
+      )
       // Bare MV / M/V at end, optionally preceded by Official or Special (no leading space required)
-      .replace(/\s*(?:(?:official|special)\s+)?M\/?V\s*$/i, '')
+      .replace(/\s*(?:(?:official|special)\s+)?M\/?V\s*$/i, "")
       // Bare noise keywords at end: Music Video, Official Video, Lyric Video, Audio, Clip
-      .replace(/\s*(?:official\s+)?(?:music\s+video|lyric(?:s)?\s+video|audio|video|clip|visualizer)\s*$/i, '')
+      .replace(
+        /\s*(?:official\s+)?(?:music\s+video|lyric(?:s)?\s+video|audio|video|clip|visualizer)\s*$/i,
+        ""
+      )
       // Official alone at end (after other noise already stripped)
-      .replace(/\s*official\s*$/i, '')
+      .replace(/\s*official\s*$/i, "")
       // Parenthesised/bracketed noise block at end (\b prevents edit matching edition)
-      .replace(/\s*[(\[][^)\]]*\b(?:official|officiel|lyrics?|audio|video|music|hd|hq|mv|4k|8k|clip|visualizer|live|remaster(?:ed)?|version|edit|performance|acoustic)\b[^)\]]*[)\]]\s*$/gi, '')
+      .replace(
+        /\s*[([][^)\]]*\b(?:official|officiel|lyrics?|audio|video|music|hd|hq|mv|4k|8k|clip|visualizer|live|remaster(?:ed)?|version|edit|performance|acoustic)\b[^)\]]*[)\]]\s*$/gi,
+        ""
+      )
       // Trailing bare dash left behind after stripping (e.g. "Artist - Title -")
-      .replace(/\s*[-–—]\s*$/, '')
+      .replace(/\s*[-–—]\s*$/, "")
       .trim();
   }
   return out;
@@ -66,9 +75,11 @@ export function stripNoise(s: string): string {
 // Quote char class: “=” ‘=’ ‘=’ ’=’ “=” ”=”
 // All \uNNNN so the file encoding cannot silently replace them with look-alike chars.
 // Pattern 1: Artist - “Title”  (dash + quoted title)
-const DASH_QUOTED_RE = /^(.+?)\s*[-–—]\s*[\u0022\u0027\u2018\u2019\u201C\u201D](.+?)[\u0022\u0027\u2018\u2019\u201C\u201D]\s*$/;
+const DASH_QUOTED_RE =
+  /^(.+?)\s*[-–—]\s*[\u0022\u0027\u2018\u2019\u201C\u201D](.+?)[\u0022\u0027\u2018\u2019\u201C\u201D]\s*$/;
 // Pattern 2: Artist “Title”  (space-separated, no dash — e.g. TWICE ONE SPARK)
-const SPACE_QUOTED_RE = /^(.+?)\s+[\u0022\u0027\u2018\u2019\u201C\u201D](.+?)[\u0022\u0027\u2018\u2019\u201C\u201D]\s*$/;
+const SPACE_QUOTED_RE =
+  /^(.+?)\s+[\u0022\u0027\u2018\u2019\u201C\u201D](.+?)[\u0022\u0027\u2018\u2019\u201C\u201D]\s*$/;
 // Pattern 3: Artist「Title」 / Artist『Title』  (Japanese/Korean corner brackets)
 const CORNER_RE = /^(.+?)\s*[「『](.+?)[」』]\s*$/;
 // Pattern 4: Artist - Title  (standard dash separator)
@@ -129,8 +140,10 @@ function candidateMatchesReference(
   referenceArtist: string | undefined,
   referenceTitle: string | undefined
 ): boolean {
-  const artistOk = !referenceArtist || !candidate.artist || artistsMatch(referenceArtist, candidate.artist);
-  const titleOk = !referenceTitle || !candidate.title || titlesSimilar(referenceTitle, candidate.title);
+  const artistOk =
+    !referenceArtist || !candidate.artist || artistsMatch(referenceArtist, candidate.artist);
+  const titleOk =
+    !referenceTitle || !candidate.title || titlesSimilar(referenceTitle, candidate.title);
   return artistOk && titleOk;
 }
 
@@ -161,9 +174,7 @@ export async function resolveCanonicalIdentity(
   // Catches both "the cure" → The Cure (artist mismatch) and "the cure" → "The Rose Song"
   // (artist matches but wrong song — common when a brand-new track isn't indexed yet).
   if (!candidateMatchesReference(candidate, referenceArtist, referenceTitle)) {
-    const structuredQuery = parsed
-      ? `${parsed.artist} ${parsed.title}`
-      : `${knownArtist} ${query}`;
+    const structuredQuery = parsed ? `${parsed.artist} ${parsed.title}` : `${knownArtist} ${query}`;
     const [retryItunes, retryDeezer] = await Promise.all([
       searchItunesByQuery(structuredQuery),
       searchDeezerByQuery(structuredQuery),

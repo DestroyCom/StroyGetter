@@ -4,6 +4,7 @@ import { Disc3, Download, Film, Music } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { Progress } from "@/components/ui/progress";
 import {
   Select,
@@ -14,13 +15,12 @@ import {
 } from "@/components/ui/select";
 import { getVideoInfos } from "@/functions/fetchVideoinfos";
 import { useRouter } from "@/i18n/navigation";
-import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { track } from "@/lib/analytics";
 import type { TikTokPhotoData, VideoData } from "@/lib/types";
 import { TIKTOK_ITAG } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { VideoLoading } from "./VideoLoading";
 import { TikTokPhotoSlider } from "./TikTokPhotoSlider";
+import { VideoLoading } from "./VideoLoading";
 
 const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? "";
 
@@ -72,11 +72,22 @@ export const VideoSelect = ({ source }: Props) => {
   ];
 
   const TWITCH_TABS: { id: TwitchFmt; label: string; sub: string; Icon: typeof Film }[] = [
-    { id: "twitch-video", label: t("formatTwitchVideo"), sub: t("formatTwitchVideoSub"), Icon: Film },
-    { id: "twitch-audio", label: t("formatTwitchAudio"), sub: t("formatTwitchAudioSub"), Icon: Music },
+    {
+      id: "twitch-video",
+      label: t("formatTwitchVideo"),
+      sub: t("formatTwitchVideoSub"),
+      Icon: Film,
+    },
+    {
+      id: "twitch-audio",
+      label: t("formatTwitchAudio"),
+      sub: t("formatTwitchAudioSub"),
+      Icon: Music,
+    },
   ];
 
-  const FORMAT_TABS = source === "tiktok" ? TIKTOK_TABS : source === "twitch" ? TWITCH_TABS : YOUTUBE_TABS;
+  const FORMAT_TABS =
+    source === "tiktok" ? TIKTOK_TABS : source === "twitch" ? TWITCH_TABS : YOUTUBE_TABS;
 
   const EDU_CARDS =
     source === "tiktok"
@@ -86,18 +97,23 @@ export const VideoSelect = ({ source }: Props) => {
           { title: t("eduCardTiktok3Title"), desc: t("eduCardTiktok3Desc") },
         ]
       : source === "twitch"
-      ? [
-          { title: t("eduCardTwitch1Title"), desc: t("eduCardTwitch1Desc") },
-          { title: t("eduCardTwitch2Title"), desc: t("eduCardTwitch2Desc") },
-          { title: t("eduCardTwitch3Title"), desc: t("eduCardTwitch3Desc") },
-        ]
-      : [
-          { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
-          { title: t("eduCard2Title"), desc: t("eduCard2Desc") },
-          { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
-        ];
+        ? [
+            { title: t("eduCardTwitch1Title"), desc: t("eduCardTwitch1Desc") },
+            { title: t("eduCardTwitch2Title"), desc: t("eduCardTwitch2Desc") },
+            { title: t("eduCardTwitch3Title"), desc: t("eduCardTwitch3Desc") },
+          ]
+        : [
+            { title: t("eduCard1Title"), desc: t("eduCard1Desc") },
+            { title: t("eduCard2Title"), desc: t("eduCard2Desc") },
+            { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
+          ];
 
-  const defaultFmt: Fmt = source === "tiktok" ? "tiktok-no-watermark" : source === "twitch" ? "twitch-video" : "library-ready";
+  const defaultFmt: Fmt =
+    source === "tiktok"
+      ? "tiktok-no-watermark"
+      : source === "twitch"
+        ? "twitch-video"
+        : "library-ready";
 
   const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
@@ -204,8 +220,8 @@ export const VideoSelect = ({ source }: Props) => {
       fmt === "mp4"
         ? (formats?.find((f) => f.itag.toString() === selectedItag)?.qualityLabel ?? selectedItag)
         : fmt === "twitch-video"
-        ? (formats?.find((f) => f.formatId === selectedItag)?.qualityLabel ?? selectedItag)
-        : fmt;
+          ? (formats?.find((f) => f.formatId === selectedItag)?.qualityLabel ?? selectedItag)
+          : fmt;
 
     track("download_started", {
       ...(videoId !== undefined && { video_id: videoId }),
@@ -241,7 +257,9 @@ export const VideoSelect = ({ source }: Props) => {
 
       setLoadProgress(100);
 
-      const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark", "twitch-video"].includes(fmt) ? "mp4" : "mp3";
+      const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark", "twitch-video"].includes(fmt)
+        ? "mp4"
+        : "mp3";
       const disposition = res.headers.get("content-disposition");
       const cdFilename = disposition?.match(/filename="([^"]+)"/)?.[1];
       const blob = await res.blob();
@@ -263,7 +281,11 @@ export const VideoSelect = ({ source }: Props) => {
       });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
-      track("download_failed", { ...(videoId !== undefined && { video_id: videoId }), reason, source });
+      track("download_failed", {
+        ...(videoId !== undefined && { video_id: videoId }),
+        reason,
+        source,
+      });
       track("error_displayed", { type: "download_error", message: t("errorDownload") });
       setDownloadError(t("errorDownload"));
     }

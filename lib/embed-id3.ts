@@ -63,7 +63,9 @@ export async function embedId3Tags(mp3Path: string, opts: EmbedOptions): Promise
   };
 
   // Cover art — try provider cover first, then extra fallbacks, then YouTube thumbnail
-  const coverCandidates = [metadata.coverUrl, ...(coverFallbacks ?? []), ytThumbnail].filter(Boolean) as string[];
+  const coverCandidates = [metadata.coverUrl, ...(coverFallbacks ?? []), ytThumbnail].filter(
+    Boolean
+  ) as string[];
   for (const url of coverCandidates) {
     const cover = await fetchCoverBuffer(url);
     if (cover) {
