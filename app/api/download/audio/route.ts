@@ -3,7 +3,7 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { trackServer } from "@/lib/analytics-server";
 import { getClientIp, guardApiRequest } from "@/lib/api-guard";
-import { downloadAudioWithFfmpegTags } from "@/lib/audio-convert";
+import { type AudioOutputFormat, downloadAudioWithFfmpegTags } from "@/lib/audio-convert";
 import { extractVideoId, getInnertube } from "@/lib/innertube";
 import { generateReqId, getLog, hashIp, runWithRequestContext } from "@/lib/request-context";
 import { buildContentDisposition, cleanFiles, TEMP_DIR } from "@/lib/route-utils";
@@ -19,9 +19,11 @@ export async function GET(request: Request) {
     const log = getLog("audio");
     const requestStart = Date.now();
 
-    const url = new URL(request.url).searchParams.get("url");
+    const searchParams = new URL(request.url).searchParams;
+    const url = searchParams.get("url");
+    const format: AudioOutputFormat = searchParams.get("format") === "wav" ? "wav" : "mp3";
 
-    log.info({ url }, "Audio download request received");
+    log.info({ url, format }, "Audio download request received");
 
     const guard = guardApiRequest(request);
     if (guard) return guard;
@@ -66,7 +68,10 @@ export async function GET(request: Request) {
 
     const thumbPath = path.join(TEMP_DIR, "source", `thumb_${videoId}.jpg`);
     let hasThumb = false;
-    if (bestThumb?.url) {
+    // WAV can't carry cover art — skip the thumbnail round-trip entirely.
+    if (format === "wav") {
+      log.debug({ videoId }, "WAV output — skipping thumbnail");
+    } else if (bestThumb?.url) {
       try {
         const res = await fetch(bestThumb.url);
         if (res.ok) {
@@ -89,11 +94,12 @@ export async function GET(request: Request) {
       log.debug({ videoId }, "No thumbnail available");
     }
 
-    const mp3Path = path.join(TEMP_DIR, "source", `audio_${videoId}_${Date.now()}.mp3`);
+    const audioPath = path.join(TEMP_DIR, "source", `audio_${videoId}_${Date.now()}.${format}`);
 
     try {
       try {
-        await downloadAudioWithFfmpegTags(url, mp3Path, ffmpegPath, {
+        await downloadAudioWithFfmpegTags(url, audioPath, ffmpegPath, {
+          format,
           thumbPath: hasThumb ? thumbPath : undefined,
           tags: {
             title,
@@ -104,24 +110,27 @@ export async function GET(request: Request) {
           },
         });
       } catch (err) {
-        cleanFiles([mp3Path]);
+        cleanFiles([audioPath]);
         throw err;
       } finally {
         if (hasThumb) cleanFiles([thumbPath]);
       }
 
-      const fileSizeBytes = fs.existsSync(mp3Path) ? fs.statSync(mp3Path).size : 0;
+      const fileSizeBytes = fs.existsSync(audioPath) ? fs.statSync(audioPath).size : 0;
       const totalMs = Date.now() - requestStart;
-      log.info({ videoId, title, fileSizeBytes, totalMs, hasThumb }, "Sending audio response");
+      log.info(
+        { videoId, title, format, fileSizeBytes, totalMs, hasThumb },
+        "Sending audio response"
+      );
 
-      const stream = fs.createReadStream(mp3Path);
-      stream.on("close", () => cleanFiles([mp3Path]));
+      const stream = fs.createReadStream(audioPath);
+      stream.on("close", () => cleanFiles([audioPath]));
 
       void trackServer(
         "download_completed",
         {
           source: "youtube",
-          format: "mp3",
+          format,
           title,
           video_id: videoId,
           duration_s: durationSec,
@@ -138,8 +147,8 @@ export async function GET(request: Request) {
       // biome-ignore lint/suspicious/noExplicitAny: Next.js stream cast
       return new NextResponse(stream as any, {
         headers: {
-          "Content-Type": "audio/mpeg",
-          "Content-Disposition": buildContentDisposition(title, "mp3"),
+          "Content-Type": format === "wav" ? "audio/wav" : "audio/mpeg",
+          "Content-Disposition": buildContentDisposition(title, format),
         },
       });
     } catch (err) {

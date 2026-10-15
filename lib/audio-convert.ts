@@ -125,30 +125,37 @@ export interface AudioFfmpegTags {
   album: string;
 }
 
+export type AudioOutputFormat = "mp3" | "wav";
+
 /**
- * Audio download → MP3 with optional cover art + ID3 metadata embedded via
- * ffmpeg. Used by the basic audio route.
+ * Audio download → MP3 (or lossless-container WAV) with optional metadata
+ * embedded via ffmpeg. Used by the basic audio route.
+ * WAV has no standard cover-art slot, so `thumbPath` is ignored for it;
+ * title/artist still land in the RIFF INFO chunk.
  */
 export async function downloadAudioWithFfmpegTags(
   url: string,
-  mp3OutPath: string,
+  outPath: string,
   ffmpegPath: string,
-  opts: { thumbPath?: string; tags?: AudioFfmpegTags } = {}
+  opts: { thumbPath?: string; tags?: AudioFfmpegTags; format?: AudioOutputFormat } = {}
 ): Promise<void> {
   const log = getLog("audio-convert");
-  const { thumbPath, tags } = opts;
+  const format = opts.format ?? "mp3";
+  const tags = opts.tags;
+  const thumbPath = format === "mp3" ? opts.thumbPath : undefined;
   const ytDlpBin = getYtDlpBinaryPath();
   const startTime = Date.now();
 
   log.info(
     {
       url,
-      outPath: mp3OutPath,
+      outPath,
+      format,
       hasThumb: !!thumbPath,
       hasTags: !!tags,
       fn: "downloadAudioWithFfmpegTags",
     },
-    "Starting yt-dlp → ffmpeg MP3 conversion with tags"
+    "Starting yt-dlp → ffmpeg audio conversion with tags"
   );
 
   const ffmpegArgs: string[] = [
@@ -158,10 +165,9 @@ export async function downloadAudioWithFfmpegTags(
     "-map",
     "0:a",
     ...(thumbPath ? ["-map", "1:0"] : []),
-    "-codec:a",
-    "libmp3lame",
-    "-q:a",
-    "2",
+    ...(format === "wav"
+      ? ["-codec:a", "pcm_s16le", "-ar", "44100"]
+      : ["-codec:a", "libmp3lame", "-q:a", "2"]),
     ...(thumbPath
       ? [
           "-id3v2_version",
@@ -187,7 +193,7 @@ export async function downloadAudioWithFfmpegTags(
         ]
       : []),
     "-y",
-    mp3OutPath,
+    outPath,
   ];
 
   await new Promise<void>((resolve, reject) => {
@@ -211,8 +217,14 @@ export async function downloadAudioWithFfmpegTags(
         reject(new Error(`ffmpeg exited with code ${code}`));
       } else {
         log.info(
-          { url, durationMs: Date.now() - startTime, hasThumb: !!thumbPath, title: tags?.title },
-          "MP3 conversion with tags complete"
+          {
+            url,
+            format,
+            durationMs: Date.now() - startTime,
+            hasThumb: !!thumbPath,
+            title: tags?.title,
+          },
+          "Audio conversion with tags complete"
         );
         resolve();
       }

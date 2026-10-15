@@ -1,7 +1,7 @@
 import { siteConfig } from "@/lib/site-config";
 import { GetterInput } from "./GetterInput";
 
-export function GetterInputServer() {
+export function GetterInputServer({ defaultFormat }: { defaultFormat?: string } = {}) {
   const disabledMessages = {
     youtube: siteConfig.youtubeDisabledMessage
       ? {
@@ -17,5 +17,5 @@ export function GetterInputServer() {
       : undefined,
   };
 
-  return <GetterInput disabledMessages={disabledMessages} />;
+  return <GetterInput disabledMessages={disabledMessages} defaultFormat={defaultFormat} />;
 }

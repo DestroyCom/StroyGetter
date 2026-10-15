@@ -40,6 +40,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...localeEntries("/app", new Date("2026-06-28"), "monthly", 0.9),
     ...localeEntries("/tiktok", new Date(), "monthly", 0.9),
     ...localeEntries("/youtube", new Date(), "monthly", 0.9),
+    ...localeEntries("/youtube-to-mp3", new Date("2026-10-15"), "monthly", 0.9),
+    ...localeEntries("/youtube-to-wav", new Date("2026-10-15"), "monthly", 0.8),
     ...localeEntries("/twitch", new Date(), "monthly", 0.9),
     ...localeEntries("/library-ready", new Date("2026-05-20"), "monthly", 0.9),
     ...englishEntry("/how-to-use-library-ready", new Date("2026-05-20"), "monthly", 0.7),

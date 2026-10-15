@@ -1,12 +1,12 @@
 "use client";
 
 import { ArrowRight, Clipboard, Loader2, Search } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useDownloadState } from "@/components/custom/FetchPageShell";
 import { resolveVideoUrl } from "@/functions/resolveVideoUrl";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics";
 
 type DisabledMessage = { text: string; href?: string };
@@ -20,14 +20,30 @@ type DisabledMessages = {
 const isKnownVideoUrl = (v: string): boolean =>
   v.includes("youtube.com") || v.includes("youtu.be") || v.includes("tiktok.com");
 
-export const GetterInput = ({ disabledMessages }: { disabledMessages?: DisabledMessages }) => {
+export const GetterInput = ({
+  disabledMessages,
+  defaultFormat,
+}: {
+  disabledMessages?: DisabledMessages;
+  /** Format preselected on /fetch (e.g. "wav" from the /youtube-to-wav landing page). */
+  defaultFormat?: string;
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
   const t = useTranslations("getterInput");
 
-  const landingPage = ["/youtube", "/tiktok", "/twitch", "/"].includes(pathname) ? pathname : null;
+  const landingPage = [
+    "/youtube",
+    "/youtube-to-mp3",
+    "/youtube-to-wav",
+    "/tiktok",
+    "/twitch",
+    "/",
+  ].includes(pathname)
+    ? pathname
+    : null;
 
   const { isDownloading } = useDownloadState();
 
@@ -67,7 +83,9 @@ export const GetterInput = ({ disabledMessages }: { disabledMessages?: DisabledM
     });
     try {
       const resolvedUrl = await resolveVideoUrl(value);
-      router.push(`/fetch?videoUrl=${resolvedUrl}`);
+      router.push(
+        `/fetch?videoUrl=${resolvedUrl}${defaultFormat ? `&format=${defaultFormat}` : ""}`
+      );
     } catch (err) {
       track("search_error", {
         query: value,
