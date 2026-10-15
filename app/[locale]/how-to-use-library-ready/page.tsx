@@ -3,15 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
-import { buildAlternates } from "@/i18n/metadata";
+import { buildEnglishOnlyAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
+export async function generateMetadata(): Promise<Metadata> {
   const path = "/how-to-use-library-ready";
   return {
     title:
@@ -29,12 +24,12 @@ export async function generateMetadata({
       "download youtube music foobar2000",
       "youtube to mp3 rekordbox ready",
     ],
-    alternates: buildAlternates(locale, path),
+    alternates: buildEnglishOnlyAlternates(path),
     openGraph: {
       title: "How to download YouTube music with cover art, ID3 tags and synced lyrics",
       description:
         "Use StroyGetter's Library Ready mode to get fully tagged MP3s from YouTube — cover art, metadata and scrolling lyrics in one click.",
-      url: `${siteConfig.url}${path}`,
+      url: `${siteConfig.url}/en${path}`,
     },
   };
 }

@@ -3,15 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
-import { buildAlternates } from "@/i18n/metadata";
+import { buildEnglishOnlyAlternates } from "@/i18n/metadata";
 import { siteConfig } from "@/lib/site-config";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
+export async function generateMetadata(): Promise<Metadata> {
   const path = "/how-to-download-youtube-videos";
   return {
     title: "How to download a YouTube video as MP4 or MP3 in 2026",
@@ -24,12 +19,12 @@ export async function generateMetadata({
       "download youtube video free",
       "youtube downloader no install",
     ],
-    alternates: buildAlternates(locale, path),
+    alternates: buildEnglishOnlyAlternates(path),
     openGraph: {
       title: "How to download a YouTube video as MP4 or MP3 in 2026",
       description:
         "Free, no-install walkthrough using StroyGetter. Download MP4 video or MP3 audio directly from your browser.",
-      url: `${siteConfig.url}${path}`,
+      url: `${siteConfig.url}/en${path}`,
     },
   };
 }

@@ -45,6 +45,16 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/youtube-to-mp3" className="transition-colors hover:text-white">
+                  {t("toolYoutubeMp3")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/youtube-to-wav" className="transition-colors hover:text-white">
+                  {t("toolYoutubeWav")}
+                </Link>
+              </li>
+              <li>
                 <Link href="/#formats" className="transition-colors hover:text-white">
                   {t("toolFormats")}
                 </Link>

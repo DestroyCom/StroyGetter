@@ -1,6 +1,6 @@
 "use client";
 
-import { Disc3, Download, Film, Music } from "lucide-react";
+import { AudioWaveform, Disc3, Download, Film, Music } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -24,7 +24,7 @@ import { VideoLoading } from "./VideoLoading";
 
 const extractYtId = (url: string): string => url.match(/[?&]v=([^&]+)/)?.[1] ?? "";
 
-type YoutubeFmt = "mp4" | "mp3" | "library-ready";
+type YoutubeFmt = "mp4" | "mp3" | "wav" | "library-ready";
 type TikTokFmt = "tiktok-watermark" | "tiktok-no-watermark" | "tiktok-audio";
 type TwitchFmt = "twitch-video" | "twitch-audio";
 type Fmt = YoutubeFmt | TikTokFmt | TwitchFmt;
@@ -48,6 +48,7 @@ export const VideoSelect = ({ source }: Props) => {
     },
     { id: "mp4", label: t("formatMp4"), sub: t("formatMp4Sub"), Icon: Film },
     { id: "mp3", label: t("formatMp3"), sub: t("formatMp3Sub"), Icon: Music },
+    { id: "wav", label: t("formatWav"), sub: t("formatWavSub"), Icon: AudioWaveform },
   ];
 
   const TIKTOK_TABS: { id: TikTokFmt; label: string; sub: string; Icon: typeof Film }[] = [
@@ -108,12 +109,14 @@ export const VideoSelect = ({ source }: Props) => {
             { title: t("eduCard3Title"), desc: t("eduCard3Desc") },
           ];
 
+  // Landing pages (/youtube-to-mp3, /youtube-to-wav) forward their format via ?format=
+  const requestedFmt = YOUTUBE_TABS.find((tab) => tab.id === searchParams.get("format"))?.id;
   const defaultFmt: Fmt =
     source === "tiktok"
       ? "tiktok-no-watermark"
       : source === "twitch"
         ? "twitch-video"
-        : "library-ready";
+        : (requestedFmt ?? "library-ready");
 
   const [videoData, setVideoData] = useState<VideoData["video_details"] | null>(null);
   const [formats, setFormats] = useState<VideoData["format"] | null>(null);
@@ -240,6 +243,7 @@ export const VideoSelect = ({ source }: Props) => {
       let apiUrl: string;
 
       if (fmt === "mp3") apiUrl = `/api/download/audio?url=${encoded}`;
+      else if (fmt === "wav") apiUrl = `/api/download/audio?url=${encoded}&format=wav`;
       else if (fmt === "library-ready") apiUrl = `/api/download/audio-library-ready?url=${encoded}`;
       else if (fmt === "mp4") apiUrl = `/api/download/video?url=${encoded}&quality=${selectedItag}`;
       else if (fmt === "tiktok-watermark")
@@ -259,7 +263,9 @@ export const VideoSelect = ({ source }: Props) => {
 
       const ext = ["mp4", "tiktok-watermark", "tiktok-no-watermark", "twitch-video"].includes(fmt)
         ? "mp4"
-        : "mp3";
+        : fmt === "wav"
+          ? "wav"
+          : "mp3";
       const disposition = res.headers.get("content-disposition");
       const cdFilename = disposition?.match(/filename="([^"]+)"/)?.[1];
       const blob = await res.blob();
