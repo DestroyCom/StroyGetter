@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/custom/JsonLd";
-import { buildAlternates } from "@/i18n/metadata";
+import { buildEnglishOnlyAlternates } from "@/i18n/metadata";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/lib/site-config";
@@ -18,7 +18,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const update = updates.find((u) => u.slug === slug);
   if (!update) return {};
   const path = `/updates/${update.slug}`;
@@ -26,11 +26,11 @@ export async function generateMetadata({
     title: `${update.title} — StroyGetter`,
     description: update.description,
     keywords: update.keywords,
-    alternates: buildAlternates(locale, path),
+    alternates: buildEnglishOnlyAlternates(path),
     openGraph: {
       title: update.title,
       description: update.description,
-      url: `${siteConfig.url}/${locale}/updates/${update.slug}`,
+      url: `${siteConfig.url}/en${path}`,
     },
   };
 }

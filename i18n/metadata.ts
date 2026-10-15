@@ -13,3 +13,14 @@ export function buildAlternates(locale: string, path: string) {
     languages,
   };
 }
+
+// For pages whose content only exists in English (guides, changelog entries):
+// every locale URL renders the same text, so all of them point to the /en version
+// as canonical. Otherwise search engines flag them as duplicate titles/descriptions.
+export function buildEnglishOnlyAlternates(path: string) {
+  const url = `${siteConfig.url}/${routing.defaultLocale}${path}`;
+  return {
+    canonical: url,
+    languages: { [routing.defaultLocale]: url, "x-default": url },
+  };
+}

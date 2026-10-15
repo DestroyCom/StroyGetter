@@ -8,6 +8,18 @@ const LOCALES = routing.locales;
 
 type Freq = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
 
+// English-only content (guides, changelog entries): only the canonical /en URL is listed.
+function englishEntry(
+  path: string,
+  lastModified: Date,
+  changeFrequency: Freq,
+  priority: number
+): MetadataRoute.Sitemap {
+  return [
+    { url: `${BASE}/${routing.defaultLocale}${path}`, lastModified, changeFrequency, priority },
+  ];
+}
+
 function localeEntries(
   path: string,
   lastModified: Date,
@@ -30,19 +42,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...localeEntries("/youtube", new Date(), "monthly", 0.9),
     ...localeEntries("/twitch", new Date(), "monthly", 0.9),
     ...localeEntries("/library-ready", new Date("2026-05-20"), "monthly", 0.9),
-    ...localeEntries("/how-to-use-library-ready", new Date("2026-05-20"), "monthly", 0.7),
-    ...localeEntries("/how-to-download-youtube-videos", new Date("2026-05-11"), "monthly", 0.8),
+    ...englishEntry("/how-to-use-library-ready", new Date("2026-05-20"), "monthly", 0.7),
+    ...englishEntry("/how-to-download-youtube-videos", new Date("2026-05-11"), "monthly", 0.8),
     ...(updates.length > 0
       ? localeEntries("/updates", new Date(updates[0].date), "monthly", 0.7)
       : []),
-    ...updates.flatMap((u) =>
-      LOCALES.map((locale) => ({
-        url: `${BASE}/${locale}/updates/${u.slug}`,
-        lastModified: new Date(u.date),
-        changeFrequency: "never" as const,
-        priority: 0.6,
-      }))
-    ),
+    ...updates.flatMap((u) => englishEntry(`/updates/${u.slug}`, new Date(u.date), "never", 0.6)),
     ...localeEntries("/legal/terms", new Date("2026-05-07"), "yearly", 0.3),
     ...localeEntries("/legal/privacy", new Date("2026-05-07"), "yearly", 0.3),
     ...localeEntries("/legal/cookies", new Date("2026-05-07"), "yearly", 0.2),
